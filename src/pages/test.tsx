@@ -19,7 +19,7 @@ const Test = () => {
 
 
     const isValid = () => {
-        alert(isPing)
+        alert(isPing !== null ? isPing.ping : "Servidor não esta funcionando")
     }
 
 
@@ -33,7 +33,7 @@ const Test = () => {
                     <h2 className='font-bold text-green-300'>EM DESENVOLVIMENTO</h2>
                     <p className='p-5'>Tenha paciencia, estamos nos esforçando muito. Assim que o projeto estiver finalizado vamos iniciar com o deploy.
                     Você pode contrubuir para o projeto clicando <span className='text-green-300'> <a href="https://github.com/Arthursouto099/Arthursouto099-project_RM">aqui.</a> </span> </p>
-                    <button className='' onClick={() => isValid}>Testar Servidor</button>
+                    <button className='cursor-pointer p-2 bg-green-300 text-gray-100 rounded-[5px] m-3'  onClick={() => isValid()}>Testar Servidor</button>
                 </div>
 
             </div>
