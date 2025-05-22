@@ -60,6 +60,10 @@ http://localhost:<port>
 - [@vihfaller](https://github.com/vihfaller)
 - [@Arthursouto099](https://github.com/Arthursouto099)
 
+## Licença
+
+Este projeto está licenciado sob a licença Apache2.0. Veja o arquivo [LICENSE](LICENSEmd) para mais detalhes.
+
 
 ## Como contribuir
 
