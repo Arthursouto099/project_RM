@@ -61,6 +61,12 @@ http://localhost:<port>
 - [@Arthursouto099](https://github.com/Arthursouto099)
 
 
+## Como contribuir
 
+1. Fork este repositório
+2. Crie sua branch: git checkout -b minha-feature
+3. Commit: git commit -m 'Minha nova feature'
+4. Push: git push origin minha-feature
+5. Crie um Pull Request
 
 
