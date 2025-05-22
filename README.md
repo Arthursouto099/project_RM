@@ -2,6 +2,10 @@
 # Relax Mind
 Relax Mind se trata de uma iniciativa que busca juntar o melhor da psicologia com tecnologia de forma acessível a todos, nossa ideia parte do principio de um software onde o usuario pode além de ter consultas com profisionais verificados da área, pode também pode se conectar com outros usuarios por meios de grupos, comunidades ou mensagens diretas. Como o software ainda está em desenvolvimento, ainda estamos debatendo sobre ideias e funcionalidades, para contribuir com o nosso projeto ``<INFORMAÇÕES A BAIXO>``. 
 
+
+## Imagem conceito dashboard - (DESENVOLVIMENTO)
+![types](types.jpeg)
+
 ---
 ## Tecnologias 
 
