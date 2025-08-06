@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
+
 }
 
 datasource db {
@@ -15,10 +15,36 @@ datasource db {
 }
 
 
+model CommonUser {
+  id_user           String @default(uuid())
+  username          String
+  email             String        @unique
+  password          String
+  birth             DateTime?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  profile_image     String?
+  cpf               String        @unique
+  fk_address        Int?
+  contact           String?
+  gender            String?
+  emergency_contact String?
 
-model user {
-  id_user String @id @default(uuid())
-  user_name String 
-  email String @unique 
-  password String 
+  address           Address?      @relation(fields: [fk_address], references: [id_address])
+ 
+
+  @@map("common_user")
+}
+
+model Address {
+  id_address Int           @id
+  street     String?
+  number     Int?
+  cep        String?
+  state      String?
+  city       String?
+
+  users      CommonUser[]
+
+  @@map("address")
 }

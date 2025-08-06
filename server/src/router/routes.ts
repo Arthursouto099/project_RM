@@ -1,10 +1,9 @@
-import { Router } from "express";
-import { Request, Response } from "express";
+import  {Router}  from "express";
+import commonUserRouter from "./v1/common_user.router";
+
+const routers = Router();
 
 
-const router = Router()
+routers.use("/user", commonUserRouter)
 
-
-
-
-export default router
+export default routers;
