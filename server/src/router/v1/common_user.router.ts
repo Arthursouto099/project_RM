@@ -7,5 +7,7 @@ const commonUserRouter = Router()
 
 
 commonUserRouter.post("/", commonUserController.post)
+commonUserRouter.get("/", commonUserController.findForUniqueKey)
+commonUserRouter.delete("/",commonUserController.deleteForUniqueKey )
 
 export default commonUserRouter
