@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
-import {CommonUser} from "../schemas/common_user.schema"
+import {CommonUser, PartialUserInputs } from "../schemas/common_user.schema"
 import prisma from "../prisma.config";
 import { Prisma } from "@prisma/client";
 import { responseOk } from "../config/responses/app.response";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
-
-
+import {z} from "zod"
 
 
 
@@ -71,6 +70,27 @@ const commonUserService = {
     },
 
 
+    findUsers: async(max?: string)  => {
+
+        if(max) {
+            // "ação futura"
+        }
+
+
+        return await prisma.commonUser.findMany() ?? []
+    },
+
+
+
+    putUserForUniqueKey: async (data: PartialUserInputs ) => {
+
+    }
+
+
+    ,
+
+
+
     deleteUser: async({id_user, email, cpf}: {id_user?: string, email?: string, cpf?: string}) => {
         try{
             let where: Prisma.CommonUserWhereUniqueInput
@@ -88,7 +108,6 @@ const commonUserService = {
                 where = {cpf}
             }
 
-            console.log(where)
 
   
         
@@ -104,8 +123,8 @@ const commonUserService = {
         catch(e) {
             if(e instanceof PrismaClientKnownRequestError) {
 
-
                 throw UserErrorHandler.internal("Erro no banco de dados", e)
+
             }
 
             if(e instanceof Error) {
@@ -116,6 +135,9 @@ const commonUserService = {
 
         }
     }
+
+
+
 
 
 

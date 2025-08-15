@@ -1,6 +1,7 @@
-import {BrowserRouter, Routes, Route} from "react-router-dom"
+import {BrowserRouter, Route, Routes} from "react-router-dom"
+import Login from "./pages/unprotectedRoutes/Login"
 
-import Test from "./pages/test"
+
 
 
 // as rotas do sistema devem ficar aqui, <Manter Oorganizado>
@@ -8,7 +9,7 @@ export default function Router() {
     return (
         <BrowserRouter>
             <Routes>
-             <Route path="/" element={<Test/>} ></Route>
+                <Route path="/login"  element={<Login/>}> </Route>
             </Routes>
         </BrowserRouter>
     )

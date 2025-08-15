@@ -46,9 +46,10 @@ const commonUserSchema = z.object({
       emergency_contact: z.string().regex(contactRegex).optional()
       
 
-});
+}).strict();
 
 
-
+const partialUserInputs = commonUserSchema.partial()
 
 export type CommonUser = z.infer<typeof commonUserSchema>
+export type PartialUserInputs = z.infer<typeof partialUserInputs>

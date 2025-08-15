@@ -22,9 +22,9 @@ const commonUserController = {
         try{
             const { id_user, email, cpf } = req.query;
 
-            
+
             if (!id_user && !email && !cpf) {
-              throw UserErrorHandler.validation("Informe id_user, email ou cpf para buscar o usuário.");
+              responseOk(res, "Busca realizada com sucesso", await commonUserService.findUsers(), 200)
             }
             
             const cm = await commonUserService.findUser({
@@ -70,7 +70,11 @@ const commonUserController = {
         catch(e) {
             next(e)
         }
-    }
+    },
+
+
+
+
 
 
 

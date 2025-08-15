@@ -12,7 +12,7 @@ const GlobalErrorHandler = (error: Error, req: Request, res: Response, next: Nex
 
 
         if(error instanceof UserErrorHandler) {
-            console.log(error)
+            console.log(error.message)
         }
 
 
