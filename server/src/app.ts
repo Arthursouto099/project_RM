@@ -18,6 +18,10 @@ app.use("/v1", router)
 
 
 app.use(urlencoded({extended: true}))
+
 app.use(GlobalErrorHandler)
 
-app.listen(process.env.PORT, () => console.log(`Running in port http://localhost:${process.env.PORT}`))
+app.listen(process.env.PORT ?? 3000, (e) =>  {
+    if(e) console.log(e)
+    console.log(`Running in port http://localhost:${process.env.PORT}`)
+})

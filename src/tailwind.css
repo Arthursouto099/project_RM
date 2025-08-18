@@ -1,1 +1,44 @@
 @import "tailwindcss";
+
+
+
+
+@theme {
+  /* Tipografia */
+  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+
+  /* Espaçamento dinâmico (escala base de 0.25rem) */
+  --spacing: 0.25rem;
+
+  /* Cores (paleta personalizada para comunidade psicológica) */
+  --color-primary: #f58a07;
+  --color-primary-dark: #c46d00;
+  --color-primary-light: #ffb94f;
+
+  --color-secondary: #3a506b;
+  --color-secondary-dark: #2b3a4a;
+  --color-secondary-light: #5c7c99;
+
+  --color-accent: #6dd3ce;
+  --color-accent-dark: #4ca5a0;
+  --color-accent-light: #a1e9e6;
+
+  --color-blue-muted: #e0f2fe;
+  --color-blue-accent: #60a5fa;
+  --color-blue-dark: #334155;
+
+  --color-background: #fffdf8;
+  --color-background-light: #fdfaf4;
+  --color-background-dark: #f5f3ef;
+
+  --color-muted: #9ca3af;
+  --color-muted-light: #d1d5db;
+
+  --color-success: #22c55e;
+  --color-success-light: #bbf7d0;
+
+  --color-danger: #f43f5e;
+  --color-danger-light: #fda4af;
+}

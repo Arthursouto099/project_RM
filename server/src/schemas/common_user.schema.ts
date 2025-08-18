@@ -11,7 +11,7 @@ const contactRegex: RegExp = /^\d{10,11}$/
 
 
 
-const commonUserSchema = z.object({
+export const commonUserSchema = z.object({
     username: z.string().min(2, "O nome do usuário deve conter pelo menos 2 caracteres"),
     email: z.email("E-mail inválido"),
     password: z
