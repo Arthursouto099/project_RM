@@ -16,9 +16,6 @@ const GlobalErrorHandler = (error: Error, req: Request, res: Response, next: Nex
         }
 
 
-
-
-
         res.status(500).json({message: "Global 500 Error", success: false}) 
         return
 

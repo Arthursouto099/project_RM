@@ -11,7 +11,7 @@ export const validate = (schema: ZodType<unknown>) => (req: Request, res: Respon
     if(!parsed.success) {
         const errs = parsed.error
         console.error(errs.message)
-        res.status(404).json({message: "Dados inválidos", error: errs.issues, success: false, })
+        res.status(400).json({message: "Dados inválidos", error: errs.issues, success: false, })
         return
     }
 

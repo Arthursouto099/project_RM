@@ -5,7 +5,7 @@ import { Prisma } from "@prisma/client";
 import { responseOk } from "../config/responses/app.response";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
-import {z} from "zod"
+import * as bc from "bcrypt"
 
 
 
@@ -15,8 +15,9 @@ const commonUserService = {
 
     createCommonUser:  async (data: CommonUser) => {
         try {
+             data.password = await bc.hash(data.password, 10)
              return await prisma.commonUser.create({data: data})
-        }
+            }
 
         catch (e) {
             // 🎯 Trata erros específicos do Prisma

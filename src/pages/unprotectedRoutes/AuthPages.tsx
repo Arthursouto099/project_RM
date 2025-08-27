@@ -38,11 +38,11 @@ export default function Login() {
             {form === "login" && <LoginForm/>}
            
           
-               <div className="flex mt-6 gap-5">
+               {/* <div className="flex mt-6 gap-5">
                 <button className="bg-blue-300 text-sm rounded-md font-semibold text-white w-full p-2">Conheça nosso Facebook</button>
                 <button className=" bg-red-300 text-sm rounded-md font-semibold text-white w-full p-2">Conheça nosso Instagram</button>
 
-              </div>
+              </div> */}
 
           </div>
         </div>
@@ -139,17 +139,38 @@ const RegisterForm = () => {
 
 
 const LoginForm = () => {
-  return (
-       <form>
+    const [email, setEmail] = useState<string>("")
+    const [password, setPassword] = useState<string>("")
 
+      const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault()
+      
+      const res = await UserApi.login({ email: email, password: password})
+      if(!res.success) {
+        toast.error(res.message)
+        return
+      }
+
+
+     
+      toast.success(res.message)
+      
+
+
+    }
+
+
+  return (
+       <form onSubmit={onSubmit}>
+              <ToastContainer position="top-center"></ToastContainer>
               <div className="grid grid-cols-2 gap-5 ">
-                <div className="col-span-2">
+                 <div className="col-span-2">
                   <label htmlFor="" className=""> <h1 className="font-semibold">Email</h1></label>
-                  <input type="email" placeholder="example@gmail.com" className="border-b-1  w-full focus:outline-none focus:border-accent focus:ring-0 p-1 border-gray-300" />
+                  <input type="email" onChange={(e) => setEmail(e.target.value)} placeholder="example@gmail.com" className="border-b-1  w-full focus:outline-none focus:border-accent focus:ring-0 p-1 border-gray-300" />
                 </div>
                 <div className="col-span-2">
                   <label htmlFor="" className=""> <h1 className="font-semibold">Senha</h1></label>
-                  <input type="password" placeholder="Talk2Us@" className="border-b-1  w-full focus:outline-none focus:ring-0 focus:border-accent p-1 border-gray-300" />
+                  <input type="password" placeholder="Talk2Us@"  onChange={(e) => setPassword(e.target.value)} className="border-b-1  w-full focus:outline-none focus:border-accent focus:ring-0 p-1 border-gray-300" />
                 </div>
 
                 <div>
@@ -158,7 +179,7 @@ const LoginForm = () => {
 
                   <div className="flex mt-10 col-span-2 gap-2">
               <button className="p-2 bg-accent-dark w-full rounded-md text-white" disabled>Registrar</button>
-              <button className="p-2 bg-accent w-full rounded-md text-white" >Login</button>
+              <button className="p-2 bg-accent w-full rounded-md text-white" type="submit" >Login</button>
               
             </div>
 

@@ -1,5 +1,5 @@
 import {BrowserRouter, Route, Routes} from "react-router-dom"
-import Login from "./pages/unprotectedRoutes/Login"
+import Login from "./pages/unprotectedRoutes/AuthPages"
 
 
 

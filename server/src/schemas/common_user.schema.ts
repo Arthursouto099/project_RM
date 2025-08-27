@@ -1,4 +1,4 @@
-import {z} from "zod";
+import {email, z} from "zod";
 
 
 
@@ -8,6 +8,8 @@ const cpfRegex: RegExp = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/;
 const passwordRegex: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/;
 // Regex para contato 
 const contactRegex: RegExp = /^\d{10,11}$/
+
+
 
 
 
@@ -49,7 +51,24 @@ export const commonUserSchema = z.object({
 }).strict();
 
 
-const partialUserInputs = commonUserSchema.partial()
+export const loginUserInputs = z.object({
+    email:  z.email("E-mail inválido"),
+      password: z
+        .string()
+        .min(6, "A senha deve conter no mínimo 8 caracteres")
+        .regex(
+            passwordRegex,
+            "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial"
+        )
+})
 
+
+
+export const partialUserInputs = commonUserSchema.partial()
+
+
+
+// exportando os tipos do usuario
+export type  LoginUserInputs = z.infer<typeof loginUserInputs>
 export type CommonUser = z.infer<typeof commonUserSchema>
 export type PartialUserInputs = z.infer<typeof partialUserInputs>
