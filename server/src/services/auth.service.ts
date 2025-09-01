@@ -6,6 +6,7 @@ import { tokenConfig } from "../config/@tokenconfig/tokenConfig";
 
 
 
+
 const authService = {
 
     login: async (inputs: LoginUserInputs) => {
@@ -16,7 +17,7 @@ const authService = {
             const checkPassword = await bc.compare(inputs.password, userData.password)
             if (!checkPassword) throw AuthErrorHandler.unauthorized("Senha incorreta")
 
-            return tokenConfig.generateToken({ email: userData.email, cpf: userData.cpf, id_user: userData.id_user })
+            return tokenConfig.generateToken({ email: userData.email, cpf: userData.cpf, id_user: userData.id_user, name: userData.username })
 
         }
 

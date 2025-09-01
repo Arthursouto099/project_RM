@@ -1,8 +1,8 @@
-import { Request, Response } from "express";
+
 import {CommonUser, PartialUserInputs } from "../schemas/common_user.schema"
 import prisma from "../prisma.config";
 import { Prisma } from "@prisma/client";
-import { responseOk } from "../config/responses/app.response";
+
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import * as bc from "bcrypt"
@@ -83,8 +83,22 @@ const commonUserService = {
 
 
 
-    putUserForUniqueKey: async (data: PartialUserInputs ) => {
+    putUserForUniqueKey: async (data: PartialUserInputs, id_user: string) => {
+        try{
+            const updated = await prisma.commonUser.update({where: {id_user: id_user}, data})
+            if(!updated) throw new UserErrorHandler("Problema ao editar o usuario", undefined, updated, 500)
+            return updated 
+        }
+        catch(e) {
+               if(e instanceof UserErrorHandler) {
+                throw e
+            }
+            if(e instanceof PrismaClientKnownRequestError) {
+               throw UserErrorHandler.internal("Falha na comunicação com o servidor")
+            }
 
+            throw UserErrorHandler.internal()
+        }
     }
 
 
@@ -130,6 +144,10 @@ const commonUserService = {
 
             if(e instanceof Error) {
                 throw UserErrorHandler.internal("Erro no banco de dados", e)
+            }
+
+            if(e instanceof UserErrorHandler) {
+                throw e
             }
 
             throw UserErrorHandler.internal("Erro inesperado ao deletar usuário", e);

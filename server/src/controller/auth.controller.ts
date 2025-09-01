@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from "express";
-import commonUserService from "../services/common_user.service";
 import authService from "../services/auth.service";
 import { responseOk } from "../config/responses/app.response";
 

@@ -1,10 +1,11 @@
-import {email, z} from "zod";
+import {z} from "zod";
 
 
 
 // Regex para cpf
 const cpfRegex: RegExp = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/;
 // Regex para senha possuir uma letra maiúscula, um número e um caractere especial
+// eslint-disable-next-line no-useless-escape
 const passwordRegex: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/;
 // Regex para contato 
 const contactRegex: RegExp = /^\d{10,11}$/
@@ -60,11 +61,11 @@ export const loginUserInputs = z.object({
             passwordRegex,
             "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial"
         )
-})
+}).strict()
 
 
 
-export const partialUserInputs = commonUserSchema.partial()
+export const partialUserInputs = commonUserSchema.partial().strict()
 
 
 

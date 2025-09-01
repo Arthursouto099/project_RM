@@ -18,6 +18,19 @@ const commonUserController = {
     },
 
 
+     put: async (req: Request, res: Response, next: NextFunction) => {
+        try{
+            const upCm = await commonUserService.putUserForUniqueKey(req.body, req.params.id_user)
+            responseOk(res, "Usuário editado com sucesso", upCm, 200);
+            
+        }
+
+        catch(e) {
+            next(e)
+        }
+    },
+
+
     findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {
         try{
             const { id_user, email, cpf } = req.query;

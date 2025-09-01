@@ -1,13 +1,13 @@
 import * as webTokenConfig from "jsonwebtoken"
 import "dotenv/config"
-import { verify } from "crypto"
-import { string } from "zod"
+
 
 
 export type Payload = {
     id_user: string,
     email: string,
-    cpf: string
+    cpf: string,
+    name: string
 
 }
 

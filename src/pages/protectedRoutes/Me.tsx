@@ -1,0 +1,285 @@
+import UserApi, { type CommonUser } from "@/api/UserApi";
+import Layout from "@/layout";
+import { User2Icon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+
+
+export default function Me() {
+    const [me, setMe] = useState<CommonUser>()
+    const [loading, setLoading] = useState<boolean>(true)
+
+
+
+
+    useEffect(() => {
+        const fetchMe = async () => {
+
+            const response = await UserApi.get()
+
+            if (!response.success) return
+
+            const data = response.data as CommonUser
+            setMe(data)
+            setLoading(false)
+        }
+
+
+        fetchMe()
+
+
+    }, [])
+
+
+
+    return (
+        <Layout>
+            <section className="m-5  h-[95%] w-[81vw] flex ">
+                <div className=" p-4  flex-1/2 ">
+                    <div className=" flex items-center gap-3">
+                        <div className="rounded-md bg-accent-light  p-2"><User2Icon className="text-background" /></div>
+                        <div className="flex flex-col ">
+                            <p className="font-normal text-[14px] opacity-85">{me?.username}</p>
+                            <h1 className=" " >{me?.email}</h1>
+                        </div>
+                    </div>
+
+                    <div className="w-[100%] h-[0.50px] bg-gray-300 mt-4"></div>
+
+                    <div className="mt-20">
+                        {me ? (
+                            <UpdateForm
+                                cpf={me.cpf}
+                                email={me.email}
+                                username={me.username}
+                                password="**********"
+                                contact={me.contact}
+                                birth={me.birth}
+                            ></UpdateForm>
+                        ) : null}
+
+                    </div>
+                </div>
+
+
+
+
+
+                <div className="flex-1/5 ">
+
+                </div>
+            </section>
+        </Layout>
+    )
+}
+
+const genderOptions: string[] = [
+    "Masculino",
+    "Feminino",
+    "Não Binário",
+    "Agênero",
+    "Gênero Fluido",
+    "Transgênero",
+    "Travesti",
+    "Homem Trans",
+    "Mulher Trans",
+    "Pangênero",
+    "Bigênero",
+    "Outro",
+    "Prefiro não dizer"
+];
+
+
+
+export interface CommonUserProps {
+    username: string;
+    email: string;
+    password: string;
+    cpf: string;
+    birth?: Date | undefined;
+    profile_image?: string | undefined;
+    fk_address?: number | undefined;
+    contact?: string | undefined;
+    gender?: "Masculino" | "Feminino" | "Não Binário" | "Agênero" | "Gênero Fluido" | "Transgênero" | "Travesti" | "Homem Trans" | "Mulher Trans" | "Pangênero" | "Bigênero" | "Outro" | "Prefiro não dizer" | undefined;
+    emergency_contact?: string | undefined;
+}
+
+
+
+
+export function UpdateForm(props: CommonUserProps) {
+  const [$name, setName] = useState<string>(props.username)
+  const [$email, setEmail] = useState<string>(props.email)
+  const [$password, setPassword] = useState<string>(props.password)
+  const [$cpf, setCpf] = useState<string>(props.cpf)
+  const [$contact, setContact] = useState<string>(props.contact ?? "")
+  const [$birth, setBirth] = useState<Date | null>(props.birth ?? null)
+  const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
+  const [$gender, setGender] = useState<
+    | "Masculino"
+    | "Feminino"
+    | "Não Binário"
+    | "Agênero"
+    | "Gênero Fluido"
+    | "Transgênero"
+    | "Travesti"
+    | "Homem Trans"
+    | "Mulher Trans"
+    | "Pangênero"
+    | "Bigênero"
+    | "Outro"
+    | "Prefiro não dizer"
+  >(props.gender ?? "Prefiro não dizer")
+
+  // Guarda apenas os campos alterados
+  const [currentValues, setCurrentValues] = useState<Array<{ key: string; value: string | Date }>>([])
+
+  const updateValue = (key: string, value: string | Date) => {
+    setCurrentValues((prev) => {
+      const filtered = prev.filter((item) => item.key !== key)
+      return [...filtered, { key, value }]
+    })
+  }
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    // const payload = {
+    //   username: $name,
+    //   email: $email,
+    //   password: $password,
+    //   cpf: $cpf,
+    //   contact: $contact,
+    //   birth: $birth,
+    //   emergency_contact: $emergency_contact,
+    //   gender: $gender,
+    // }
+
+    const obj = currentValues.reduce((acc, item) => {
+        acc[item.key] = item.value
+        return acc
+    }, {} as Record<string, string | Date>)
+
+   
+    const res = await UserApi.put(obj as Partial<CommonUser>)
+    if (!res.success) {
+      toast.error(res.message)
+      return
+    }
+    toast.success(res.message)
+  }
+
+  return (
+    <form onSubmit={onSubmit}>
+      <ToastContainer position="top-center" />
+
+      <div className="grid grid-cols-2 gap-5">
+        {/* Nome */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Nome</label>
+          <input
+            type="text"
+            value={$name}
+            required
+            onChange={(e) => {
+              setName(e.target.value)
+              updateValue("username", e.target.value)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+
+        {/* Email */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <input
+            type="email"
+            value={$email}
+            required
+            onChange={(e) => {
+              setEmail(e.target.value)
+              updateValue("email", e.target.value)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+
+        {/* CPF */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">CPF</label>
+          <input
+            type="text"
+            value={$cpf}
+            required
+            onChange={(e) => {
+              setCpf(e.target.value)
+              updateValue("cpf", e.target.value)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+
+        {/* Gênero */}
+        <div>
+          <label htmlFor="gender" className="block text-sm font-semibold text-gray-700 mb-1">
+            Gênero
+          </label>
+          <select
+            name="gender"
+            id="gender"
+            value={$gender}
+            required
+            onChange={(e) => {
+              setGender(e.target.value as typeof $gender)
+              updateValue("gender", e.target.value)
+            }}
+            className="w-full border-b border-gray-300 bg-white px-1 py-2 text-sm outline-none focus:border-accent-normal focus:ring-0"
+          >
+            {genderOptions.map((s) => (
+              <option key={s} value={s} className="bg-white text-gray-700">
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Aniversário */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Aniversário</label>
+          <input
+            type="date"
+            
+           
+            onChange={(e) => {
+              const date = new Date(e.target.value)
+              setBirth(date)
+              updateValue("birth", date)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+
+        {/* Contato */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Contato</label>
+          <input
+            type="text"
+            value={$contact}
+            onChange={(e) => {
+              setContact(e.target.value)
+              updateValue("contact", e.target.value)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+
+        {/* Botão */}
+        <div className="flex col-span-2 gap-2">
+          <button className="p-2 bg-accent-normal w-full rounded-md text-white cursor-pointer" type="submit">
+            Update
+          </button>
+        </div>
+      </div>
+    </form>
+  )
+}
