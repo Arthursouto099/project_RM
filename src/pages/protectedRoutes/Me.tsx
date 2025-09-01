@@ -3,105 +3,124 @@ import Layout from "@/layout";
 import { User2Icon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
-
+import { supabase } from "@/storage/supabaseClient";
 
 export default function Me() {
-    const [me, setMe] = useState<CommonUser>()
-    const [loading, setLoading] = useState<boolean>(true)
+  const [me, setMe] = useState<CommonUser>()
+  const [loading, setLoading] = useState<boolean>(true)
+  const [updated, setUpdated] = useState<number>(0)
+  const [field, setFields] = useState<"informacoes" | "configuracoes">("informacoes")
+
+
+  console.log(me)
+
+  useEffect(() => {
+    const fetchMe = async () => {
+
+      const response = await UserApi.get()
+
+      if (!response.success) return
+
+      const data = response.data as CommonUser
+      setMe(data)
+      setLoading(false)
+    }
+
+
+    fetchMe()
+
+
+  }, [updated])
+
+
+
+  return (
+    <Layout>
+      <section className="m-5  h-[95%] w-[81vw] flex ">
+        <div className=" p-4  flex-1/2 ">
+          <div className=" flex items-center gap-3">
+            <div className="rounded-md bg-accent-light  p-2"><User2Icon className="text-background" /></div>
+            <div className="flex flex-col ">
+              <p className="font-normal text-[14px] opacity-85">{me?.username}</p>
+              <h1 className=" " >{me?.email}</h1>
+            </div>
+          </div>
+
+          <div className="w-[100%] h-[0.50px] bg-gray-300 mt-4"></div>
+
+          <div className="mt-10    ">
+            <div className="flex gap-3">
+              <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "informacoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("informacoes")}>Informações</h1>
+              <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "configuracoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("configuracoes")} >configurações</h1>
+            </div>
+
+          </div>
 
 
 
 
-    useEffect(() => {
-        const fetchMe = async () => {
-
-            const response = await UserApi.get()
-
-            if (!response.success) return
-
-            const data = response.data as CommonUser
-            setMe(data)
-            setLoading(false)
-        }
+          <div className="mt-20">
+            {me ? (
+              <UpdateForm onUpdated={() => {
+                setUpdated((prev) => prev + 1)
 
 
-        fetchMe()
+              }}
+                cpf={me.cpf}
+                email={me.email}
+                username={me.username}
+                password="**********"
+                contact={me.contact}
+                birth={me.birth}
+                gender={me.gender}
+              ></UpdateForm>
+            ) : null}
 
-
-    }, [])
-
-
-
-    return (
-        <Layout>
-            <section className="m-5  h-[95%] w-[81vw] flex ">
-                <div className=" p-4  flex-1/2 ">
-                    <div className=" flex items-center gap-3">
-                        <div className="rounded-md bg-accent-light  p-2"><User2Icon className="text-background" /></div>
-                        <div className="flex flex-col ">
-                            <p className="font-normal text-[14px] opacity-85">{me?.username}</p>
-                            <h1 className=" " >{me?.email}</h1>
-                        </div>
-                    </div>
-
-                    <div className="w-[100%] h-[0.50px] bg-gray-300 mt-4"></div>
-
-                    <div className="mt-20">
-                        {me ? (
-                            <UpdateForm
-                                cpf={me.cpf}
-                                email={me.email}
-                                username={me.username}
-                                password="**********"
-                                contact={me.contact}
-                                birth={me.birth}
-                            ></UpdateForm>
-                        ) : null}
-
-                    </div>
-                </div>
+          </div>
+        </div>
 
 
 
 
 
-                <div className="flex-1/5 ">
+        <div className="flex-1/5 ">
 
-                </div>
-            </section>
-        </Layout>
-    )
+        </div>
+      </section>
+    </Layout>
+  )
 }
 
 const genderOptions: string[] = [
-    "Masculino",
-    "Feminino",
-    "Não Binário",
-    "Agênero",
-    "Gênero Fluido",
-    "Transgênero",
-    "Travesti",
-    "Homem Trans",
-    "Mulher Trans",
-    "Pangênero",
-    "Bigênero",
-    "Outro",
-    "Prefiro não dizer"
+  "Masculino",
+  "Feminino",
+  "Não Binário",
+  "Agênero",
+  "Gênero Fluido",
+  "Transgênero",
+  "Travesti",
+  "Homem Trans",
+  "Mulher Trans",
+  "Pangênero",
+  "Bigênero",
+  "Outro",
+  "Prefiro não dizer"
 ];
 
 
 
 export interface CommonUserProps {
-    username: string;
-    email: string;
-    password: string;
-    cpf: string;
-    birth?: Date | undefined;
-    profile_image?: string | undefined;
-    fk_address?: number | undefined;
-    contact?: string | undefined;
-    gender?: "Masculino" | "Feminino" | "Não Binário" | "Agênero" | "Gênero Fluido" | "Transgênero" | "Travesti" | "Homem Trans" | "Mulher Trans" | "Pangênero" | "Bigênero" | "Outro" | "Prefiro não dizer" | undefined;
-    emergency_contact?: string | undefined;
+  username: string;
+  email: string;
+  password: string;
+  cpf: string;
+  birth?: Date | undefined;
+  profile_image?: string | undefined;
+  fk_address?: number | undefined;
+  contact?: string | undefined;
+  gender?: "Masculino" | "Feminino" | "Não Binário" | "Agênero" | "Gênero Fluido" | "Transgênero" | "Travesti" | "Homem Trans" | "Mulher Trans" | "Pangênero" | "Bigênero" | "Outro" | "Prefiro não dizer" | undefined;
+  emergency_contact?: string | undefined;
+  onUpdated: () => void
 }
 
 
@@ -113,7 +132,7 @@ export function UpdateForm(props: CommonUserProps) {
   const [$password, setPassword] = useState<string>(props.password)
   const [$cpf, setCpf] = useState<string>(props.cpf)
   const [$contact, setContact] = useState<string>(props.contact ?? "")
-  const [$birth, setBirth] = useState<Date | null>(props.birth ?? null)
+  const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth!) ?? null)
   const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
   const [$gender, setGender] = useState<
     | "Masculino"
@@ -130,6 +149,9 @@ export function UpdateForm(props: CommonUserProps) {
     | "Outro"
     | "Prefiro não dizer"
   >(props.gender ?? "Prefiro não dizer")
+  const [file, setFile] = useState<File | null>()
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isFileUpdated, setFileUpdated] = useState<boolean>(false)
 
   // Guarda apenas os campos alterados
   const [currentValues, setCurrentValues] = useState<Array<{ key: string; value: string | Date }>>([])
@@ -155,18 +177,54 @@ export function UpdateForm(props: CommonUserProps) {
     //   gender: $gender,
     // }
 
+
+
     const obj = currentValues.reduce((acc, item) => {
-        acc[item.key] = item.value
-        return acc
+      acc[item.key] = item.value
+      return acc
     }, {} as Record<string, string | Date>)
 
-   
+    if (isFileUpdated) {
+      const fileExt = file!.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error } = await supabase.storage.from('images').upload(filePath, file!, {upsert: true})
+
+      if (error) {
+        if (error) {
+          console.error("Erro no upload:", error.message);
+          return;
+        }
+
+      }
+
+      const { data: publicUrlData } = supabase
+        .storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      if (publicUrlData?.publicUrl) {
+        setImageUrl(publicUrlData.publicUrl);
+        console.log("Imagem disponível em:", publicUrlData.publicUrl);
+      }
+
+
+      setFileUpdated(false)
+    }
+
+
+
+
+
     const res = await UserApi.put(obj as Partial<CommonUser>)
     if (!res.success) {
       toast.error(res.message)
+
       return
     }
     toast.success(res.message)
+    props.onUpdated()
   }
 
   return (
@@ -185,7 +243,7 @@ export function UpdateForm(props: CommonUserProps) {
               setName(e.target.value)
               updateValue("username", e.target.value)
             }}
-            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+            className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />
         </div>
 
@@ -248,8 +306,8 @@ export function UpdateForm(props: CommonUserProps) {
           <label className="block text-sm font-semibold text-gray-700 mb-1">Aniversário</label>
           <input
             type="date"
-            
-           
+            value={$birth instanceof Date ? $birth.toISOString().split("T")[0] : ""}
+
             onChange={(e) => {
               const date = new Date(e.target.value)
               setBirth(date)
@@ -272,11 +330,24 @@ export function UpdateForm(props: CommonUserProps) {
             className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />
         </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Contato</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const selectedFile = e.target.files?.[0];
+              setFile(selectedFile || null);
+              setFileUpdated(true)
+            }}
+            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
 
         {/* Botão */}
         <div className="flex col-span-2 gap-2">
           <button className="p-2 bg-accent-normal w-full rounded-md text-white cursor-pointer" type="submit">
-            Update
+            Atualizar Dados
           </button>
         </div>
       </div>
