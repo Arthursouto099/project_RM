@@ -6,7 +6,6 @@
 
 generator client {
   provider = "prisma-client-js"
-
 }
 
 datasource db {
@@ -14,37 +13,78 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model CommonUser {
-  id_user           String @default(uuid()) @id
+  id_user           String    @id @default(uuid())
   username          String
-  email             String        @unique
+  email             String    @unique
   password          String
   birth             DateTime?
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
   profile_image     String?
-  cpf               String        @unique
+  cpf               String    @unique
   fk_address        Int?
   contact           String?
   gender            String?
   emergency_contact String?
-
-  address           Address?      @relation(fields: [fk_address], references: [id_address])
- 
+  region            String    @default("BR")
+  address           Address?  @relation(fields: [fk_address], references: [id_address])
+  posts             Post[]
+  updatedAt         DateTime  @default(now()) @updatedAt()
+  createdAt         DateTime  @default(now())
 
   @@map("common_user")
 }
 
+// inicialmente dessa forma
+model Post {
+  id_post   String     @id @default(cuid())
+  id_user   String
+  user      CommonUser @relation(fields: [id_user], references: [id_user])
+  title     String
+  content   String
+  videos    Video[]
+  images    Image[]
+  region    String
+  comments  Coment[]
+  updatedAt DateTime   @updatedAt @default(now())
+  createdAt DateTime   @default(now())
+}
+
+model Coment {
+  id_comment String   @id @default(cuid())
+  id_post    String
+  post       Post     @relation(fields: [id_post], references: [id_post])
+  content    String
+  updatedAt  DateTime @updatedAt @default(now())
+  createdAt  DateTime @default(now())
+}
+
+//
+
+model Image {
+  id     String @id @default(cuid())
+  url    String
+  postId String
+  post   Post   @relation(fields: [postId], references: [id_post])
+}
+
+model Video {
+  id     String @id @default(cuid())
+  url    String
+  postId String
+  post   Post   @relation(fields: [postId], references: [id_post])
+}
+
 model Address {
-  id_address Int           @id
+  id_address Int     @id
   street     String?
   number     Int?
   cep        String?
   state      String?
   city       String?
 
-  users      CommonUser[]
+  users CommonUser[]
 
   @@map("address")
 }
