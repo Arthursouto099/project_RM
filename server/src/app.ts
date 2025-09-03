@@ -4,6 +4,7 @@ import router from "./router/routes"
 import cors from "cors"
 import GlobalErrorHandler from "./Handlers/GlobalErrorHandler"
 
+
 dotenv.config()
 
 const app = express()

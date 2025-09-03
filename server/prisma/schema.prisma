@@ -45,7 +45,7 @@ model Post {
   content   String
   videos    Video[]
   images    Image[]
-  region    String
+  region    String @default("BR")
   comments  Coment[]
   updatedAt DateTime   @updatedAt @default(now())
   createdAt DateTime   @default(now())
