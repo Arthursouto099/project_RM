@@ -48,6 +48,8 @@ export type CommonUser = {
     | "Outro"
     | "Prefiro não dizer"
     emergency_contact?: string
+    bio?: string
+    desc?: string
 }
 
 

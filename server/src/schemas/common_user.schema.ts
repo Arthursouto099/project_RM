@@ -46,7 +46,9 @@ export const commonUserSchema = z.object({
         "Outro",
         "Prefiro não dizer"
       ]).optional(),
-      emergency_contact: z.string().regex(contactRegex).optional()
+      emergency_contact: z.string().regex(contactRegex).optional(),
+      bio: z.string().optional(),
+      desc : z.string().optional()
       
 
 }).strict();

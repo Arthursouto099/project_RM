@@ -27,8 +27,10 @@ const postService = {
     },
 
     findPostsByIdUser: async (id_user: string) => {
-        return await prisma.post.findMany({ where: { id_user } }) ?? []
-    }
+        return await prisma.post.findMany({ where: { id_user }, include: {user: true, comments: true} }) ?? []
+    },
+
+    
 
 
 

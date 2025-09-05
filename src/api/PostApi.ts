@@ -1,6 +1,6 @@
 import { isAxiosError } from "axios";
 import instanceV1 from "./api@instance/ap-v1i";
-import type { DefaultResponseAPI } from "./UserApi";
+import type { CommonUser, DefaultResponseAPI } from "./UserApi";
 import { tokenActions } from "@/@tokenSettings/token";
 
 export type Post = {
@@ -12,6 +12,7 @@ export type Post = {
   videos?: string[]   // URLs ou ObjectURL para preview
   createdAt?: Date
   updatedAt?: Date
+  user?: CommonUser
 }
 
 const PostApi = {
@@ -24,6 +25,35 @@ const PostApi = {
                 message: isCreatedPost.data.message || "Não foi possível realizar a publicação",
                 success: true,
                 data: isCreatedPost.data.data as Post
+            }
+        }
+        catch (e) {
+
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+     findPostsByMe: async (): Promise<DefaultResponseAPI> => {
+        try {
+            const token = tokenActions.getToken()
+            const isFindedPosts = await instanceV1.get("/post/me", {headers: {Authorization: `bearer ${token}`}})
+            console.log(isFindedPosts)
+            return {
+                message: isFindedPosts.data.message || "Não foi possível realizar a publicação",
+                success: true,
+                data: isFindedPosts.data.data as Post[]
             }
         }
         catch (e) {

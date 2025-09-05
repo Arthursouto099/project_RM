@@ -76,6 +76,8 @@ export default function Me() {
                 contact={me.contact}
                 birth={me.birth}
                 gender={me.gender}
+                bio={me.bio}
+                desc={me.desc}
               ></UpdateForm>
             ) : null}
 
@@ -137,6 +139,8 @@ export interface CommonUserProps {
   contact?: string | undefined;
   gender?: "Masculino" | "Feminino" | "Não Binário" | "Agênero" | "Gênero Fluido" | "Transgênero" | "Travesti" | "Homem Trans" | "Mulher Trans" | "Pangênero" | "Bigênero" | "Outro" | "Prefiro não dizer" | undefined;
   emergency_contact?: string | undefined;
+  bio?: string | undefined
+  desc?: string | undefined
   onUpdated: () => void
 }
 
@@ -172,6 +176,8 @@ export function UpdateForm(props: CommonUserProps) {
 
   // Guarda apenas os campos alterados
   const [currentValues, setCurrentValues] = useState<Array<{ key: string; value: string | Date }>>([])
+  const [$bio, setBio] = useState<string>(props.bio ?? "")
+  const [$desc, setDesc] = useState<string>(props.desc ?? "")
 
   const updateValue = (key: string, value: string | Date) => {
     setCurrentValues((prev) => {
@@ -353,7 +359,19 @@ export function UpdateForm(props: CommonUserProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Contato</label>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Bio</label>
+          <input
+            type="text"
+            value={$bio}
+            onChange={(e) => {
+              setBio(e.target.value)
+              updateValue("bio", e.target.value)
+            }}
+            className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+          <div>
+          <label className="block  text-sm font-semibold text-gray-700 mb-1">Imagem de perfil</label>
           <input
             type="file"
             accept="image/*"
@@ -366,6 +384,19 @@ export function UpdateForm(props: CommonUserProps) {
           />
         </div>
 
+        <div className="col-span-2">
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Descrição</label>
+          <textarea
+            
+            value={$desc}
+            onChange={(e) => {
+              setDesc(e.target.value)
+              updateValue("desc", e.target.value)
+            }}
+            className="border-b w-full  grid focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+      
         {/* Botão */}
         <div className="flex col-span-2 gap-2">
           <button className="p-2 bg-accent-normal w-full rounded-md text-white cursor-pointer" type="submit">

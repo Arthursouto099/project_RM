@@ -32,6 +32,8 @@ model CommonUser {
   posts             Post[]
   updatedAt         DateTime  @default(now()) @updatedAt()
   createdAt         DateTime  @default(now())
+  bio String? @default("")
+  desc String? @default("")
 
   @@map("common_user")
 }
