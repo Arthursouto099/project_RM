@@ -3,6 +3,7 @@ import Login from "./pages/unprotectedRoutes/AuthPages"
 import ProtectedGroup from "./pages/ProtectedCheck"
 import Home from "./pages/protectedRoutes/Home"
 import Me from "./pages/protectedRoutes/Me"
+import Profile from "./pages/protectedRoutes/Profile"
 
 
 
@@ -18,6 +19,7 @@ export default function Router() {
                 <Route element={<ProtectedGroup />} >
                     <Route path="/home" element={<Home />}></Route>
                     <Route path="/me" element={<Me/>}> </Route>
+                    <Route path="/profile" element={<Profile/>}> </Route>
                 </Route>
             </Routes>
         </BrowserRouter>

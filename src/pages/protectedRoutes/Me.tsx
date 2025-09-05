@@ -1,6 +1,6 @@
 import UserApi, { type CommonUser } from "@/api/UserApi";
 import Layout from "@/layout";
-import { User2Icon } from "lucide-react";
+import { Share2, User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/storage/supabaseClient";
@@ -39,7 +39,10 @@ export default function Me() {
       <section className="m-5  h-[95%] w-[81vw] flex ">
         <div className=" p-4  flex-1/2 ">
           <div className=" flex items-center gap-3">
-            <div className="rounded-md bg-accent-light  p-2"><User2Icon className="text-background" /></div>
+            <div className="rounded-md bg-accent-light w-11 flex items-center justify-center ">
+              {me?.profile_image ? (<img width={100} className="rounded-md  bg-accent-dark border-1"  src={me?.profile_image} alt="" />) : < User2 className=" m-2 text-background"/> }
+              
+            </div>
             <div className="flex flex-col ">
               <p className="font-normal text-[14px] opacity-85">{me?.username}</p>
               <h1 className=" " >{me?.email}</h1>
@@ -48,12 +51,12 @@ export default function Me() {
 
           <div className="w-[100%] h-[0.50px] bg-gray-300 mt-4"></div>
 
-          <div className="mt-10    ">
+          <div className="mt-10  mb-[-4%]   ">
             <div className="flex gap-3">
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "informacoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("informacoes")}>Informações</h1>
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "configuracoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("configuracoes")} >configurações</h1>
             </div>
-
+                
           </div>
 
 
@@ -84,7 +87,21 @@ export default function Me() {
 
 
         <div className="flex-1/5 ">
-
+              <div className=" p-3 w-[100%] h-[100%] ">
+                      <div className="bg-accent-dark p-5 rounded-md text-background-light">
+                        <div className="flex gap-3">
+                            <Share2 width={100} height={90} className=""></Share2>
+                            <div>
+                              
+                              <h2 className="text-sm font-semibold">Quantidade de publicações</h2>
+                              <h1 className="text-7xl">2</h1>
+                            </div>
+                            
+                            
+                        </div>
+                        
+                      </div>
+                </div>
         </div>
       </section>
     </Layout>
@@ -177,7 +194,7 @@ export function UpdateForm(props: CommonUserProps) {
     //   gender: $gender,
     // }
 
-
+    
 
     const obj = currentValues.reduce((acc, item) => {
       acc[item.key] = item.value
@@ -207,12 +224,17 @@ export function UpdateForm(props: CommonUserProps) {
       if (publicUrlData?.publicUrl) {
         setImageUrl(publicUrlData.publicUrl);
         console.log("Imagem disponível em:", publicUrlData.publicUrl);
+        
+
+        obj["profile_image"] = publicUrlData.publicUrl
       }
+      
 
 
       setFileUpdated(false)
     }
 
+    console.log(obj)
 
 
 

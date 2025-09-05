@@ -34,7 +34,7 @@ const postController = {
         }
     },
 
-    findPosts: async (req: Request, res: Response, next: NextFunction) => {
+    findPosts: async (req: Request, res: Response) => {
       responseOk(res, "", await postService.findPosts(), 200)
     }
 }

@@ -43,8 +43,8 @@ model Post {
   user      CommonUser @relation(fields: [id_user], references: [id_user])
   title     String
   content   String
-  videos    Video[]
-  images    Image[]
+  videos    String[]
+  images    String[]
   region    String @default("BR")
   comments  Coment[]
   updatedAt DateTime   @updatedAt @default(now())
@@ -61,20 +61,6 @@ model Coment {
 }
 
 //
-
-model Image {
-  id     String @id @default(cuid())
-  url    String
-  postId String
-  post   Post   @relation(fields: [postId], references: [id_post])
-}
-
-model Video {
-  id     String @id @default(cuid())
-  url    String
-  postId String
-  post   Post   @relation(fields: [postId], references: [id_post])
-}
 
 model Address {
   id_address Int     @id

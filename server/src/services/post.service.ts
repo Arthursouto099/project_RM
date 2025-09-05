@@ -1,7 +1,7 @@
 import { PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
-import { da, de } from "zod/v4/locales/index.cjs";
+
 
 
 
@@ -14,6 +14,7 @@ const postService = {
         try {
             if(!id_user) throw PostErrorHandler.unauthorized("Id não fornecido")
             data.id_user = id_user
+            
             return await prisma.post.create({data})
         }
         catch (e) {
