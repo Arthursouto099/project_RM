@@ -78,6 +78,7 @@ export default function Me() {
                 gender={me.gender}
                 bio={me.bio}
                 desc={me.desc}
+                nickname={me.nickname}
               ></UpdateForm>
             ) : null}
 
@@ -141,6 +142,7 @@ export interface CommonUserProps {
   emergency_contact?: string | undefined;
   bio?: string | undefined
   desc?: string | undefined
+  nickname?: string | undefined
   onUpdated: () => void
 }
 
@@ -152,6 +154,7 @@ export function UpdateForm(props: CommonUserProps) {
   const [$email, setEmail] = useState<string>(props.email)
   const [$password, setPassword] = useState<string>(props.password)
   const [$cpf, setCpf] = useState<string>(props.cpf)
+  const [$nickname, setNickName] = useState<string>(props.nickname ?? "")
   const [$contact, setContact] = useState<string>(props.contact ?? "")
   const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth!) ?? null)
   const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
@@ -270,6 +273,19 @@ export function UpdateForm(props: CommonUserProps) {
             onChange={(e) => {
               setName(e.target.value)
               updateValue("username", e.target.value)
+            }}
+            className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-1">Nick</label>
+          <input
+            type="text"
+            value={$nickname}
+            required
+            onChange={(e) => {
+              setNickName(e.target.value)
+              updateValue("nickname","@" + e.target.value)
             }}
             className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />

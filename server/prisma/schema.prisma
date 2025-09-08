@@ -14,26 +14,27 @@ datasource db {
 }
 
 model CommonUser {
-  id_user           String    @id @default(uuid())
+  id_user           String       @id @default(uuid())
   username          String
-  email             String    @unique
+  email             String       @unique
   password          String
   birth             DateTime?
-  created_at        DateTime  @default(now())
-  updated_at        DateTime  @updatedAt
   profile_image     String?
-  cpf               String    @unique
+  cpf               String       @unique
   fk_address        Int?
   contact           String?
   gender            String?
   emergency_contact String?
-  region            String    @default("BR")
-  address           Address?  @relation(fields: [fk_address], references: [id_address])
+  region            String       @default("BR")
+  address           Address?     @relation(fields: [fk_address], references: [id_address])
   posts             Post[]
-  updatedAt         DateTime  @default(now()) @updatedAt()
-  createdAt         DateTime  @default(now())
-  bio String? @default("")
-  desc String? @default("")
+  updatedAt         DateTime     @default(now()) @updatedAt()
+  createdAt         DateTime     @default(now())
+  bio               String?      @default("")
+  desc              String?      @default("")
+  nickname          String       @default("@unk_user")
+  friends           CommonUser[] @relation("UserFriends")
+  friendOf          CommonUser[] @relation("UserFriends")
 
   @@map("common_user")
 }
@@ -47,9 +48,9 @@ model Post {
   content   String
   videos    String[]
   images    String[]
-  region    String @default("BR")
+  region    String     @default("BR")
   comments  Coment[]
-  updatedAt DateTime   @updatedAt @default(now())
+  updatedAt DateTime   @default(now()) @updatedAt
   createdAt DateTime   @default(now())
 }
 
@@ -58,7 +59,7 @@ model Coment {
   id_post    String
   post       Post     @relation(fields: [id_post], references: [id_post])
   content    String
-  updatedAt  DateTime @updatedAt @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
   createdAt  DateTime @default(now())
 }
 

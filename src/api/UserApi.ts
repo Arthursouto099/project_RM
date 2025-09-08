@@ -50,6 +50,7 @@ export type CommonUser = {
     emergency_contact?: string
     bio?: string
     desc?: string
+    nickname?: string
 }
 
 

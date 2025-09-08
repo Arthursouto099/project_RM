@@ -210,14 +210,15 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
       <div className="grid grid-cols-2 gap-5 ">
         <div className="col-span-2">
           <label htmlFor="" className=""> <h1 className="font-semibold">Titulo</h1></label>
-          <input type="text" required onChange={(e) => {
+          <input type="text" max={190} required onChange={(e) => {
             setTitle(e.target.value)
             if (onTitleChange) onTitleChange(e.target.value)
           }} placeholder="example@gmail.com" className="border-b-1  w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300" />
         </div>
         <div className="col-span-2">
           <label htmlFor="" className=""> <h1 className="font-semibold">Conteudo</h1></label>
-          <textarea onChange={(e) => {
+          <textarea maxLength={390} onChange={(e) => {
+            
             setContent(e.target.value)
             if (onContentChange) onContentChange(e.target.value)
           }} className="border-b-1 min-h-20  w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300">

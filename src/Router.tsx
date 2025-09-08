@@ -4,6 +4,7 @@ import ProtectedGroup from "./pages/ProtectedCheck"
 import Home from "./pages/protectedRoutes/Home"
 import Me from "./pages/protectedRoutes/Me"
 import Profile from "./pages/protectedRoutes/Profile"
+import Friends from "./pages/protectedRoutes/Friends"
 
 
 
@@ -20,6 +21,8 @@ export default function Router() {
                     <Route path="/home" element={<Home />}></Route>
                     <Route path="/me" element={<Me/>}> </Route>
                     <Route path="/profile" element={<Profile/>}> </Route>
+                    <Route path="/friends" element={<Friends/>}> </Route>
+                    
                 </Route>
             </Routes>
         </BrowserRouter>
