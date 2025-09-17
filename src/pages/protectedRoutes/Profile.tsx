@@ -51,7 +51,7 @@ export default function Profile() {
                 <User2 className="m-2 w-full h-full text-background" />
               )}
             </div>
-            <div className="flex flex-col w-full max-w-2xl">
+            <div className="flex flex-col w-full min-w-3xl max-w-3xl">
               <div>
                 <h1 className="text-2xl font-semibold">{me?.username}</h1>
                 <h2 className="opacity-80">{me?.nickname}</h2>
@@ -78,7 +78,7 @@ export default function Profile() {
           <div className="h-[0.5px] w-full bg-background-dark"></div>
 
           {/* Posts */}
-          <div className="w-full flex flex-col gap-10 mt-10 items-center">
+          <div className="w-full min-h-[560px] flex flex-col gap-10 mt-10 items-center">
             {myPosts.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()).map((p) => (
               <div
                 className="flex flex-col  border-b border-gray-300  w-full md:w-[70%] p-3   gap-3"

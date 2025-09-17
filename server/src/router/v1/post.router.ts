@@ -13,6 +13,7 @@ postRouter.post("/", validate(postSchema), authMiddleware ,postController.post)
 postRouter.get("/me",  authMiddleware, postController.findForUniqueKey)
 postRouter.get("/", postController.findPosts )
 
+
 // postRouter.post("/profile" , upload.single("image"), postController.postImage )
 
 export default postRouter

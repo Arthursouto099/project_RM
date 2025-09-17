@@ -82,3 +82,13 @@
     @apply border-sidebar-border outline-sidebar-ring/50;
   }
 }
+
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari e Opera */
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE e Edge */
+  scrollbar-width: none; /* Firefox */
+}

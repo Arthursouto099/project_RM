@@ -13,7 +13,16 @@ export const postSchema = z.object({
 }).strict();
 
 
+
+export const getAllPostsInputs = z.object({
+  page: z.number().default(1),
+  limit: z.number().default(10)
+}).strict()
+
+
+
 export const postSchemaPartial = postSchema.partial().strict()
 
 export type PostInputs = z.infer<typeof postSchema>
 export type PartialPostInputs = z.infer<typeof postSchema>
+export type GetAllPostsInputs = z.infer<typeof getAllPostsInputs>

@@ -22,8 +22,24 @@ const postService = {
         }
     },
 
-    findPosts: async () => {
-        return await prisma.post.findMany() ?? []
+    findPosts: async ({page = 1, limit = 10}) => {
+        const skip = (page - 1)  * limit 
+        
+
+
+        // executando duas querys
+        const [posts, total] = await Promise.all([
+            prisma.post.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}, include: {user: true}}),
+            prisma.post.count()
+        ])
+
+
+        return {
+            posts,
+            total,
+            pages: Math.ceil(total / limit),
+            page
+        }
     },
 
     findPostsByIdUser: async (id_user: string) => {
