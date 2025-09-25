@@ -88,7 +88,7 @@ export default function Me() {
 
 
 
-
+{/* 
         <div className="flex-1/5 ">
               <div className=" p-3 w-[100%] h-[100%] ">
                       <div className="bg-accent-dark p-5 rounded-md text-background-light">
@@ -105,7 +105,7 @@ export default function Me() {
                         
                       </div>
                 </div>
-        </div>
+        </div> */}
       </section>
     </Layout>
   )
