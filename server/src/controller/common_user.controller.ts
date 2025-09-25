@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import commonUserService from "../services/common_user.service";
 import { responseOk } from "../config/responses/app.response";
 import UserErrorHandler from "../errors/UserErrorHandler";
+import { CustomRequest } from "../types/CustomRequest";
+import prisma from "../prisma.config";
 
 
 
@@ -37,6 +39,33 @@ const commonUserController = {
             next(e)
         }
     },
+
+
+
+    addFriend:  async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try{
+            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            if(!req.body.id_user) throw UserErrorHandler.unauthorized()
+            const initRelation = await commonUserService.addFriend(req.userLogged.id_user, req.body.id_user)
+            responseOk(res, "Relação criada com sucesso", initRelation)
+        }
+        catch(e) {
+            next(e)
+        }
+    },
+
+
+    getMutualFriends: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+             if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+             const mutualRelations = await commonUserService.getMutualFriends(req.userLogged.id_user)
+             responseOk(res, "Relação criada com sucesso", mutualRelations)
+        }   
+        catch(e) {
+            next(e)
+        } 
+    },
+
 
 
     findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {

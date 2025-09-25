@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import * as bc from "bcrypt"
+import { id } from "zod/v4/locales/index.cjs";
 
 
 
@@ -77,6 +78,58 @@ const commonUserService = {
 
 
         return await prisma.commonUser.findMany() ?? []
+    },
+
+
+
+    addFriend: async (friend1ID: string, friend2ID: string) => {
+        try {
+            const initRelation = await prisma.$transaction([
+                 prisma.commonUser.update({where: {id_user: friend1ID}, data: {friends: {connect: {id_user: friend2ID}}}}),
+                 prisma.commonUser.update({where: {id_user: friend2ID}, data: {friends: {connect: {id_user: friend1ID}}}})
+
+            ])
+
+            return {
+                user1: initRelation[0],
+                user2: initRelation[1]
+            }
+
+        }
+
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+            
+        }
+
+
+
+    },
+
+
+    getMutualFriends: async (id_user: string) => {
+        try {
+            const friends = await prisma.commonUser.findUnique({where: {id_user}, select: {friendOf: true, friends: true}})
+
+
+            // filtro as amizades<1 === 1> para ambos
+            const mutualFriends = friends?.friends.filter((friend) => {
+                // some indetifica um padrão e me retorna apenas um dos elementos repitidos na lista
+                return friends.friendOf.some((f) => f.id_user === friend.id_user)
+            })
+            return mutualFriends
+        }
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+        }
     },
 
 
