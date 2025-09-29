@@ -25,6 +25,16 @@ export interface DefaultResponseAPI {
     requestTime?: string;
 }
 
+export type FriendRequest = {
+  id_request: string
+  id_requester: string
+  requester: CommonUser
+  id_receiver: string
+  receiver: CommonUser
+  status: "pending" | "accepted" | "rejected"
+  createdAt: Date
+}
+
 export type CommonUser = {
     id_user?: string
     username: string
@@ -96,6 +106,97 @@ const UserApi = {
                 message: response.data.message || "Usuário registrado com sucesso",
                 success: true,
                 data: response.data.data,
+                code: response.status,
+                requestTime: new Date().toISOString(),
+            };
+        } catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+
+    sendFriendRequest: async (id_user: string) => {
+        try {
+            const token = tokenActions.getToken()
+            const response = await instanceV1.post("/user/relation/request", {id_user: id_user}, {headers: {Authorization: `bearer ${token}`}});
+            
+
+            return {
+                message: response.data.message || "Usuário registrado com sucesso",
+                success: true,
+                data: response.data.data,
+                code: response.status,
+                requestTime: new Date().toISOString(),
+            };
+        } catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+    acceptFriendRequest: async (id_request: string) => {
+        try {
+            const token = tokenActions.getToken()
+            const response = await instanceV1.post("/user/relation/accept", {id_request}, {headers: {Authorization: `bearer ${token}`}});
+            
+
+            return {
+                message: response.data.message || "Usuário registrado com sucesso",
+                success: true,
+                data: response.data.data as {sendRequest: FriendRequest, accept: {user1: CommonUser, user2: CommonUser}},
+                code: response.status,
+                requestTime: new Date().toISOString(),
+            };
+        } catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+    getFriendRequest: async () => {
+        try {
+            const token = tokenActions.getToken()
+            const response = await instanceV1.get("/user/relation/received", {headers: {Authorization: `bearer ${token}`}});
+            
+
+            return {
+                message: response.data.message || "Usuário registrado com sucesso",
+                success: true,
+                data: response.data.data as FriendRequest[],
                 code: response.status,
                 requestTime: new Date().toISOString(),
             };

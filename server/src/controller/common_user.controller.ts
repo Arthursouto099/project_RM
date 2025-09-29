@@ -13,7 +13,7 @@ import { CustomRequest } from "../types/CustomRequest";
 const commonUserController = {
 
 
-   
+
 
     post: async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -42,14 +42,14 @@ const commonUserController = {
 
 
 
-    addFriend:  async (req: CustomRequest, res: Response, next: NextFunction) => {
-        try{
-            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
-            if(!req.body.id_user) throw UserErrorHandler.unauthorized()
+    addFriend: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            if (!req.body.id_user) throw UserErrorHandler.unauthorized()
             const initRelation = await commonUserService.addFriend(req.userLogged.id_user, req.body.id_user)
             responseOk(res, "Relação criada com sucesso", initRelation)
         }
-        catch(e) {
+        catch (e) {
             next(e)
         }
     },
@@ -57,39 +57,51 @@ const commonUserController = {
 
     getMutualFriends: async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
-             if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
-             const mutualRelations = await commonUserService.getMutualFriends(req.userLogged.id_user)
-             responseOk(res, "Relação criada com sucesso", mutualRelations)
-        }   
-        catch(e) {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            const mutualRelations = await commonUserService.getMutualFriends(req.userLogged.id_user)
+            responseOk(res, "Relação criada com sucesso", mutualRelations)
+        }
+        catch (e) {
             next(e)
-        } 
+        }
     },
 
-    sendFriendRequest: async (req:  CustomRequest, res: Response, next: NextFunction) => {
-        try{
-            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+
+    getFriendRequestsForUser: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            const requests = await commonUserService.getFriendRequestForUser(req.userLogged.id_user)
+            responseOk(res, "Relação criada com sucesso", requests)
+        }
+        catch (e) {
+            next(e)
+        }
+    },
+
+    sendFriendRequest: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
             const send = await commonUserService.sendRequestFriend(req.userLogged?.id_user, req.body.id_user)
             responseOk(res, "Pedido enviado com sucesso", send)
         }
-        catch(e) {
+        catch (e) {
             next(e)
         }
     },
 
-        acceptFriendRequest: async (req:  CustomRequest, res: Response, next: NextFunction) => {
-        try{
-            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+    acceptFriendRequest: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
             const send = await commonUserService.acceptRequestFriend(req.body.id_request)
-            responseOk(res, "Pedido aceito com sucesso", send)
+            responseOk(res, "Pedido aceito com sucesso, vocês são amigos!", send)
         }
-        catch(e) {
+        catch (e) {
             next(e)
         }
     },
 
 
-    
+
 
 
 
@@ -155,13 +167,13 @@ const commonUserController = {
 
     get: async (req: Request, res: Response, next: NextFunction) => {
         try {
-             const users = await commonUserService.findUsers({page: Number(req.query.page ?? 1) , limit: Number(req.query.limit ?? 1)})
-            responseOk(res, "consulta feita com sucesso", {users: users.users, page: users.page, pages: users.pages, total: users.total}, 200)
+            const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 1) })
+            responseOk(res, "consulta feita com sucesso", { users: users.users, page: users.page, pages: users.pages, total: users.total }, 200)
         }
-        catch(e) {
+        catch (e) {
             next(e)
         }
-    } 
+    }
 
 
 }

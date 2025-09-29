@@ -142,7 +142,22 @@ const commonUserService = {
 
     sendRequestFriend: async ( id_requester: string, id_received: string) => {
         try {
+
+            const isFriends = await prisma.commonUser.findFirst({where: {id_user: id_received}, include: {friendOf: true}})
+
+            const alreadyFriends = isFriends?.friendOf.some((u) => u.id_user === id_requester)
+            
+            if(alreadyFriends) throw UserErrorHandler.validation("Você e esse usuario já são amigos")
+
+            // verifico se ja existe
+            const isRequest  = await prisma.friendRequest.findFirst({where: {id_requester: id_requester, id_receiver: id_received}})
+            if(isRequest) throw UserErrorHandler.validation("Você já tem uma solicitação em aberto com esse usuario")
+
+            
             const sendRequest = await prisma.friendRequest.create({data: {id_requester: id_requester, id_receiver: id_received  }})
+
+
+
             
             return sendRequest
         }
@@ -156,11 +171,47 @@ const commonUserService = {
     }
     ,
 
+    getFriendRequestForUser: async (id_user: string) => {
+        try {
+            const receivedRequest = await prisma.friendRequest.findMany({where: {id_receiver: id_user}, include: {receiver: true, requester: true}})
+            
+            return receivedRequest
+        }
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+        }
+    }
+
+    ,
+
     acceptRequestFriend: async(id_request: string) => {
          try {
             const sendRequest = await prisma.friendRequest.update({data: {status: "accepted"}, where: {id_request}})
             if(!sendRequest) throw new UserErrorHandler("Requisição de amizade não encontrada", "REQUEST_ERROR", 500)
-            return sendRequest
+
+
+            // verificar se já são amigos
+            const isFriends = await prisma.commonUser.findFirst({where: {id_user: sendRequest.id_receiver}, include: {friendOf: true}})
+            const alreadyFriends = isFriends?.friendOf.some((u) => u.id_user === sendRequest.id_requester)
+
+            let accepted = null
+
+            if(!alreadyFriends) {
+                accepted = await commonUserService.addFriend(sendRequest.id_requester, sendRequest.id_receiver)
+            }
+
+
+            if(!accepted) throw UserErrorHandler.validation("Você já é amigo desse usuario")
+            
+            
+            return {
+                sendRequest,
+                accepted
+            }
         }
         catch(e) {
             if(e instanceof UserErrorHandler) throw e
