@@ -3,7 +3,7 @@ import { responseOk } from "../config/responses/app.response";
 import postService from "../services/post.service";
 import PostErrorHandler from "../errors/PostErrorHandler";
 import { CustomRequest } from "../types/CustomRequest";
-import { GetAllPostsInputs } from "../schemas/post.schema";
+
 
 
 
@@ -25,7 +25,7 @@ const postController = {
 
     findPosts: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const posts = await postService.findPosts({page: Number(req.query.page) ?? 1, limit: Number(req.query.limit) ?? 10})
+            const posts = await postService.findPosts({page: Number(req.query.page ?? 1) , limit: Number(req.query.limit ?? 1)})
             responseOk(res, "consulta feita com sucesso", {posts: posts.posts, page: posts.page, pages: posts.pages, total: posts.total}, 200)
         }
         catch(e) {

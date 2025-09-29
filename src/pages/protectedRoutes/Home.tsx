@@ -4,6 +4,7 @@ import Layout from "@/layout"
 import { useEffect, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
+import { PlusCircle } from "lucide-react"
 
 
 
@@ -14,7 +15,7 @@ import Posts from "@/components/post"
 export default function Home() {
     const [page, setPage] = useState<number>(1)
     const [posts, setPosts] = useState<Post[]>([])
-    const { payload, isAuthenticated } = useAuth()
+    const {isAuthenticated } = useAuth()
 
 
     useEffect(() => {
@@ -55,16 +56,20 @@ export default function Home() {
                             {/* Div que será rolável */}
                             <div className="flex m-5 flex-col no-scrollbar overflow-y-auto max-h-[85vh]">
                                 {posts.map((post) => (
-                                    Posts(post)
+                                    <Posts key={post.id_post} post={post}/>
                                 ))}
                             </div>
 
                             {/* Botão para carregar mais */}
                             <div className="flex justify-center m-5">
+
+
                                 <button
-                                    className="p-3 rounded-md bg-accent text-background"
+                                    className="p-2  cursor-pointer rounded-md flex items-center gap-2 bg-accent text-background 
+                                     hover:bg-accent/80 hover:scale-105 transition-all duration-200"
                                     onClick={() => setPage(prev => prev + 1)}
                                 >
+                                    <PlusCircle />
                                     Mais publicações
                                 </button>
                             </div>

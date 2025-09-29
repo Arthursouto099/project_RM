@@ -6,7 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import * as bc from "bcrypt"
-import { id } from "zod/v4/locales/index.cjs";
+
 
 
 
@@ -70,14 +70,22 @@ const commonUserService = {
     },
 
 
-    findUsers: async (max?: string) => {
+    findUsers: async ({page = 1, limit = 10}) => {
+        const skip = (page - 1) * limit
 
-        if (max) {
-            // "ação futura"
+
+        const [users, total] = await Promise.all([
+            prisma.commonUser.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}}),
+            prisma.commonUser.count({})
+        ])
+
+        return {
+            users,
+            total,
+            pages: Math.ceil(total / limit),
+            page
         }
-
-
-        return await prisma.commonUser.findMany() ?? []
+        
     },
 
 
@@ -122,6 +130,37 @@ const commonUserService = {
                 return friends.friendOf.some((f) => f.id_user === friend.id_user)
             })
             return mutualFriends
+        }
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+        }
+    },
+
+    sendRequestFriend: async ( id_requester: string, id_received: string) => {
+        try {
+            const sendRequest = await prisma.friendRequest.create({data: {id_requester: id_requester, id_receiver: id_received  }})
+            
+            return sendRequest
+        }
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+        }
+    }
+    ,
+
+    acceptRequestFriend: async(id_request: string) => {
+         try {
+            const sendRequest = await prisma.friendRequest.update({data: {status: "accepted"}, where: {id_request}})
+            if(!sendRequest) throw new UserErrorHandler("Requisição de amizade não encontrada", "REQUEST_ERROR", 500)
+            return sendRequest
         }
         catch(e) {
             if(e instanceof UserErrorHandler) throw e

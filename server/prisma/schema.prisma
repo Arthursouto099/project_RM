@@ -37,6 +37,30 @@ model CommonUser {
   friendOf          CommonUser[] @relation("UserFriends")
 
   @@map("common_user")
+
+  // requests recebidas pelo user
+  FriendRequestReceived FriendRequest[] @relation("RequestsReceived")
+
+  // requests enviadas pelo user
+  FriendRequestSent FriendRequest[] @relation("RequestsSent")
+}
+
+
+enum Status {
+  pending
+  accepted
+  rejected
+}
+
+model FriendRequest {
+  id_request   String     @id @default(cuid())
+  id_requester String
+  requester    CommonUser @relation("RequestsSent", fields: [id_requester], references: [id_user])
+  id_receiver  String
+  receiver     CommonUser @relation("RequestsReceived", fields: [id_receiver], references: [id_user])
+  status       Status     @default(pending) 
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
 // inicialmente dessa forma

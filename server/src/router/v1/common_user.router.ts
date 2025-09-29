@@ -14,6 +14,9 @@ commonUserRouter.delete("/",commonUserController.deleteForUniqueKey )
 commonUserRouter.put("/:id_user", authMiddleware,commonUserController.put )
 commonUserRouter.post("/relations", authMiddleware, commonUserController.addFriend )
 commonUserRouter.get("/relations", authMiddleware, commonUserController.getMutualFriends)
+commonUserRouter.post("/relation/request", authMiddleware, commonUserController.sendFriendRequest)
+commonUserRouter.post("/relation/accept", authMiddleware, commonUserController.acceptFriendRequest)
+commonUserRouter.get("/all", authMiddleware, commonUserController.get)
 
 
 export default commonUserRouter

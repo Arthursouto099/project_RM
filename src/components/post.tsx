@@ -1,62 +1,102 @@
 import type { Post } from "@/api/PostApi";
 import { Calendar, User2 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
+import { useEffect, useState } from "react";
+import useAuth, { type Payload } from "@/hooks/useAuth";
 
-export default function Posts(post: Post) {
+export default function Posts({ post }: { post: Post }) {
+
+  const [isUser, setUser] = useState<boolean>(false)
+  const { payload } = useAuth()
+
+
+  useEffect(() => {
+    const checkUser = async (payload: Payload) => {
+
+      if (!payload) return
+      if (payload.id_user === post.user?.id_user) {
+        setUser(true)
+      }
+    }
+
+    checkUser(payload as Payload)
+  }, [payload, post.user?.id_user])
 
 
 
-    return (
-        <div className="w-full">
-            <div
-                className="flex flex-col  border-b border-gray-300  w-full md:w-full   p-3   gap-3"
-                key={post.id_post}
-              >
-                <div className="flex gap-2 items-center">
-                  <div className="h-9 w-9 rounded-md  flex items-center justify-center">
-                    {post.user?.profile_image ? (
-                      <img className="rounded-md" src={post.user.profile_image} alt="" />
-                    ) : (
-                      <User2 />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="font-semibold text-neutral-700">{post.user?.username}</h1>
-                    <h2 className="font-semibold text-neutral-700 opacity-80" >{post.user?.nickname}</h2>
-                  </div>
 
-                </div>
+  return (
+    <div className="w-full">
+      <div
+        className="flex flex-col w-full p-4 gap-3 border-b border-neutral-200 hover:bg-neutral-50 hover:rounded-md transition-colors"
+        key={post.id_post}
+      >
+        {/* Header */}
+        <div className="flex gap-3 items-center">
+          <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
+            {post.user?.profile_image ? (
+              <img
+                className="h-full w-full object-cover"
+                src={post.user.profile_image}
+                alt=""
+              />
+            ) : (
+              <User2 className="text-neutral-500" />
+            )}
+          </div>
+          <div className="flex w-full flex-col leading-tight">
+            <div className=" flex justify-between">
 
-                <div className="flex flex-col gap-6">
-
-              
-
-                <h1 className="text-xl md:text-20 break-words font-semibold text-neutral-600">
-                  {post.title}
+              <div className="flex items-center gap-2">
+                <h1 className="font-semibold text-neutral-900">
+                  {post.user?.username}
                 </h1>
-                <p className="text-neutral-500 font-normal break-words">{post.content}</p>
+                <h2 className="text-neutral-500">{post.user?.nickname}</h2>
+              </div>
 
-                 {post.images && post.images.length > 0 ? (
-                  <div className="w-full">
-                    <CarouselImgs urls={post.images}></CarouselImgs>
+              <div>
+                {isUser ? (
+                  <div className="flex gap-2 cursor-pointer"  >
+
+                    <h1 className="text-3xl">...</h1>
+                    
                   </div>
                 ) : null}
-
-                  </div>
-
-               
-
-                <div className="w-full m-2 mb-5 flex items-center gap-2">
-                  <Calendar className="text-neutral-500 w-5" />
-                  <h1 className="font-semibold text-neutral-500">
-                    {new Date(post.createdAt!).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </h1>
-                </div>
               </div>
+
+            </div>
+
+          </div>
         </div>
-    )
+
+        {/* Body */}
+        <div className="flex flex-col gap-3">
+          <h1 className="text-lg font-medium text-neutral-900 break-words">
+            {post.title}
+          </h1>
+          <p className="text-neutral-700 text-sm break-words">{post.content}</p>
+
+          {post.images && post.images.length > 0 && (
+            <div className="w-full rounded-lg overflow-hidden border border-neutral-200">
+              <CarouselImgs urls={post.images} />
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-2 text-neutral-500 text-sm">
+          <Calendar className="w-4 h-4" />
+          <span>
+            {new Date(post.createdAt!).toLocaleString("pt-BR", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            })}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+  )
 }

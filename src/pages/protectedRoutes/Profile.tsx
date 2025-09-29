@@ -1,9 +1,9 @@
 import PostApi, { type Post } from "@/api/PostApi";
 import type { CommonUser } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
-import { CarouselImgs } from "@/components/carousel";
+import Posts from "@/components/post";
 import Layout from "@/layout";
-import { Calendar, Camera, User2, Users2 } from "lucide-react";
+import { Camera, User2, Users2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Profile() {
@@ -36,7 +36,7 @@ export default function Profile() {
   return (
     <Layout>
       <section className="m-5 h-[95%] w-[90%] flex justify-center items-center">
-        <div className="mt-20 w-full  flex flex-col gap-5 mx-auto">
+        <div className="mt-20 w-full   flex  justify-center  items-center flex-col gap-5 mx-auto">
           {/* Perfil */}
           <div className="flex justify-center m-auto flex-col md:flex-row gap-8 md:gap-20 items-center md:items-start text-center md:text-left">
             <div className="w-32 h-32 md:w-40 md:h-40 bg-accent rounded-md flex items-center justify-center">
@@ -78,50 +78,11 @@ export default function Profile() {
           <div className="h-[0.5px] w-full bg-background-dark"></div>
 
           {/* Posts */}
-          <div className="w-full min-h-[560px] flex flex-col gap-10 mt-10 items-center">
-            {myPosts.sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()).map((p) => (
-              <div
-                className="flex flex-col  border-b border-gray-300  w-full md:w-[70%] p-3   gap-3"
-                key={p.id_post}
-              >
-                <div className="flex gap-2 items-center">
-                  <div className="h-9 w-9 rounded-md  flex items-center justify-center">
-                    {me?.profile_image ? (
-                      <img className="rounded-md" src={me.profile_image} alt="" />
-                    ) : (
-                      <User2 />
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <h1 className="font-semibold text-neutral-700">{me?.username}</h1>
-                    <h2 className="font-semibold text-neutral-700 opacity-80" >{me?.nickname}</h2>
-                  </div>
-
-                </div>
-
-                <h1 className="text-xl md:text-20 break-words font-semibold text-neutral-600">
-                  {p.title}
-                </h1>
-                <p className="text-neutral-500 font-normal break-words">{p.content}</p>
-
-                {p.images && p.images.length > 0 ? (
-                  <div className="w-full">
-                    <CarouselImgs urls={p.images}></CarouselImgs>
-                  </div>
-                ) : null}
-
-                <div className="w-full m-2 mb-5 flex items-center gap-2">
-                  <Calendar className="text-neutral-500 w-5" />
-                  <h1 className="font-semibold text-neutral-500">
-                    {new Date(p.createdAt!).toLocaleString("pt-BR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
-                  </h1>
-                </div>
-              </div>
+          <div className="w-[50vw] min-h-[560px] flex flex-col gap-10 mt-10  justify-center items-center">
+            {myPosts.map((p) => (
+              <Posts key={p.id_post}post={p}/>
             ))}
+             
           </div>
         </div>
       </section>

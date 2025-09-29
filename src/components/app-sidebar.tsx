@@ -1,4 +1,4 @@
-import { Calendar, Home, Search, Settings } from "lucide-react"
+import {  Home, Search, Settings, Users2 } from "lucide-react"
 import { UserIcon, User2,CirclePlus } from "lucide-react"
 
 import {
@@ -30,9 +30,9 @@ const items = [
     icon: User2 ,
   },
   {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
+    title: "Pedidos",
+    url: "/friends",
+    icon: Users2,
   },
   {
     title: "Search",

@@ -1,6 +1,6 @@
 import UserApi, { type CommonUser } from "@/api/UserApi";
 import Layout from "@/layout";
-import { Share2, User2 } from "lucide-react";
+import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/storage/supabaseClient";
@@ -37,6 +37,11 @@ export default function Me() {
   return (
     <Layout>
       <section className="m-5  h-[95%] w-[81vw] flex ">
+
+
+        {loading ? (
+          <div></div>
+        ) : null}
         <div className=" p-4  flex-1/2 ">
           <div className=" flex items-center gap-3">
             <div className="rounded-md bg-accent-light w-11 flex items-center justify-center ">
@@ -152,12 +157,12 @@ export interface CommonUserProps {
 export function UpdateForm(props: CommonUserProps) {
   const [$name, setName] = useState<string>(props.username)
   const [$email, setEmail] = useState<string>(props.email)
-  const [$password, setPassword] = useState<string>(props.password)
+  // const [$password, setPassword] = useState<string>(props.password)
   const [$cpf, setCpf] = useState<string>(props.cpf)
   const [$nickname, setNickName] = useState<string>(props.nickname ?? "")
   const [$contact, setContact] = useState<string>(props.contact ?? "")
-  const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth!) ?? null)
-  const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
+  const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth! ?? null) )
+  // const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
   const [$gender, setGender] = useState<
     | "Masculino"
     | "Feminino"
@@ -215,7 +220,7 @@ export function UpdateForm(props: CommonUserProps) {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const { data, error } = await supabase.storage.from('images').upload(filePath, file!, {upsert: true})
+      const {error } = await supabase.storage.from('images').upload(filePath, file!, {upsert: true})
 
       if (error) {
         if (error) {
@@ -232,6 +237,7 @@ export function UpdateForm(props: CommonUserProps) {
 
       if (publicUrlData?.publicUrl) {
         setImageUrl(publicUrlData.publicUrl);
+        console.log(imageUrl)
         console.log("Imagem disponível em:", publicUrlData.publicUrl);
         
 

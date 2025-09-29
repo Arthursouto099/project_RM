@@ -3,7 +3,7 @@ import commonUserService from "../services/common_user.service";
 import { responseOk } from "../config/responses/app.response";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import { CustomRequest } from "../types/CustomRequest";
-import prisma from "../prisma.config";
+
 
 
 
@@ -66,6 +66,31 @@ const commonUserController = {
         } 
     },
 
+    sendFriendRequest: async (req:  CustomRequest, res: Response, next: NextFunction) => {
+        try{
+            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            const send = await commonUserService.sendRequestFriend(req.userLogged?.id_user, req.body.id_user)
+            responseOk(res, "Pedido enviado com sucesso", send)
+        }
+        catch(e) {
+            next(e)
+        }
+    },
+
+        acceptFriendRequest: async (req:  CustomRequest, res: Response, next: NextFunction) => {
+        try{
+            if(!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            const send = await commonUserService.acceptRequestFriend(req.body.id_request)
+            responseOk(res, "Pedido aceito com sucesso", send)
+        }
+        catch(e) {
+            next(e)
+        }
+    },
+
+
+    
+
 
 
     findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {
@@ -74,7 +99,7 @@ const commonUserController = {
 
 
             if (!id_user && !email && !cpf) {
-                responseOk(res, "Busca realizada com sucesso", await commonUserService.findUsers(), 200)
+                responseOk(res, "Busca realizada com sucesso", (await commonUserService.findUsers({})).users[0], 200)
             }
 
             const cm = await commonUserService.findUser({
@@ -128,14 +153,15 @@ const commonUserController = {
 
 
 
-    // get: async (req: Request, res: Response, next: NextFunction) => {
-    //     try {
-    //         return await commonUserService.
-    //     }
-    //     catch(e) {
-    //         next(e)
-    //     }
-    // } 
+    get: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+             const users = await commonUserService.findUsers({page: Number(req.query.page ?? 1) , limit: Number(req.query.limit ?? 1)})
+            responseOk(res, "consulta feita com sucesso", {users: users.users, page: users.page, pages: users.pages, total: users.total}, 200)
+        }
+        catch(e) {
+            next(e)
+        }
+    } 
 
 
 }
