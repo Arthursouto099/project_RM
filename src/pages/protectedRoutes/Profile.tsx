@@ -3,7 +3,7 @@ import type { CommonUser } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
 import Posts from "@/components/post";
 import Layout from "@/layout";
-import { Camera, User2, Users2 } from "lucide-react";
+import { Camera, NotebookPenIcon, User2, Users2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Profile() {
@@ -64,7 +64,7 @@ export default function Profile() {
                   <p>{0}</p>
                 </div>
                 <div className="flex mt-4 text-gray-600 items-center gap-2">
-                  <Camera />
+                  <NotebookPenIcon />
                   <p>{myPosts.length}</p>
                 </div>
               </div>

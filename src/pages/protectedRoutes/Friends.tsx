@@ -13,8 +13,9 @@ import { useEffect, useState } from "react";
 
 
 export default function Friends() {
-  const [field, setFields] = useState<"pedidos" | "usuarios">("usuarios")
+  const [field, setFields] = useState<"pedidos" | "usuarios" | "amigos">("usuarios")
   const [requests, setRequest] = useState<FriendRequest[]>([])
+  const [friend, setFriends] = useState<CommonUser[]>([])
   const [page, setPage] = useState<number>(1)
   const [users, setUsers] = useState<CommonUser[]>([])
   const { payload } = useAuth()
@@ -33,6 +34,17 @@ export default function Friends() {
 
     getUsers()
   }, [page])
+
+  
+  useEffect(() => {
+    const getFriends = async () => {
+      const request = await UserApi.getFriends(1, 10)
+      console.log(request)
+      setFriends(request.data ?? [])
+    }
+
+    getFriends()
+  }, [])
 
   useEffect(() => {
     const getRequest = async () => {
@@ -145,6 +157,72 @@ function CardUserFriend({ commonUser }: { commonUser: CommonUser }) {
     </div>
   )
 }
+function CardFriend({ friend }: { friend: CommonUser }) {
+
+
+  const friendAction = async () => {
+
+  }
+
+  return (
+    <div className="w-full p-5 rounded-md bg-background-dark/30 relative">
+
+      
+
+
+      <ToastContainer position="top-center" />
+
+      <div className="flex gap-3 items-center">
+        <div className="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center bg-neutral-200">
+          {friend.profile_image ? (
+            <img
+              className="h-full w-full object-cover"
+              src={friend.profile_image}
+              alt=""
+            />
+          ) : (
+            <User2 className="text-neutral-500" />
+          )}
+        </div>
+        <div className="flex w-full flex-col leading-tight">
+          <div className=" flex justify-between">
+
+            <div className="flex items-center gap-2">
+              <h1 className="font-semibold text-neutral-900">
+                {friend.username}
+              </h1>
+              <h2 className="text-neutral-500">{friend.nickname}</h2>
+            </div>
+
+
+
+          </div>
+
+
+
+        </div>
+
+      </div>
+      <div className="flex items-center mt-4 gap-2 text-neutral-500 text-sm">
+        <Calendar className="w-4 h-4" />
+        <span>
+
+        
+        </span>
+      </div>
+
+      <div className="mt-5 flex gap-3">
+        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={ async() => {
+            
+        }}> <CheckCheck /> Aceitar </button>
+        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={() => {
+
+        }}> <X /> Rejeitar </button>
+      </div>
+    </div>
+  )
+}
+
 
 
 function CardRequest({ request }: { request: FriendRequest }) {

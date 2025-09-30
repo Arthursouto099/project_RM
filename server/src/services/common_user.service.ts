@@ -119,8 +119,31 @@ const commonUserService = {
     },
 
 
+    getFriends: async (id_user: string, {page = 1, limit = 10}) => {
+        try{
+            const skip = (page - 1) * limit
+            
+            const friends = await prisma.commonUser.findUnique({where: {id_user}, select:{friends: {skip: skip, take: limit, orderBy: {createdAt: "desc"}}}})
+            return friends
+            
+            
+        }
+        catch(e) {
+            if(e instanceof UserErrorHandler) throw e
+
+            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
+            
+            throw UserErrorHandler.internal()
+        }
+    }
+
+    ,
+
+
     getMutualFriends: async (id_user: string) => {
         try {
+           
+
             const friends = await prisma.commonUser.findUnique({where: {id_user}, select: {friendOf: true, friends: true}})
 
 

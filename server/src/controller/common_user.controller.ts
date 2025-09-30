@@ -99,10 +99,17 @@ const commonUserController = {
             next(e)
         }
     },
+    getFriends: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            if (!req.userLogged?.id_user) throw UserErrorHandler.unauthorized()
+            const friends = await commonUserService.getFriends(req.userLogged.id_user, { page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 1) })
+            responseOk(res, "Busca por amigos do usuario foi um sucesso", friends)
+        }
+        catch (e) {
+            next(e)
+        }
 
-
-
-
+    },
 
 
     findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {

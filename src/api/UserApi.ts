@@ -272,6 +272,29 @@ const UserApi = {
             }
         }
     },
+       getFriends: async (page: number, limit= 10) => {
+        try {
+            const token = tokenActions.getToken()
+            const response = await instanceV1.get(`/user/relation/friends?page=${page}&limit=${limit}`, { headers: { Authorization: `bearer ${token}`  } })
+           
+            return {
+                message: response.data.message || "Amigos encontrados com sucesso",
+                success: true,
+                data: response.data.data as CommonUser[],
+                code: response.status,
+                requestTime: new Date().toISOString(),
+            }
+        }
+        catch (e) {
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+                code: e
+               
+            }
+        }
+    },
 
     put: async (data: Partial<CommonUserProps>): Promise<DefaultResponseAPI> => {
          try {

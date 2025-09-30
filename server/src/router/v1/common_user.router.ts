@@ -18,6 +18,7 @@ commonUserRouter.post("/relation/request", authMiddleware, commonUserController.
 commonUserRouter.post("/relation/accept", authMiddleware, commonUserController.acceptFriendRequest)
 commonUserRouter.get("/all", authMiddleware, commonUserController.get)
 commonUserRouter.get("/relation/received", authMiddleware , commonUserController.getFriendRequestsForUser)
+commonUserRouter.get("/relation/friends", authMiddleware, commonUserController.getFriends )
 
 
 export default commonUserRouter
