@@ -280,7 +280,7 @@ const UserApi = {
             return {
                 message: response.data.message || "Amigos encontrados com sucesso",
                 success: true,
-                data: response.data.data as CommonUser[],
+                data: response.data.data.friends as CommonUser[],
                 code: response.status,
                 requestTime: new Date().toISOString(),
             }

@@ -16,6 +16,7 @@ import { useLocation, useNavigate } from "react-router-dom"
 import UserApi, { type CommonUser } from "@/api/UserApi"
 import { useEffect, useState } from "react"
 import { DialogCreatePost } from "./post-create-modal"
+import { ModeToggle } from "./ToggleThemeButton"
 
 // Menu items.
 const items = [
@@ -117,6 +118,10 @@ export function AppSidebar() {
                       <CirclePlus/>
                       <DialogCreatePost></DialogCreatePost>
                     </div>
+                  </SidebarMenuButton>
+
+                  <SidebarMenuButton>
+                    <ModeToggle/>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>

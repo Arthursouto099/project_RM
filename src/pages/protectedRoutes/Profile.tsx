@@ -53,24 +53,24 @@ export default function Profile() {
             </div>
             <div className="flex flex-col w-full min-w-3xl max-w-3xl">
               <div>
-                <h1 className="text-2xl font-semibold">{me?.username}</h1>
-                <h2 className="opacity-80">{me?.nickname}</h2>
+                <h1 className="text-2xl text-sidebar-foreground font-semibold">{me?.username}</h1>
+                <h2 className="opacity-80 text-sidebar-foreground">{me?.nickname}</h2>
               </div>
 
               <div className="mt-2 h-[0.5px] w-full bg-accent"></div>
               <div className="flex gap-9 items-center justify-center md:justify-start">
-                <div className="flex text-gray-600 mt-4 items-center gap-2">
+                <div className="flex  mt-4 items-center gap-2">
                   <Users2 />
                   <p>{0}</p>
                 </div>
-                <div className="flex mt-4 text-gray-600 items-center gap-2">
+                <div className="flex mt-4  items-center gap-2">
                   <NotebookPenIcon />
                   <p>{myPosts.length}</p>
                 </div>
               </div>
               <div className="mt-2">
-                <h1 className="font-semibold">{me?.bio}</h1>
-                <p className="text-sm break-words">{me?.desc}</p>
+                <h1 className="font-semibold text-sidebar-foreground">{me?.bio}</h1>
+                <p className="text-sm break-words text-sidebar-foreground">{me?.desc}</p>
               </div>
             </div>
           </div>

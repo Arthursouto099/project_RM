@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
 import { PlusCircle } from "lucide-react"
+import { ModeToggle } from "@/components/ToggleThemeButton"
 
 
 
@@ -46,7 +47,7 @@ export default function Home() {
 
     return (
         <Layout>
-            <section className="w-[90%] m-auto flex justify-center items-start">
+            <section className="w-[90%] m-auto  flex justify-center text-sidebar-foreground items-start">
                 <div className="w-full flex">
 
                     {/* Área principal de posts */}
@@ -79,7 +80,7 @@ export default function Home() {
 
                     {/* Sidebar */}
                     <div className="flex-1/4 ml-5">
-                        <h1>wfiohreugref</h1>
+                      
                     </div>
 
                 </div>

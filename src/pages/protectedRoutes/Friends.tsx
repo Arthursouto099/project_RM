@@ -5,7 +5,7 @@ import Layout from "@/layout";
 import { toast, ToastContainer } from "react-toastify"
 
 
-import { Calendar, CheckCheck, Search, SendToBack, User2, X } from "lucide-react";
+import { Calendar, CheckCheck, FileQuestionIcon, Search, SearchX, SearchXIcon, SendToBack, User2, X, } from "lucide-react";
 import { useEffect, useState } from "react";
 
 
@@ -15,7 +15,7 @@ import { useEffect, useState } from "react";
 export default function Friends() {
   const [field, setFields] = useState<"pedidos" | "usuarios" | "amigos">("usuarios")
   const [requests, setRequest] = useState<FriendRequest[]>([])
-  const [friend, setFriends] = useState<CommonUser[]>([])
+  const [friends, setFriends] = useState<CommonUser[]>([])
   const [page, setPage] = useState<number>(1)
   const [users, setUsers] = useState<CommonUser[]>([])
   const { payload } = useAuth()
@@ -23,7 +23,7 @@ export default function Friends() {
 
   useEffect(() => {
     const getUsers = async () => {
-      const request = await UserApi.getUsers(page, 10);
+      const request = await UserApi.getUsers(page, 5);
       setUsers(prev => {
         const users = request.data ?? []
         const fill = users.filter(np => !prev.some(u => u.id_user === np.id_user))
@@ -35,21 +35,27 @@ export default function Friends() {
     getUsers()
   }, [page])
 
-  
+
   useEffect(() => {
     const getFriends = async () => {
       const request = await UserApi.getFriends(1, 10)
-      console.log(request)
-      setFriends(request.data ?? [])
+      setFriends(prev => {
+        // por algum caralho eu precisei verificar se ele e mesmo um array
+        const friendsL = Array.isArray(request.data) ? request.data : []
+        const fill = friendsL.filter(np => !prev.some(u => u.id_user === np.id_user))
+        return [...prev, ...fill]
+      })
     }
 
     getFriends()
   }, [])
 
+  
+
   useEffect(() => {
     const getRequest = async () => {
       const request = await UserApi.getFriendRequest()
-      setRequest(request.data ?? [])
+      setRequest(request.data?.filter((d) => d.status === "pending") ?? [])
     }
 
     getRequest()
@@ -58,39 +64,81 @@ export default function Friends() {
 
   return (
     <Layout>
-      <section className="m-5 h-[95%] ">
-        <header className="w-full ">
-          <div className="w-[50%] relative">
-            <Search className="absolute  top-2 right-4" />
-            <input className="w-full rounded-md border p-2" placeholder="@usuario" type="text" name="" id="" />
+      <section className="m-5 h-[95%] flex  gap-5">
+        <header className="w-full">
+
+          <div className="w-full p-2 mt-1 mb-1 rounded-md bg-green-300 text-[18px] text-background font-normal shadow"> <h1 >Solicitações e Usuarios</h1></div>
+          <div className="w-[100%] relative">
+
+            
+
 
             <div className="flex gap-3 mt-4 mb-4">
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "pedidos" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("pedidos")}>Pedidos</h1>
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "usuarios" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("usuarios")} >Usuarios</h1>
             </div>
 
+            <Search className="absolute  top-13 right-4" />
+            <input className="w-full rounded-md border mb-5 p-2" placeholder="@usuario" type="text" name="" id="" />
+
 
             {field === "usuarios" && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]" >
                 {users.filter((u) => u.id_user !== (payload as Payload).id_user).map((u) => (
                   <CardUserFriend key={u.id_user} commonUser={u} />
                 ))}
+        
 
               </div>
             )}
 
-            {field === "pedidos" && (
-              <div className=" flex flex-col gap-3">
+            {field === "pedidos" && requests.length > 0 ? (
+              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]">
                 {requests.map((req) => (
                   <CardRequest key={req.id_request} request={req} />
                 ))}
               </div>
-            )}
+            ) : field === "pedidos" ? (
+              <div className="bg-background-dark/40 p-5 h-[50vh] rounded-md border-2 border-dotted flex flex-col items-center justify-center gap-4">
+                <SearchX className="w-12 h-12 text-gray-400" />
+                <h1 className="text-[17px] text-black/50 text-center">
+                  Você não possui nenhuma solicitação!
+                </h1>
+              </div>
+            ) : null}
+
 
 
           </div>
 
         </header>
+
+
+        <div className="w-full  ">
+          <div className="w-full p-2 mt-1 mb-1 rounded-md bg-green-300 text-[18px] text-background font-normal shadow"> <h1 >Solicitações e Usuarios</h1></div>
+          <div className="mt-4 ">
+
+            
+            <div className="flex gap-3 mt-4 mb-4">
+
+              <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 border-b-accent border-2 `}>Amigos</h1>
+              
+            </div>
+
+        
+            <input className="w-full rounded-md border mb-5 p-2" placeholder="@usuario" type="text" name="" id="" />
+
+             <div className="flex flex-col overflow-auto no-scrollbar h-[68vh] gap-3">
+                {friends.map((u) => (
+                  <CardFriend key={u.id_user} friend={u} />
+                ))}
+                
+
+              </div>
+
+          
+          </div>
+        </div>
       </section>
     </Layout>
   )
@@ -167,7 +215,7 @@ function CardFriend({ friend }: { friend: CommonUser }) {
   return (
     <div className="w-full p-5 rounded-md bg-background-dark/30 relative">
 
-      
+
 
 
       <ToastContainer position="top-center" />
@@ -207,13 +255,13 @@ function CardFriend({ friend }: { friend: CommonUser }) {
         <Calendar className="w-4 h-4" />
         <span>
 
-        
+
         </span>
       </div>
 
       <div className="mt-5 flex gap-3">
-        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={ async() => {
-            
+        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={async () => {
+
         }}> <CheckCheck /> Aceitar </button>
         <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={() => {
 
@@ -225,17 +273,19 @@ function CardFriend({ friend }: { friend: CommonUser }) {
 
 
 
+
+
 function CardRequest({ request }: { request: FriendRequest }) {
 
 
   const acceptRequest = async (id_request: string) => {
-      const r = await UserApi.acceptFriendRequest(id_request)
-      if(r.code === 200) {
-        toast.success(r.message)
-        return
-      } 
+    const r = await UserApi.acceptFriendRequest(id_request)
+    if (r.code === 200) {
+      toast.success(r.message)
+      return
+    }
 
-      toast.error(r.message)
+    toast.error(r.message)
   }
 
   return (
@@ -291,8 +341,8 @@ function CardRequest({ request }: { request: FriendRequest }) {
       </div>
 
       <div className="mt-5 flex gap-3">
-        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={ async() => {
-              await acceptRequest(request.id_request)
+        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={async () => {
+          await acceptRequest(request.id_request)
         }}> <CheckCheck /> Aceitar </button>
         <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-background-dark cursor-pointer" onClick={() => {
 

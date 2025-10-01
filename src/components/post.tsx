@@ -28,7 +28,7 @@ export default function Posts({ post }: { post: Post }) {
   return (
     <div className="w-full">
       <div
-        className="flex flex-col w-full p-4 gap-3 border-b border-neutral-200 hover:bg-neutral-50 hover:rounded-md transition-colors"
+        className="flex flex-col w-full  p-4 gap-3 border-b border-neutral-200 hover:bg-sidebar-foreground/20 hover:rounded-md transition-colors"
         key={post.id_post}
       >
         {/* Header */}
@@ -48,7 +48,7 @@ export default function Posts({ post }: { post: Post }) {
             <div className=" flex justify-between">
 
               <div className="flex items-center gap-2">
-                <h1 className="font-semibold text-neutral-900">
+                <h1 className="font-semibold text-sidebar-foreground">
                   {post.user?.username}
                 </h1>
                 <h2 className="text-neutral-500">{post.user?.nickname}</h2>
@@ -58,7 +58,7 @@ export default function Posts({ post }: { post: Post }) {
                 {isUser ? (
                   <div className="flex gap-2 cursor-pointer"  >
 
-                    <h1 className="text-3xl">...</h1>
+                    <h1 className="text-3xl text-sidebar-foreground">...</h1>
                     
                   </div>
                 ) : null}
@@ -71,10 +71,10 @@ export default function Posts({ post }: { post: Post }) {
 
         {/* Body */}
         <div className="flex flex-col gap-3">
-          <h1 className="text-lg font-medium text-neutral-900 break-words">
+          <h1 className="text-lg font-medium text-sidebar-foreground  break-words">
             {post.title}
           </h1>
-          <p className="text-neutral-700 text-sm break-words">{post.content}</p>
+          <p className="text-sidebar-accent-foreground text-sm break-words">{post.content}</p>
 
           {post.images && post.images.length > 0 && (
             <div className="w-full rounded-lg overflow-hidden border border-neutral-200">
