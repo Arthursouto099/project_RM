@@ -43,6 +43,8 @@ model CommonUser {
 
   // requests enviadas pelo user
   FriendRequestSent FriendRequest[] @relation("RequestsSent")
+  Message Message[]
+  ChatUser ChatUser[]
 }
 
 
@@ -50,6 +52,53 @@ enum Status {
   pending
   accepted
   rejected
+}
+
+
+model Chat {
+  id_chat String @id @default(cuid())
+  name String? // caso seja um grupo
+  isGroup Boolean @default(false)
+  participants ChatUser[]
+  messages Message[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+model ChatUser {
+  id_chat String
+  id_user String
+  chat Chat @relation(fields: [id_chat], references: [id_chat])
+  joinedAt DateTime @default(now())
+  user CommonUser @relation(fields: [id_user], references: [id_user])
+  role String? // Adm member e etc
+
+  @@id([id_chat, id_user])
+} 
+
+model Message {
+  id_message  String     @id @default(cuid())
+  id_chat     String
+  chat        Chat       @relation(fields: [id_chat], references: [id_chat])
+
+  id_sender   String
+  sender      CommonUser @relation(fields: [id_sender], references: [id_user])
+
+  content     String
+  images      String[]   // opcional: anexos/imagens
+  videos      String[]   // opcional: vídeos
+
+  status      MessageStatus @default(SENT)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum MessageStatus {
+  SENT
+  DELIVERED
+  READ
 }
 
 model FriendRequest {

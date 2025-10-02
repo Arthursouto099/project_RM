@@ -1,4 +1,4 @@
-import {  Home, Search, Settings, Users2 } from "lucide-react"
+import {  Home, MessageSquare, Search, Settings, Users2 } from "lucide-react"
 import { UserIcon, User2,CirclePlus } from "lucide-react"
 
 import {
@@ -35,9 +35,9 @@ const items = [
     icon: Users2,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Messages",
+    url: "/direct",
+    icon: MessageSquare,
   },
   {
     title: "Settings",

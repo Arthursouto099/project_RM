@@ -7,6 +7,7 @@ import { toast, ToastContainer } from "react-toastify"
 
 import { Calendar, CheckCheck, MessageSquare, Search, SearchX, SendToBack, User2, X, } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 
 
@@ -35,19 +36,7 @@ export default function Friends() {
   }, [page])
 
 
-  // useEffect(() => {
-  //   const getFriends = async () => {
-  //     const request = await UserApi.getFriends(1, 10)
-  //     setFriends(prev => {
-  //       // por algum caralho eu precisei verificar se ele e mesmo um array
-  //       const friendsL = Array.isArray(request.data) ? request.data : []
-  //       const fill = friendsL.filter(np => !prev.some(u => u.id_user === np.id_user))
-  //       return [...prev, ...fill]
-  //     })
-  //   }
 
-  //   getFriends()
-  // }, [])
 
 
 
@@ -201,9 +190,7 @@ function CardUserFriend({ commonUser }: { commonUser: CommonUser }) {
 export function CardFriend({ friend }: { friend: CommonUser }) {
 
 
-  const friendAction = async () => {
-    alert("iniciando chat")
-  }
+ 
 
   return (
     <div className="w-full p-5 rounded-md bg-sidebar-accent/30 relative">
@@ -247,9 +234,12 @@ export function CardFriend({ friend }: { friend: CommonUser }) {
 
 
       <div className="mt-5 flex gap-3">
-        <button className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer" onClick={async () => {
-          friendAction()
-        }}> <MessageSquare /> Abrir Chat </button>
+        <Link
+          to={`/direct/${friend.id_user}`}
+          className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
+        >
+          <MessageSquare /> Abrir Chat
+        </Link>
 
       </div>
     </div>

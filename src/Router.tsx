@@ -5,6 +5,8 @@ import Home from "./pages/protectedRoutes/Home"
 import Me from "./pages/protectedRoutes/Me"
 import Profile from "./pages/protectedRoutes/Profile"
 import Friends from "./pages/protectedRoutes/Friends"
+import { Direct } from "./pages/protectedRoutes/Direct"
+import { DirectChat } from "./pages/protectedRoutes/DirectChat"
 
 
 
@@ -22,6 +24,8 @@ export default function Router() {
                     <Route path="/me" element={<Me/>}> </Route>
                     <Route path="/profile" element={<Profile/>}> </Route>
                     <Route path="/friends" element={<Friends/>}> </Route>
+                    <Route path="/direct" element={<Direct/>}/>
+                    <Route path="/direct/:id_user" element={<DirectChat/>}/>
                     
                 </Route>
             </Routes>
