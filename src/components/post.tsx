@@ -28,7 +28,7 @@ export default function Posts({ post }: { post: Post }) {
   return (
     <div className="w-full">
       <div
-        className="flex flex-col w-full  p-4 gap-3 border-b border-neutral-200 hover:bg-sidebar-foreground/20 hover:rounded-md transition-colors"
+        className="flex flex-col w-full  p-4 gap-3 border-b border-neutral-200 hover:bg-sidebar-foreground/5 hover:rounded-md transition-colors"
         key={post.id_post}
       >
         {/* Header */}

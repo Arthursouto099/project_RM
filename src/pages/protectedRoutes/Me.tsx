@@ -4,6 +4,7 @@ import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import { supabase } from "@/storage/supabaseClient";
+import { ModeToggle } from "@/components/ToggleThemeButton";
 
 export default function Me() {
   const [me, setMe] = useState<CommonUser>()
@@ -45,10 +46,10 @@ export default function Me() {
         <div className=" p-4  flex-1/2 ">
           <div className=" flex items-center gap-3">
             <div className="rounded-md bg-accent-light w-11 flex items-center justify-center ">
-              {me?.profile_image ? (<img width={100} className="rounded-md  bg-accent-dark border-1"  src={me?.profile_image} alt="" />) : < User2 className=" m-2 text-background"/> }
-              
+              {me?.profile_image ? (<img width={100} className="rounded-md  bg-accent-dark border-1" src={me?.profile_image} alt="" />) : < User2 className=" m-2 text-background" />}
+
             </div>
-            <div className="flex flex-col ">
+            <div className="flex flex-col text-sidebar-foreground ">
               <p className="font-normal text-[14px] opacity-85">{me?.username}</p>
               <h1 className=" " >{me?.email}</h1>
             </div>
@@ -56,44 +57,57 @@ export default function Me() {
 
           <div className="w-[100%] h-[0.50px] bg-gray-300 mt-4"></div>
 
-          <div className="mt-10  mb-[-4%]   ">
+          <div className="mt-10 text-sidebar-foreground  mb-[-4%]   ">
             <div className="flex gap-3">
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "informacoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("informacoes")}>Informações</h1>
               <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "configuracoes" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("configuracoes")} >configurações</h1>
             </div>
-                
-          </div>
-
-
-
-
-          <div className="mt-20">
-            {me ? (
-              <UpdateForm onUpdated={() => {
-                setUpdated((prev) => prev + 1)
-
-
-              }}
-                cpf={me.cpf}
-                email={me.email}
-                username={me.username}
-                password="**********"
-                contact={me.contact}
-                birth={me.birth}
-                gender={me.gender}
-                bio={me.bio}
-                desc={me.desc}
-                nickname={me.nickname}
-              ></UpdateForm>
-            ) : null}
 
           </div>
+
+
+
+
+          {field === "informacoes" && (
+            <div className="mt-20 text-sidebar-foreground">
+              {me ? (
+                <UpdateForm onUpdated={() => {
+                  setUpdated((prev) => prev + 1)
+
+
+                }}
+                  cpf={me.cpf}
+                  email={me.email}
+                  username={me.username}
+                  password="**********"
+                  contact={me.contact}
+                  birth={me.birth}
+                  gender={me.gender}
+                  bio={me.bio}
+                  desc={me.desc}
+                  nickname={me.nickname}
+                ></UpdateForm>
+              ) : null}
+
+            </div>
+          )}
+
+
+
+          {field === "configuracoes" && (
+            <div className="mt-20 text-sidebar-foreground">
+
+              <UserConfigs />
+            </div>
+          )}
+
+
         </div>
 
 
 
 
-{/* 
+        {/* 
         <div className="flex-1/5 ">
               <div className=" p-3 w-[100%] h-[100%] ">
                       <div className="bg-accent-dark p-5 rounded-md text-background-light">
@@ -115,6 +129,21 @@ export default function Me() {
     </Layout>
   )
 }
+
+
+export function UserConfigs() {
+  return (
+    <div className=" grid grid-cols-2  text-sidebar-foreground gap-5 ">
+      <div className="">
+        <div className="flex items-center gap-2">
+          <ModeToggle />
+          <h1>Mudar o Tema Principal</h1>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 const genderOptions: string[] = [
   "Masculino",
@@ -161,7 +190,7 @@ export function UpdateForm(props: CommonUserProps) {
   const [$cpf, setCpf] = useState<string>(props.cpf)
   const [$nickname, setNickName] = useState<string>(props.nickname ?? "")
   const [$contact, setContact] = useState<string>(props.contact ?? "")
-  const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth! ?? null) )
+  const [$birth, setBirth] = useState<Date | null | string>(new Date(props.birth! ?? null))
   // const [$emergency_contact, setEmergencyContact] = useState<string>(props.emergency_contact ?? "")
   const [$gender, setGender] = useState<
     | "Masculino"
@@ -208,7 +237,7 @@ export function UpdateForm(props: CommonUserProps) {
     //   gender: $gender,
     // }
 
-    
+
 
     const obj = currentValues.reduce((acc, item) => {
       acc[item.key] = item.value
@@ -220,7 +249,7 @@ export function UpdateForm(props: CommonUserProps) {
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      const {error } = await supabase.storage.from('images').upload(filePath, file!, {upsert: true})
+      const { error } = await supabase.storage.from('images').upload(filePath, file!, { upsert: true })
 
       if (error) {
         if (error) {
@@ -239,11 +268,11 @@ export function UpdateForm(props: CommonUserProps) {
         setImageUrl(publicUrlData.publicUrl);
         console.log(imageUrl)
         console.log("Imagem disponível em:", publicUrlData.publicUrl);
-        
+
 
         obj["profile_image"] = publicUrlData.publicUrl
       }
-      
+
 
 
       setFileUpdated(false)
@@ -268,10 +297,10 @@ export function UpdateForm(props: CommonUserProps) {
     <form onSubmit={onSubmit}>
       <ToastContainer position="top-center" />
 
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2  text-sidebar-foreground gap-5">
         {/* Nome */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Nome</label>
+          <label className="block text-sm font-semibold  mb-1">Nome</label>
           <input
             type="text"
             value={$name}
@@ -284,14 +313,14 @@ export function UpdateForm(props: CommonUserProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Nick</label>
+          <label className="block text-sm font-semibold  mb-1">Nick</label>
           <input
             type="text"
             value={$nickname}
             required
             onChange={(e) => {
               setNickName(e.target.value)
-              updateValue("nickname","@" + e.target.value)
+              updateValue("nickname", "@" + e.target.value)
             }}
             className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />
@@ -299,7 +328,7 @@ export function UpdateForm(props: CommonUserProps) {
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+          <label className="block text-sm font-semibold  mb-1">Email</label>
           <input
             type="email"
             value={$email}
@@ -314,7 +343,7 @@ export function UpdateForm(props: CommonUserProps) {
 
         {/* CPF */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">CPF</label>
+          <label className="block text-sm font-semibold  mb-1">CPF</label>
           <input
             type="text"
             value={$cpf}
@@ -329,7 +358,7 @@ export function UpdateForm(props: CommonUserProps) {
 
         {/* Gênero */}
         <div>
-          <label htmlFor="gender" className="block text-sm font-semibold text-gray-700 mb-1">
+          <label htmlFor="gender" className="block text-sm font-semibold  mb-1">
             Gênero
           </label>
           <select
@@ -341,10 +370,10 @@ export function UpdateForm(props: CommonUserProps) {
               setGender(e.target.value as typeof $gender)
               updateValue("gender", e.target.value)
             }}
-            className="w-full border-b border-gray-300 bg-white px-1 py-2 text-sm outline-none focus:border-accent-normal focus:ring-0"
+            className="w-full border-b border-gray-300px-1 py-2 text-sm outline-none focus:border-accent-normal focus:ring-0"
           >
             {genderOptions.map((s) => (
-              <option key={s} value={s} className="bg-white text-gray-700">
+              <option key={s} value={s} className="text-black ">
                 {s}
               </option>
             ))}
@@ -353,8 +382,9 @@ export function UpdateForm(props: CommonUserProps) {
 
         {/* Aniversário */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Aniversário</label>
+          <label className="block text-sm font-semibold text-sidebar-foreground mb-1">Aniversário</label>
           <input
+
             type="date"
             value={$birth instanceof Date ? $birth.toISOString().split("T")[0] : ""}
 
@@ -363,13 +393,13 @@ export function UpdateForm(props: CommonUserProps) {
               setBirth(date)
               updateValue("birth", date)
             }}
-            className="border-b w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
+            className="border-b w-full focus:outline-none focus:border-accent-normal   focus:ring-0 p-1 border-gray-300"
           />
         </div>
 
         {/* Contato */}
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Contato</label>
+          <label className="block text-sm font-semibold text-sidebar-foreground mb-1">Contato</label>
           <input
             type="text"
             value={$contact}
@@ -381,7 +411,7 @@ export function UpdateForm(props: CommonUserProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Bio</label>
+          <label className="block text-sm font-semibold text-sidebar-foreground mb-1">Bio</label>
           <input
             type="text"
             value={$bio}
@@ -392,8 +422,8 @@ export function UpdateForm(props: CommonUserProps) {
             className="border-b w-full  focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />
         </div>
-          <div>
-          <label className="block  text-sm font-semibold text-gray-700 mb-1">Imagem de perfil</label>
+        <div>
+          <label className="block  text-sm font-semibold text-sidebar-foreground mb-1">Imagem de perfil</label>
           <input
             type="file"
             accept="image/*"
@@ -407,9 +437,9 @@ export function UpdateForm(props: CommonUserProps) {
         </div>
 
         <div className="col-span-2">
-          <label className="block text-sm font-semibold text-gray-700 mb-1">Descrição</label>
+          <label className="block text-sm font-semibold text-sidebar-foreground mb-1">Descrição</label>
           <textarea
-            
+
             value={$desc}
             onChange={(e) => {
               setDesc(e.target.value)
@@ -418,7 +448,7 @@ export function UpdateForm(props: CommonUserProps) {
             className="border-b w-full  grid focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300"
           />
         </div>
-      
+
         {/* Botão */}
         <div className="flex col-span-2 gap-2">
           <button className="p-2 bg-accent-normal w-full rounded-md text-white cursor-pointer" type="submit">

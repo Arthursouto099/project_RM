@@ -32,7 +32,7 @@ export function DialogCreatePost() {
         </h1>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-xl border border-gray-200 bg-white">
+      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-xl border border-gray-200 bg-sidebar-foreground">
         <DialogHeader>
           <DialogTitle>
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
@@ -60,7 +60,7 @@ export function DialogCreatePost() {
           </div>
 
           {/* Lado da Visualização */}
-          <div className="flex flex-col w-3 flex-1 gap-6 p-6 bg-gray-50 rounded-2xl border border-gray-200">
+          <div className="flex flex-col w-3 flex-1 gap-6 p-6  rounded-2xl border border-gray-200">
             <h1 className="break-words text-3xl font-bold text-gray-800">
               {prevTitle}
             </h1>
@@ -204,7 +204,7 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
   }
 
   return (
-    <form onSubmit={onSubmit}>
+    <form onSubmit={onSubmit} >
       <ToastContainer position="top-center" />
 
       <div className="grid grid-cols-2 gap-5 ">

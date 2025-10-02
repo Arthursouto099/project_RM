@@ -172,10 +172,10 @@ const commonUserController = {
 
 
 
-    get: async (req: Request, res: Response, next: NextFunction) => {
+    get: async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
-            const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 1) })
-            responseOk(res, "consulta feita com sucesso", { users: users.users, page: users.page, pages: users.pages, total: users.total }, 200)
+            const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 10) })
+            responseOk(res, "consulta feita com sucesso", { users: users.users.filter((u) => u.id_user !== req.userLogged?.id_user ), page: users.page, pages: users.pages, total: users.total }, 200)
         }
         catch (e) {
             next(e)

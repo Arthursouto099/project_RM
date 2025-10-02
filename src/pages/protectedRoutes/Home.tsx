@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
 import { PlusCircle } from "lucide-react"
-import { ModeToggle } from "@/components/ToggleThemeButton"
 
 
 

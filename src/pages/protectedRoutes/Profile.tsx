@@ -3,7 +3,7 @@ import type { CommonUser } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
 import Posts from "@/components/post";
 import Layout from "@/layout";
-import { Camera, NotebookPenIcon, User2, Users2 } from "lucide-react";
+import { NotebookPenIcon, User2, Users2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export default function Profile() {
@@ -59,11 +59,11 @@ export default function Profile() {
 
               <div className="mt-2 h-[0.5px] w-full bg-accent"></div>
               <div className="flex gap-9 items-center justify-center md:justify-start">
-                <div className="flex  mt-4 items-center gap-2">
-                  <Users2 />
+                <div className="flex text-sidebar-foreground mt-4 items-center gap-2">
+                  <Users2 className="" />
                   <p>{0}</p>
                 </div>
-                <div className="flex mt-4  items-center gap-2">
+                <div className="flex mt-4  text-sidebar-foreground items-center gap-2">
                   <NotebookPenIcon />
                   <p>{myPosts.length}</p>
                 </div>
