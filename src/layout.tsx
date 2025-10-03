@@ -6,7 +6,7 @@ export default function Layout() {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main className="overflow-hidden bg-sidebar w-screen">
+      <main className="overflow-hidden bg-sidebar h-screen w-screen">
         <div className="block md:hidden">
           <SidebarTrigger />
         </div>

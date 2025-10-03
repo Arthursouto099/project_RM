@@ -1,6 +1,7 @@
 import { isAxiosError } from "axios";
 import instanceV1 from "./api@instance/ap-v1i";
 import { tokenActions } from "@/@tokenSettings/token";
+import type { CommonUser } from "./UserApi";
 
 
 
@@ -23,6 +24,7 @@ export type Message = {
         updatedAt: Date;
         id_message: string;
         status:   "SENT" | "DELIVERED" | "READ";
+        sender?: CommonUser
 }
 
 const ChatAPi = {

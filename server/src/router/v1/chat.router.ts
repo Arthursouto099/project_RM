@@ -3,6 +3,7 @@ import authMiddleware from "../../middlewares/authMiddleware"
 import chatController from "../../controller/chat.controller"
 import { validate } from "../../middlewares/zodMiddleware"
 import { message } from "../../schemas/chat.schema"
+import { io } from "../../app"
 
 
 

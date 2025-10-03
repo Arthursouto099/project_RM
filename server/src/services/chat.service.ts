@@ -73,7 +73,7 @@ const chatService = {
 
     getPrivateMessas: async  ( id_chat: string  , {page = 1, limit = 20}) => {
         const skip = (page - 1) * limit
-        const messages = await prisma.message.findMany({where: {id_chat}, take: limit, skip: skip, orderBy: {createdAt: "desc"}} ,)
+        const messages = await prisma.message.findMany({where: {id_chat}, take: limit, skip: skip, orderBy: {createdAt: "desc"}, include: {sender: true}} ,)
         return messages ?? []
     },
 
@@ -95,6 +95,7 @@ const chatService = {
                     images: images ?? [],
                     videos: videos ?? []
                 }
+                ,include: {sender: true}
             })
 
 
