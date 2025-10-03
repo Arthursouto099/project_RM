@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom"
 import useAuth from "../../hooks/useAuth"
-import Layout from "@/layout"
+
 import { useEffect, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
@@ -45,7 +45,7 @@ export default function Home() {
 
 
     return (
-        <Layout>
+      
             <section className="w-[90%] m-auto  flex justify-center text-sidebar-foreground items-start">
                 <div className="w-full flex">
 
@@ -84,7 +84,7 @@ export default function Home() {
 
                 </div>
             </section>
-        </Layout>
+       
 
 
     )

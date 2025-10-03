@@ -1,4 +1,3 @@
-import { id } from "zod/v4/locales/index.cjs"
 import prisma from "../prisma.config"
 import ChatErrorHandler from "../errors/ChatErrorHandler"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
@@ -31,7 +30,7 @@ const chatService = {
                         { participants: { every: { id_user: { in: [UserA, UserB] } } } }
                     ]
                 },
-                include: { participants: true }
+                include: { participants: true, messages: true }
             })
 
             if (existingChat) return {
@@ -71,6 +70,14 @@ const chatService = {
     },
 
 
+
+    getPrivateMessas: async  ( id_chat: string  , {page = 1, limit = 20}) => {
+        const skip = (page - 1) * limit
+        const messages = await prisma.message.findMany({where: {id_chat}, take: limit, skip: skip, orderBy: {createdAt: "desc"}} ,)
+        return messages ?? []
+    },
+
+
     SendMessage: async ({ id_chat, id_sender, content, images, videos }: {
         id_chat: string,
         id_sender: string,
@@ -94,6 +101,7 @@ const chatService = {
             return message
         }
         catch (e) {
+            console.log(e)
 
             if (e instanceof ChatErrorHandler) throw e
 

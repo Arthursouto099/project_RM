@@ -1,4 +1,4 @@
-import {  Home, MessageSquare, Search, Settings, Users2 } from "lucide-react"
+import {  Home, MessageSquare, Settings, Users2 } from "lucide-react"
 import { UserIcon, User2,CirclePlus } from "lucide-react"
 
 import {
@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "@/components/ui/sidebar"
-import { useLocation, useNavigate } from "react-router-dom"
+import { Link, useLocation, useNavigate } from "react-router-dom"
 import UserApi, { type CommonUser } from "@/api/UserApi"
 import { useEffect, useState } from "react"
 import { DialogCreatePost } from "./post-create-modal"
@@ -100,10 +100,10 @@ export function AppSidebar() {
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a href={item.url}>
+                    <Link to={item.url}>
                       <item.icon />
                       <span>{item.title}</span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

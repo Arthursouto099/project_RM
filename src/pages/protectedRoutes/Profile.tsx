@@ -2,7 +2,7 @@ import PostApi, { type Post } from "@/api/PostApi";
 import type { CommonUser } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
 import Posts from "@/components/post";
-import Layout from "@/layout";
+
 import { NotebookPenIcon, User2, Users2 } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -34,7 +34,7 @@ export default function Profile() {
 
 
   return (
-    <Layout>
+
       <section className="m-5 h-[95%] w-[90%] flex justify-center items-center">
         <div className="mt-20 w-full   flex  justify-center  items-center flex-col gap-5 mx-auto">
           {/* Perfil */}
@@ -86,7 +86,7 @@ export default function Profile() {
           </div>
         </div>
       </section>
-    </Layout>
+
 
   )
 } 

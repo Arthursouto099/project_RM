@@ -1,6 +1,5 @@
 import type { CommonUser } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
-import Layout from "@/layout";
 import { useEffect, useState } from "react";
 import { CardFriend } from "./Friends";
 import { Search } from "lucide-react";
@@ -35,7 +34,6 @@ export function Direct() {
 
 
     return (
-        <Layout>
             <section className="m-5 h-[95%] flex flex-col text-sidebar-foreground  gap-5">
                 <header className="w-full">
                     <div className="w-full p-4 mt-2  mb-2 rounded-xl bg-sidebar-accent shadow-md flex items-center justify-between">
@@ -52,7 +50,7 @@ export function Direct() {
                 <div className="w-full flex flex-col gap-4">
 
                     {friends.map((f) => (
-                        <CardFriend friend={f} />
+                        <CardFriend  key= {f.id_user} friend={f} />
 
 
                     ))}
@@ -62,7 +60,7 @@ export function Direct() {
 
 
             </section>
-        </Layout>
+      
     )
 
 

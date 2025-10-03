@@ -1,13 +1,14 @@
 import type { CommonUser, FriendRequest } from "@/api/UserApi";
 import UserApi from "@/api/UserApi";
 import useAuth, { type Payload } from "@/hooks/useAuth";
-import Layout from "@/layout";
+
 import { toast, ToastContainer } from "react-toastify"
 
 
 import { Calendar, CheckCheck, MessageSquare, Search, SearchX, SendToBack, User2, X, } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import ChatAPi from "@/api/ChatApi";
 
 
 
@@ -51,7 +52,7 @@ export default function Friends() {
 
 
   return (
-    <Layout>
+    
       <section className="m-5 h-[95%] flex text-sidebar-foreground  gap-5">
         <header className="w-full">
           <div className="w-full p-4 mt-2 mb-2 rounded-xl bg-sidebar-accent shadow-md flex items-center justify-between">
@@ -120,7 +121,7 @@ export default function Friends() {
 
 
       </section>
-    </Layout>
+   
   )
 }
 
@@ -190,7 +191,10 @@ function CardUserFriend({ commonUser }: { commonUser: CommonUser }) {
 export function CardFriend({ friend }: { friend: CommonUser }) {
 
 
- 
+  const createOrGetChat = async (id_user: string) => {
+      const request = await ChatAPi.createOrReturnChat(id_user)
+      console.log(request)
+  }
 
   return (
     <div className="w-full p-5 rounded-md bg-sidebar-accent/30 relative">
@@ -234,7 +238,9 @@ export function CardFriend({ friend }: { friend: CommonUser }) {
 
 
       <div className="mt-5 flex gap-3">
-        <Link
+        <Link onClick={async ()  => {
+          await createOrGetChat(friend.id_user!)
+        }}
           to={`/direct/${friend.id_user}`}
           className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
         >

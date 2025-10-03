@@ -249,6 +249,36 @@ const UserApi = {
             };
         }
     },
+     getUser: async (id_user: string) => {
+        try {
+            const token = tokenActions.getToken()
+            const response = await instanceV1.get(`/user?id_user=${id_user}`, { headers: { Authorization: `bearer ${token}`  } })
+          
+            return {
+                message: response.data.message || "Usuário encontrado com sucesso",
+                success: true,
+                data: response.data.data as CommonUser,
+                code: response.status,
+                requestTime: new Date().toISOString(),
+            }
+        }
+        catch (e) {
+             if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
        getUsers: async (page: number, limit= 10) => {
         try {
             const token = tokenActions.getToken()

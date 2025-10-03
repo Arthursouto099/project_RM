@@ -1,5 +1,4 @@
 import UserApi, { type CommonUser } from "@/api/UserApi";
-import Layout from "@/layout";
 import { User2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
@@ -36,7 +35,7 @@ export default function Me() {
 
 
   return (
-    <Layout>
+ 
       <section className="m-5  h-[95%] w-[81vw] flex ">
 
 
@@ -126,7 +125,7 @@ export default function Me() {
                 </div>
         </div> */}
       </section>
-    </Layout>
+
   )
 }
 
