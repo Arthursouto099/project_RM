@@ -1,6 +1,6 @@
 import type { CommonUser } from "@/api/UserApi"
 import UserApi from "@/api/UserApi"
-import { MessageSquare, Users2Icon } from "lucide-react"
+import { MessageSquare, User, Users2Icon } from "lucide-react"
 import { useEffect, useState } from "react"
 
 export default function ProfileDashboard({id_user}: {id_user: string}) {
@@ -25,7 +25,7 @@ export default function ProfileDashboard({id_user}: {id_user: string}) {
     }, [id_user])
 
 
-    console.log(user)
+   
 
 
     return (
@@ -35,7 +35,9 @@ export default function ProfileDashboard({id_user}: {id_user: string}) {
                     {user?.profile_image  ? (
                         <img className="rounded-full w-50  border-3"  src={user.profile_image} alt="" />
                     ): (
-                    <div></div>
+                    <div className="w-50 border-3 h-50 rounded-full  justify-center items-center flex ">
+                        <User className="w-[70%] text-sidebar-foreground h-full "/>
+                    </div>
                     ) }
 
 
@@ -54,15 +56,29 @@ export default function ProfileDashboard({id_user}: {id_user: string}) {
                             <div className="flex items-center gap-3 ">< Users2Icon/> {user?.friends?.length}  </div>
                             <h1>Amizades</h1>
                         </div>
+                 
+                    </div>
+
+
+                    <div className="flex flex-col mt-5 text-sidebar-foreground gap-2">
                         <div>
-                            <div className="flex items-center gap-3 "><MessageSquare/> {user?.posts?.length}  </div>
-                            <h1>Postagens</h1>
+                            <h1>{user?.nickname}</h1>
+                        </div>
+
+                        <div>
+                            <p>{user?.bio}</p>
                         </div>
                     </div>
                 </div>
 
 
+              
 
+            </div>
+
+
+            <div className="text-sidebar-foreground mt-4">
+                    <p>{user?.desc}</p>
             </div>
         </div>
     )

@@ -24,5 +24,5 @@ export const getAllPostsInputs = z.object({
 export const postSchemaPartial = postSchema.partial().strict()
 
 export type PostInputs = z.infer<typeof postSchema>
-export type PartialPostInputs = z.infer<typeof postSchema>
+export type PartialPostInputs = z.infer<typeof postSchemaPartial>
 export type GetAllPostsInputs = z.infer<typeof getAllPostsInputs>

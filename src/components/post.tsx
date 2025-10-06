@@ -1,9 +1,19 @@
 import type { Post } from "@/api/PostApi";
-import { Calendar, User2 } from "lucide-react";
+import { Calendar, Edit, User2 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import useAuth, { type Payload } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { DialogCreatePost } from "./post-create-modal";
 
 export default function Posts({ post }: { post: Post }) {
 
@@ -60,9 +70,17 @@ export default function Posts({ post }: { post: Post }) {
 
               <div>
                 {isUser ? (
-                  <div className="flex gap-2 cursor-pointer"  >
+                  <div className="flex gap-2 "  >
 
-                    <h1 className="text-3xl text-sidebar-foreground">...</h1>
+                    <PostOptions partialPost={{
+                      id_post: post.id_post,
+                      title: post.title,
+                      content: post.content,
+                      images: post.images
+                      
+                    }}>
+                      <h1 className="text-3xl cursor-pointer text-sidebar-foreground">...</h1>
+                      </PostOptions>
                     
                   </div>
                 ) : null}
@@ -106,4 +124,38 @@ export default function Posts({ post }: { post: Post }) {
     </div>
 
   )
+}
+
+
+export function PostOptions({children, partialPost} : {children: React.ReactNode, partialPost?: Partial<Post>})  {
+
+
+  return (
+    <Dialog >
+      <DialogTrigger>
+        {children}
+      </DialogTrigger>
+
+
+      <DialogContent className="bg-sidebar text-sidebar-foreground">
+            <DialogCreatePost partialUpdatePost={{
+              id_post: partialPost?.id_post,
+              title: partialPost?.title,
+              content: partialPost?.content,
+              images: partialPost?.images
+            }} isUpdated={true}>
+              <div className="flex cursor-pointer gap-4"> <Edit/> <h1>Editar Post</h1></div>
+            </DialogCreatePost>    
+
+
+
+
+      </DialogContent>
+    </Dialog>
+    
+
+  )
+
+
+
 }

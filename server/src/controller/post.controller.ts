@@ -23,6 +23,22 @@ const postController = {
     },
 
 
+    putPost: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        try{
+        if (!req.userLogged?.id_user || !req.params.id_post) throw PostErrorHandler.unauthorized("id não fornecido")
+        const updatedPost = await postService.putPost(req.body, req.params.id_post)
+        responseOk(res, "Post editado com sucesso", updatedPost, 200);
+
+        }
+        catch(e){
+            next(e)
+        }
+    },
+
+
+
+
+
     findPosts: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const posts = await postService.findPosts({page: Number(req.query.page ?? 1) , limit: Number(req.query.limit ?? 1)})

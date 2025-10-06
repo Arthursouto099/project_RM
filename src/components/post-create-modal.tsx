@@ -1,4 +1,4 @@
-import PostApi from "@/api/PostApi"
+import PostApi, { type Post } from "@/api/PostApi"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,25 +11,23 @@ import {
 } from "@/components/ui/dialog"
 import { supabase } from "@/storage/supabaseClient"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { toast, ToastContainer } from "react-toastify"
 import { CarouselImgs } from "./carousel"
 import { DialogDescription } from "@radix-ui/react-dialog"
 
 
 
-export function DialogCreatePost() {
-  const [preview, setPreview] = useState<string[]>([])
-  const [prevTitle, setPrevTitle] = useState<string>("")
-  const [prevContent, setPrevContent] = useState<string>("")
+export function DialogCreatePost({ isUpdated = false, children, partialUpdatePost }: { children: React.ReactNode, isUpdated: boolean, partialUpdatePost?: Partial<Post> }) {
+  const [preview, setPreview] = useState<string[]>(partialUpdatePost?.images ?? [] )
+  const [prevTitle, setPrevTitle] = useState<string>(partialUpdatePost?.title ?? "")
+  const [prevContent, setPrevContent] = useState<string>(partialUpdatePost?.content ?? "")
 
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <h1 className="cursor-pointer ">
-          Criar
-        </h1>
+        {children}
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-xl border text-sidebar-foreground border-gray-200 bg-sidebar">
@@ -37,7 +35,7 @@ export function DialogCreatePost() {
           <DialogTitle>
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
               <div className="text-xl font-semibold ">
-                Criar Publicação
+                {isUpdated ? "Editar Post" : "Criar Post"}
               </div>
               <div className="text-lg font-medium ">
                 Visualizar Publicação
@@ -55,6 +53,8 @@ export function DialogCreatePost() {
                 onPreviewsChange={(e) => setPreview(e)}
                 onContentChange={(c) => setPrevContent(c)}
                 onTitleChange={(t) => setPrevTitle(t)}
+                isUpdated={isUpdated}
+                isUpdatePost={partialUpdatePost}
               />
             </div>
           </div>
@@ -65,11 +65,11 @@ export function DialogCreatePost() {
               {prevTitle.length < 1 ? "Pré visualização da postagen" : prevTitle}
             </h1>
 
-            <p className="break-words overflow-y-auto max-h-[20%] text-gray-600 leading-relaxed">
-              {prevContent.length < 1 ? "Pré visualização da postagem":  prevContent}
+            <p className="break-words no-scrollbar  overflow-y-auto max-h-[20%] text-gray-600 leading-relaxed">
+              {prevContent.length < 1 ? "Pré visualização da postagem" : prevContent}
             </p>
 
-            <div className="flex justify-center items-center">
+            <div className="w-[100%]  rounded-lg overflow-hidden border border-neutral-200">
               {preview.length > 0 ? (
                 <CarouselImgs urls={preview} />
               ) : (
@@ -102,10 +102,12 @@ interface CreatePostProps {
   onPreviewsChange?: (previews: string[]) => void
   onTitleChange?: (title: string) => void
   onContentChange?: (content: string) => void
+  isUpdated?: boolean,
+  isUpdatePost?: Partial<Post>
 }
 
 
-export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChange }: CreatePostProps) {
+export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChange, isUpdated = false, isUpdatePost }: CreatePostProps) {
   const [title, setTitle] = useState<string>("")
   const [content, setContent] = useState<string>("")
   const [files, setFiles] = useState<File[] | null>()
@@ -164,7 +166,19 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
 
       setImageUrls(urls)
 
-      const res = await PostApi.create({ title, content, images: urls })
+
+      if (!isUpdated) {
+        const res = await PostApi.create({ title, content, images: urls })
+        if (!res.success) {
+          toast.error(res.message)
+          return
+        }
+        toast.success(res.message)
+        return
+      }
+
+
+      const res = await PostApi.update({ title, content, images: urls, id_post: isUpdatePost?.id_post })
       if (!res.success) {
         toast.error(res.message)
         return
@@ -173,22 +187,23 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
       return
     }
 
-    const res = await PostApi.create({ title, content })
-    if (!res.success) {
-      toast.error(res.message)
+    if (!isUpdated)  {
+      const res = await PostApi.create({ title, content })
+      if (!res.success) {
+        toast.error(res.message)
+        return
+      }
+      toast.success(res.message)
       return
     }
-    toast.success(res.message)
-    return
 
-
-
-
-
-
-
-
-
+      const res = await PostApi.update({ title, content, id_post: isUpdatePost?.id_post })
+      if (!res.success) {
+        toast.error(res.message)
+        return
+      }
+      toast.success(res.message)
+      return
 
 
     // const res = await UserApi.login({ email: email, password: password })
@@ -217,11 +232,11 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
         </div>
         <div className="col-span-2">
           <label htmlFor="" className=""> <h1 className="font-semibold">Conteudo</h1></label>
-          <textarea maxLength={390} onChange={(e) => {
-            
+          <textarea  placeholder="Escreva algo relacionado ao seu post" maxLength={390} onChange={(e) => {
+
             setContent(e.target.value)
             if (onContentChange) onContentChange(e.target.value)
-          }} className="border-b-1 min-h-20  w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300">
+          }} className="border-b-1 min-h-20 no-scrollbar w-full focus:outline-none focus:border-accent-normal focus:ring-0 p-1 border-gray-300">
 
           </textarea>
         </div>
@@ -256,7 +271,7 @@ export function CreatePostForm({ onPreviewsChange, onTitleChange, onContentChang
 
         <div className="flex  col-span-2 gap-2">
 
-          <button className="  p-2 bg-accent-normal w-full rounded-md text-white" type="submit" >Postar</button>
+          <button className="  p-2 bg-accent-normal w-full rounded-md text-white" type="submit" >Concluir</button>
 
         </div>
 

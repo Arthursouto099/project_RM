@@ -1,4 +1,4 @@
-import { PostInputs } from "../schemas/post.schema";
+import { PartialPostInputs, PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
 
@@ -21,6 +21,19 @@ const postService = {
             throw PostErrorHandler.internal("Não foi possivel criar o post", e)
         }
     },
+
+    putPost: async (data: PartialPostInputs, id_post: string) => {
+        try {
+            return await prisma.post.update({data, where: {id_post}})
+        }
+
+        catch(e) {
+            throw PostErrorHandler.internal("Não foi possivel editar o post")
+        }
+
+
+    },
+
 
     findPosts: async ({page = 1, limit = 10}) => {
         const skip = (page - 1)  * limit 

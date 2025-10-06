@@ -115,7 +115,9 @@ export function AppSidebar() {
                   <SidebarMenuButton>
                     <div  className=" cursor-pointer flex justify-center items-center gap-2" >
                       <CirclePlus/>
-                      <DialogCreatePost></DialogCreatePost>
+                      <DialogCreatePost isUpdated={false}>
+                        <h1>Criar</h1>
+                      </DialogCreatePost>
                     </div>
                   </SidebarMenuButton>
                  
