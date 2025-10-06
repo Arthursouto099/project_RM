@@ -33,10 +33,9 @@ const postController = {
         }
     },
 
-    findForUniqueKey: async (req: CustomRequest, res: Response, next: NextFunction) => {
+    findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            if (!req.userLogged?.id_user) throw PostErrorHandler.unauthorized("id não fornecido")
-            const posts = await postService.findPostsByIdUser(req.userLogged.id_user)
+            const posts = await postService.findPostsByIdUser(req.params.id_user, {page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 10)} )
             responseOk(res, "", posts, 200)
 
         }

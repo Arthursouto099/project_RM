@@ -2,6 +2,7 @@ import { isAxiosError } from "axios";
 import instanceV1 from "./api@instance/ap-v1i";
 import { tokenActions } from "@/@tokenSettings/token";
 import type { CommonUserProps } from "@/pages/protectedRoutes/Me";
+import type { Post } from "./PostApi";
 
 
 export interface LoginInput {
@@ -63,6 +64,8 @@ export type CommonUser = {
     bio?: string
     desc?: string
     nickname?: string
+    posts?: Post[]
+    friends?: CommonUser[]
 }
 
 

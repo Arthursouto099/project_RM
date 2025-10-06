@@ -8,6 +8,7 @@ import Friends from "./pages/protectedRoutes/Friends"
 import { Direct } from "./pages/protectedRoutes/Direct"
 import { DirectChat } from "./pages/protectedRoutes/DirectChat"
 import Layout from "./layout"
+import Profiles from "./pages/unprotectedRoutes/Profiles"
 
 
 
@@ -20,7 +21,7 @@ export default function Router() {
    <BrowserRouter>
   <Routes>
     <Route path="/login" element={<Login />} />
-
+    
     <Route element={<ProtectedGroup />}>
       {/* Rotas onde o meu layout serve*/}
       <Route element={<Layout />}>
@@ -30,6 +31,7 @@ export default function Router() {
         <Route path="/friends" element={<Friends />} />
         <Route path="/direct" element={<Direct />} />
         <Route path="/direct/:id_user" element={<DirectChat />} />
+        <Route path="/profiles/:id_user" element={<Profiles/>}/>
       </Route>
     </Route>
   </Routes>

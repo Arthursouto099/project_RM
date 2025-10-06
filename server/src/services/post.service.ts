@@ -42,8 +42,11 @@ const postService = {
         }
     },
 
-    findPostsByIdUser: async (id_user: string) => {
-        return await prisma.post.findMany({ where: { id_user }, include: {user: true, comments: true} }) ?? []
+    findPostsByIdUser: async (id_user: string, {page = 1, limit = 10}) => {
+        const skip = (page - 1) * limit
+
+
+        return await prisma.post.findMany({ where: { id_user }, skip: skip, take: limit, include: {user: true, comments: true}, orderBy: {createdAt: "desc"} }) ?? []
     },
 
     

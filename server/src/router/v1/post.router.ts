@@ -10,7 +10,7 @@ const postRouter = Router()
 
 
 postRouter.post("/", validate(postSchema), authMiddleware ,postController.post)
-postRouter.get("/me",  authMiddleware, postController.findForUniqueKey)
+postRouter.get("/:id_user",  authMiddleware, postController.findForUniqueKey)
 postRouter.get("/", postController.findPosts )
 
 

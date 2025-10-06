@@ -3,6 +3,7 @@ import { Calendar, User2 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import { useEffect, useState } from "react";
 import useAuth, { type Payload } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 export default function Posts({ post }: { post: Post }) {
 
@@ -26,14 +27,16 @@ export default function Posts({ post }: { post: Post }) {
 
 
   return (
-    <div className="w-full">
+    <div className="w-[100%]">
       <div
         className="flex flex-col w-full  p-4 gap-3 border-b border-neutral-200 hover:bg-sidebar-foreground/5 hover:rounded-md transition-colors"
         key={post.id_post}
       >
         {/* Header */}
         <div className="flex gap-3 items-center">
-          <div className="h-10 w-10 rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
+
+          <Link to={`/profiles/${post.user?.id_user}`}>
+          <div  className="h-13 w-13  border-2 cursor-pointer rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
             {post.user?.profile_image ? (
               <img
                 className="h-full w-full object-cover"
@@ -44,6 +47,7 @@ export default function Posts({ post }: { post: Post }) {
               <User2 className="text-neutral-500" />
             )}
           </div>
+          </Link>
           <div className="flex w-full flex-col leading-tight">
             <div className=" flex justify-between">
 
@@ -75,12 +79,15 @@ export default function Posts({ post }: { post: Post }) {
             {post.title}
           </h1>
           <p className="text-sidebar-accent-foreground text-sm break-words">{post.content}</p>
+          <div className="w-full flex">
 
+          
           {post.images && post.images.length > 0 && (
-            <div className="w-full rounded-lg overflow-hidden border border-neutral-200">
+            <div className="w-[100%] h-full rounded-lg overflow-hidden border border-neutral-200">
               <CarouselImgs urls={post.images} />
             </div>
           )}
+          </div>
         </div>
 
         {/* Footer */}

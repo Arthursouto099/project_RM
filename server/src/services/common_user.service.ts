@@ -49,7 +49,7 @@ const commonUserService = {
             }
 
 
-            return await prisma.commonUser.findFirst({ where: where })
+            return await prisma.commonUser.findFirst({ where: where , include: {posts: true, friends: true}})
         }
 
         catch (e) {
@@ -75,7 +75,7 @@ const commonUserService = {
 
 
         const [users, total] = await Promise.all([
-            prisma.commonUser.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}}),
+            prisma.commonUser.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}, include: {posts: true, friends: true}}),
             prisma.commonUser.count({})
         ])
 

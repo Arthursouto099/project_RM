@@ -85,11 +85,10 @@ const PostApi = {
             };
         }
     },
-    findPostsByMe: async (): Promise<DefaultResponseAPI> => {
+    findPostsByMe: async (id_user: string, {page = 1, limit = 10})=> {
         try {
             const token = tokenActions.getToken()
-            const isFindedPosts = await instanceV1.get("/post/me", { headers: { Authorization: `bearer ${token}` } })
-            console.log(isFindedPosts)
+            const isFindedPosts = await instanceV1.get(`/post/${id_user}?page=${page}&limit=${limit}`, { headers: { Authorization: `bearer ${token}` } })
             return {
                 message: isFindedPosts.data.message || "Não foi possível realizar a publicação",
                 success: true,

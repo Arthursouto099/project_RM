@@ -32,14 +32,14 @@ export function DialogCreatePost() {
         </h1>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-xl border border-gray-200 bg-sidebar-foreground">
+      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-xl border text-sidebar-foreground border-gray-200 bg-sidebar">
         <DialogHeader>
           <DialogTitle>
             <div className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
-              <div className="text-xl font-semibold text-gray-800">
+              <div className="text-xl font-semibold ">
                 Criar Publicação
               </div>
-              <div className="text-lg font-medium text-gray-500">
+              <div className="text-lg font-medium ">
                 Visualizar Publicação
               </div>
             </div>
@@ -61,12 +61,12 @@ export function DialogCreatePost() {
 
           {/* Lado da Visualização */}
           <div className="flex flex-col w-3 flex-1 gap-6 p-6  rounded-2xl border border-gray-200">
-            <h1 className="break-words text-3xl font-bold text-gray-800">
-              {prevTitle}
+            <h1 className="break-words text-3xl font-bold ">
+              {prevTitle.length < 1 ? "Pré visualização da postagen" : prevTitle}
             </h1>
 
             <p className="break-words overflow-y-auto max-h-[20%] text-gray-600 leading-relaxed">
-              {prevContent}
+              {prevContent.length < 1 ? "Pré visualização da postagem":  prevContent}
             </p>
 
             <div className="flex justify-center items-center">
