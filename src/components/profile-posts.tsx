@@ -3,7 +3,7 @@ import PostApi from "@/api/PostApi";
 import { useEffect, useRef, useState } from "react";
 import Posts from "./post";
 import ProfileDashboard from "./profile";
-
+import { motion } from "framer-motion"
 
 
 
@@ -75,11 +75,15 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
                     <ProfileDashboard id_user={id_user} />
                 </div>
 
-                <div className="w-full flex flex-col items-center gap-6">
+                < motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, ease: "easeOut" }}
+                    className="w-full flex flex-col items-center gap-6">
                     {posts.map((post) => (
                         <Posts key={post.id_post} post={post} />
                     ))}
-                </div>
+                </motion.div>
             </div>
         </div>
     )

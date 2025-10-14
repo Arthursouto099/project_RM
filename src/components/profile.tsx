@@ -3,83 +3,77 @@ import UserApi from "@/api/UserApi"
 import { MessageSquare, User, Users2Icon } from "lucide-react"
 import { useEffect, useState } from "react"
 
-export default function ProfileDashboard({id_user}: {id_user: string}) {
-    const [user, setUser] = useState<CommonUser | null>(null)
-    
+export default function ProfileDashboard({ id_user }: { id_user: string }) {
+  const [user, setUser] = useState<CommonUser | null>(null)
 
+  useEffect(() => {
+    const getUser = async () => {
+      const res = await UserApi.getUser(id_user)
+      if (res?.data) setUser(res.data)
+    }
 
+    getUser()
+  }, [id_user])
 
-    useEffect(() => {
-
-        const getUser = async () => {
-            const user = (await UserApi.getUser(id_user)).data
-            if(!user) return
-
-            setUser(user)
-        }
-
-
-        getUser()
-
-
-    }, [id_user])
-
-
-   
-
-
-    return (
-        <div className="w-[100%] m-auto  h-full ">
-            <div className="flex gap-5 w-full h-full">
-                <div>
-                    {user?.profile_image  ? (
-                        <img className="rounded-full w-50  border-3"  src={user.profile_image} alt="" />
-                    ): (
-                    <div className="w-50 border-3 h-50 rounded-full  justify-center items-center flex ">
-                        <User className="w-[70%] text-sidebar-foreground h-full "/>
-                    </div>
-                    ) }
-
-
-                </div>
-
-
-                <div className="w-full">
-                    <h1 className="text-sidebar-foreground text-460">{user?.username}</h1>
-
-                    <div className="mt-5 flex gap-9 text-sidebar-foreground">
-                        <div>
-                            <div className="flex items-center gap-3 "><MessageSquare/> {user?.posts?.length}  </div>
-                            <h1>Postagens</h1>
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-3 ">< Users2Icon/> {user?.friends?.length}  </div>
-                            <h1>Amizades</h1>
-                        </div>
-                 
-                    </div>
-
-
-                    <div className="flex flex-col mt-5 text-sidebar-foreground gap-2">
-                        <div>
-                            <h1>{user?.nickname}</h1>
-                        </div>
-
-                        <div>
-                            <p>{user?.bio}</p>
-                        </div>
-                    </div>
-                </div>
-
-
-              
-
+  return (
+    <div className="w-full max-w-5xl m-auto p-5 h-full flex flex-col items-center">
+      {/* CARD PRINCIPAL */}
+      <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 w-full bg-sidebar-accent/20 rounded-2xl shadow-md p-6 transition-all">
+        {/* FOTO DE PERFIL */}
+        <div className="flex-shrink-0 relative">
+          {user?.profile_image ? (
+            <img
+              className="rounded-full w-36 h-36 object-cover border-4 border-sidebar-foreground/30 shadow-sm"
+              src={user.profile_image}
+              alt={user.username}
+            />
+          ) : (
+            <div className="w-36 h-36 rounded-full border-4 border-sidebar-foreground/30 flex justify-center items-center bg-sidebar-accent/40 shadow-sm">
+              <User className="w-16 h-16 text-sidebar-foreground" />
             </div>
-
-
-            <div className="text-sidebar-foreground mt-4">
-                    <p>{user?.desc}</p>
-            </div>
+          )}
         </div>
-    )
+
+        {/* INFORMAÇÕES DO USUÁRIO */}
+        <div className="flex flex-col flex-1 text-sidebar-foreground w-full">
+          <h1 className="text-3xl font-semibold mb-2 break-all">{user?.username}</h1>
+
+          <div className="flex flex-wrap gap-6 mt-2">
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 text-lg">
+                <MessageSquare className="w-5 h-5" /> {user?.posts?.length ?? 0}
+              </div>
+              <span className="text-sm text-sidebar-foreground/70">Postagens</span>
+            </div>
+
+            <div className="flex flex-col items-center">
+              <div className="flex items-center gap-2 text-lg">
+                <Users2Icon className="w-5 h-5" /> {user?.friends?.length ?? 0}
+              </div>
+              <span className="text-sm text-sidebar-foreground/70">Amizades</span>
+            </div>
+          </div>
+
+          {/* NICKNAME E BIO */}
+          <div className="mt-5 space-y-2">
+            {user?.nickname && (
+              <h2 className="text-xl font-medium">{user.nickname}</h2>
+            )}
+            {user?.bio && (
+              <p className="text-sm text-sidebar-foreground/80 leading-relaxed max-w-md">
+                {user.bio}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* DESCRIÇÃO GERAL */}
+      {user?.desc && (
+        <div className="w-full mt-6 bg-sidebar-accent/20 rounded-2xl p-5 shadow-md text-sidebar-foreground">
+          <p className="text-sm sm:text-base leading-relaxed">{user.desc}</p>
+        </div>
+      )}
+    </div>
+  )
 }
