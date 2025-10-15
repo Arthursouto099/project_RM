@@ -3,6 +3,7 @@ import { responseOk } from "../config/responses/app.response";
 import postService from "../services/post.service";
 import PostErrorHandler from "../errors/PostErrorHandler";
 import { CustomRequest } from "../types/CustomRequest";
+import { io } from "../app";
 
 
 
@@ -15,6 +16,9 @@ const postController = {
             const post = await postService.createPost(req.body, req.userLogged.id_user)
             responseOk(res, "Post criado com sucesso", post, 201);
 
+            //envia um evento para todos clientes que estão em postsRoom
+            io.to("postsRoom").emit("postCreated", post)
+            console.log("Emitindo postCreated:", post.id_post)
         }
 
         catch (e) {

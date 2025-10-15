@@ -4,7 +4,8 @@ import useAuth from "../../hooks/useAuth"
 import { useEffect, useRef, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
-
+import { motion } from "framer-motion"
+import { io, type Socket } from "socket.io-client"
 
 
 
@@ -16,6 +17,7 @@ export default function Home() {
     const [page, setPage] = useState<number>(1)
     const [posts, setPosts] = useState<Post[]>([])
     const [hasMore, setHasMore] = useState<boolean>(true)
+    const [socket, setSocket] = useState<Socket | null>(null)
     const { isAuthenticated } = useAuth()
 
 
@@ -23,33 +25,33 @@ export default function Home() {
 
     // cuidando da paginação dos post
     useEffect(() => {
-        
+
         const el = postRef.current
         if (!el) return
 
-        
+
 
         const fecthPosts = async () => {
             const getAllPosts = await PostApi.findPosts(page, 5)
             const newPosts = getAllPosts.data?.posts ?? []
-           
 
 
-            if(!newPosts || newPosts.length === 0 ) {
+
+            if (!newPosts || newPosts.length === 0) {
                 setHasMore(false)
                 return
             }
 
 
             setPosts((prev) => {
-              
-                 const filtered = newPosts.filter(np => !prev.some(p => p.id_post === np.id_post))
-                 return [...prev, ...filtered]
+
+                const filtered = newPosts.filter(np => !prev.some(p => p.id_post === np.id_post))
+                return [...prev, ...filtered]
             })
 
 
-            
-        
+
+
         }
 
         fecthPosts()
@@ -60,17 +62,37 @@ export default function Home() {
 
     useEffect(() => {
         const el = postRef.current
-        if(!el) return
+        if (!el) return
 
         const handleScroll = () => {
-             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50 && hasMore) {
-        setPage(prev => prev + 1)
-      }
+            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50 && hasMore) {
+                setPage(prev => prev + 1)
+            }
         }
 
         el.addEventListener("scroll", handleScroll)
         return () => el.removeEventListener("scroll", handleScroll)
     }, [hasMore])
+
+
+
+    useEffect(() => {
+        const socketInstance = io("http://localhost:3300");
+
+        socketInstance.emit("joinPosts");
+
+        socketInstance.on("postCreated", (post: Post) => {
+            setPosts((prev) => {
+                if (prev.some((p) => p.id_post === post.id_post)) return prev;
+                return [post, ...prev];
+            });
+        });
+
+        return () => {
+            socketInstance.off("postCreated");
+            socketInstance.disconnect();
+        };
+    }, [])
 
 
 
@@ -102,41 +124,44 @@ export default function Home() {
 
     return (
 
-        <section className="w-[90%] m-auto  flex justify-center text-sidebar-foreground items-start">
-            <div className="w-full flex">
+        <section className="w-full flex justify-center items-start text-sidebar-foreground">
+            <div className="w-full md:w-[90%] flex justify-center">
+
+
 
                 {/* Área principal de posts */}
-                <div className="flex-1/2 flex justify-center">
-                    <div className="w-full flex flex-col">
-
-                        {/* Div que será rolável */}
-                        <div ref={postRef} className="flex w-[65%] m-5 flex-col no-scrollbar  overflow-y-auto max-h-[85vh]">
-                            {posts.map((post) => (
-                                <Posts key={post.id_post} post={post} />
-                            ))}
-                        </div>
-
-                        {/* Botão para carregar mais */}
-                        <div className="flex justify-center m-5">
-
-
-                            {hasMore && (
-                                <div>
-                                  <h1 className="text-sidebar-foreground/40">Arraste a tela para mais publicações</h1>
-                                </div>
-                            )}
-                        </div>
-
+                <div className="flex flex-col items-center w-full max-w-4xl">
+                    <div className="w-full ml-8 mt-4 mb-5 md:w-[70%] ">
+                        <h1 className="font-semibold text-2xl">PROJECT<span className="text-accent">RM</span></h1>
                     </div>
-                </div>
 
-                {/* Sidebar */}
-                <div className="flex-1/4 ml-5">
 
+                    {/* Div rolável */}
+                    <motion.div
+                        ref={postRef}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: "easeOut" }}
+                        className="w-full md:w-[70%] flex flex-col overflow-y-auto no-scrollbar max-h-[85vh] m-5"
+                    >
+                        {posts.map((post) => (
+                            <Posts key={post.id_post} post={post} />
+                        ))}
+                    </motion.div>
+
+                    {/* Mensagem de rolagem */}
+                    {hasMore && (
+                        <div className="flex justify-center m-5">
+                            <h1 className="text-sidebar-foreground/40 text-center">
+                                Arraste a tela para mais publicações
+                            </h1>
+                        </div>
+                    )}
                 </div>
 
             </div>
         </section>
+
 
 
 

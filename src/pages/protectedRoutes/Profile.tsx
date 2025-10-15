@@ -9,6 +9,7 @@ import ProfilePosts from "@/components/profile-posts";
 import useAuth from "@/hooks/useAuth";
 import { useEffect } from "react";
 
+
 export default function Profile() {
 
 

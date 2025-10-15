@@ -6,11 +6,7 @@ import useAuth, { type Payload } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { DialogCreatePost } from "./post-create-modal";
