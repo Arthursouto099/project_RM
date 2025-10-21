@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { BrowserRouter, redirect, Route, Routes } from "react-router-dom"
 import Login from "./pages/unprotectedRoutes/AuthPages"
 import ProtectedGroup from "./pages/ProtectedCheck"
 import Home from "./pages/protectedRoutes/Home"
@@ -17,24 +17,25 @@ import Profiles from "./pages/unprotectedRoutes/Profiles"
 
 // as rotas do sistema devem ficar aqui, <Manter Oorganizado>
 export default function Router() {
-    return (
-   <BrowserRouter>
-  <Routes>
-    <Route path="/login" element={<Login />} />
-    
-    <Route element={<ProtectedGroup />}>
-      {/* Rotas onde o meu layout serve*/}
-      <Route element={<Layout />}>
-        <Route path="/home" element={<Home />} />
-        <Route path="/me" element={<Me />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/direct" element={<Direct />} />
-        <Route path="/direct/:id_user" element={<DirectChat />} />
-        <Route path="/profiles/:id_user" element={<Profiles/>}/>
-      </Route>
-    </Route>
-  </Routes>
-</BrowserRouter>
-    )
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+ 
+
+        <Route element={<ProtectedGroup />}>
+          {/* Rotas onde o meu layout serve*/}
+          <Route element={<Layout />}>
+            <Route path="/home" element={<Home />} />
+            <Route path="/me" element={<Me />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/friends" element={<Friends />} />
+            <Route path="/direct" element={<Direct />} />
+            <Route path="/direct/:id_user" element={<DirectChat />} />
+            <Route path="/profiles/:id_user" element={<Profiles />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
 }

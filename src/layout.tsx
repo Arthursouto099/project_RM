@@ -7,8 +7,8 @@ export default function Layout() {
     <SidebarProvider>
       <AppSidebar />
       <main className=" bg-sidebar overflow-y-hidden h-screen w-screen">
-        <div className="block md:hidden">
-          <SidebarTrigger />
+        <div className="block md:hidden bg-sidebar">
+          <SidebarTrigger className="text-sidebar-foreground" />
         </div>
         <Outlet /> {/* Renderiza as rotas filhas com o layout que estabeleci */}
       </main>

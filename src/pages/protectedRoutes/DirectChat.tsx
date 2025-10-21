@@ -127,7 +127,7 @@ export function DirectChat() {
     }
   }, [chat?.id_chat])
 
-  // Listener de scroll: carrega mais quando chega no topo
+
   useEffect(() => {
     const el = messagesRef.current
     if (!el) return

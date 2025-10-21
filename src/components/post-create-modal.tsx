@@ -32,8 +32,8 @@ export function DialogCreatePost({
     <Dialog>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-2xl border border-gray-200 text-sidebar-foreground bg-sidebar p-0 overflow-hidden">
-        <DialogHeader className="border-b border-gray-200 bg-side px-6 py-4">
+      <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-2xl border border-gray-200/20 text-sidebar-foreground bg-sidebar p-0 overflow-hidden">
+        <DialogHeader className="border-b border-gray-200/20 bg-side px-6 py-4">
           <DialogTitle className="flex justify-between items-center">
             <span className="text-xl font-semibold">
               {isUpdated ? "Editar Post" : "Criar Post"}
@@ -60,7 +60,7 @@ export function DialogCreatePost({
           </div>
 
           {/* Lado da Visualização */}
-          <div className="flex flex-col  md:overflow-auto flex-1 gap-4 md:gap-6 p-6 rounded-2xl border border-gray-200 shadow-sm ">
+          <div className="flex flex-col  md:overflow-auto flex-1 gap-4 md:gap-6 p-6 rounded-2xl border border-gray-200/20 shadow-sm ">
             <h1 className="break-words text-2xl md:text-3xl font-bold">
               {prevTitle.length < 1 ? "Pré-visualização da postagem" : prevTitle}
             </h1>
@@ -71,11 +71,11 @@ export function DialogCreatePost({
                 : prevContent}
             </p>
 
-            <div className="w-full rounded-lg overflow-hidden border border-gray-300">
+            <div className="w-full rounded-lg overflow-hidden border border-gray-300/20">
               {preview.length > 0 ? (
                 <CarouselImgs urls={preview} />
               ) : (
-                <div className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300  rounded-lg">
+                <div className="w-full h-40 flex items-center justify-center border-2 border-dashed border-gray-300/20  rounded-lg">
                   Sem imagens
                 </div>
               )}
@@ -83,7 +83,7 @@ export function DialogCreatePost({
           </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t border-gray-200 ">
+        <DialogFooter className="px-6 py-4 border-t border-gray-200/20 ">
           <DialogClose asChild>
             <Button
               type="button"
@@ -211,7 +211,7 @@ export function CreatePostForm({
               if (onTitleChange) onTitleChange(e.target.value)
             }}
             placeholder="Digite o título da publicação"
-            className="w-full mt-1 rounded-lg border border-gray-300 p-2 focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
+            className="w-full mt-1 rounded-lg border border-gray-300/20 p-2 focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
           />
         </div>
 
@@ -224,7 +224,7 @@ export function CreatePostForm({
               setContent(e.target.value)
               if (onContentChange) onContentChange(e.target.value)
             }}
-            className="w-full mt-1 min-h-24 rounded-lg border border-gray-300 p-2 resize-none focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
+            className="w-full mt-1 min-h-24 rounded-lg border border-gray-300/20 p-2 resize-none focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
           ></textarea>
         </div>
 
@@ -250,7 +250,7 @@ export function CreatePostForm({
           {previews.map((src, idx) => (
             <div
               key={idx}
-              className="relative w-full aspect-square overflow-hidden rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all"
+              className="relative w-full aspect-square overflow-hidden rounded-lg border border-gray-200/20 shadow-sm hover:shadow-md transition-all"
             >
               <img
                 src={src}

@@ -33,16 +33,16 @@ export default function Posts({ post }: { post: Post }) {
 
 
   return (
-    <div className="w-[100%]">
+    <div className="w-full  md:w-[90%] -hidden md:p-0">
       <div
-        className="flex flex-col w-full  p-4 gap-3 border-b border-neutral-200 hover:bg-sidebar-foreground/5 hover:rounded-md transition-colors"
+        className="flex flex-col w-full md:w-full   p-6 gap-5 border-b border-neutral-200/20 hover:bg-sidebar-foreground/5 hover:rounded-md transition-colors"
         key={post.id_post}
       >
         {/* Header */}
         <div className="flex gap-3 items-center">
 
           <Link to={`/profiles/${post.user?.id_user}`}>
-          <div  className="h-13 w-13  border-2 cursor-pointer rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
+          <div  className="h-13 w-13  border-2 cursor-pointer rounded-full overflow-x-hidden overflow-hidden flex items-center justify-center bg-neutral-200">
             {post.user?.profile_image ? (
               <img
                 className="h-full w-full object-cover"
@@ -58,7 +58,7 @@ export default function Posts({ post }: { post: Post }) {
             <div className=" flex justify-between">
 
               <div className="flex items-center gap-2">
-                <h1 className="font-semibold text-sidebar-foreground">
+                <h1 className="font-semibold  text-sm max-w-30 md:max-w-full md:text-shadow-md text-sidebar-foreground">
                   {post.user?.username}
                 </h1>
                 <h2 className="text-neutral-500">{post.user?.nickname}</h2>

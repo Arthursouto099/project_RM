@@ -17,7 +17,6 @@ export default function Home() {
     const [page, setPage] = useState<number>(1)
     const [posts, setPosts] = useState<Post[]>([])
     const [hasMore, setHasMore] = useState<boolean>(true)
-    const [socket, setSocket] = useState<Socket | null>(null)
     const { isAuthenticated } = useAuth()
 
 
@@ -81,6 +80,8 @@ export default function Home() {
 
         socketInstance.emit("joinPosts");
 
+
+        // toda vez que um emit de post é lançado
         socketInstance.on("postCreated", (post: Post) => {
             setPosts((prev) => {
                 if (prev.some((p) => p.id_post === post.id_post)) return prev;
@@ -88,8 +89,19 @@ export default function Home() {
             });
         });
 
+        // toda vez que um emit de update é lançado
+        socketInstance.on("postUpdated", (updatedPost: Post) => {
+            setPosts((prev) => {
+                return prev.map((post) =>
+                    post.id_post === updatedPost.id_post ? updatedPost : post
+                );
+            });
+        });
+
+
         return () => {
             socketInstance.off("postCreated");
+            socketInstance.off("postUpdated");
             socketInstance.disconnect();
         };
     }, [])
@@ -124,15 +136,18 @@ export default function Home() {
 
     return (
 
-        <section className="w-full flex justify-center items-start text-sidebar-foreground">
-            <div className="w-full md:w-[90%] flex justify-center">
+        <section className="w-screen overflow-x-hidden  md:w-full  flex justify-center items-start text-sidebar-foreground">
+            <div className="w-[100%]  md:w-[90%] flex justify-center">
 
 
 
                 {/* Área principal de posts */}
                 <div className="flex flex-col items-center w-full max-w-4xl">
-                    <div className="w-full ml-8 mt-4 mb-5 md:w-[70%] ">
-                        <h1 className="font-semibold text-2xl">PROJECT<span className="text-accent">RM</span></h1>
+                    <div className="w-full mt-4 mb-5 md:w-[70%] ">
+                        <div className="ml-8 md:ml-0">
+                            <h1 className="font-semibold    text-2xl">PROJECT<span className="text-accent">RM</span></h1>
+                        </div>
+                        <div className="w-screen md:w-[87.5%] h-[1.1px]  bg-gray-200/20 mt-5 "></div>
                     </div>
 
 
@@ -142,7 +157,7 @@ export default function Home() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="w-full md:w-[70%] flex flex-col overflow-y-auto no-scrollbar max-h-[85vh] m-5"
+                        className="w-full md:w-[70%] pb-40 md:pb-0  flex flex-col overflow-y-auto no-scrollbar max-h-[100vh] md:max-h-[80vh] m-5"
                     >
                         {posts.map((post) => (
                             <Posts key={post.id_post} post={post} />

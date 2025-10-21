@@ -33,6 +33,10 @@ const postController = {
         const updatedPost = await postService.putPost(req.body, req.params.id_post)
         responseOk(res, "Post editado com sucesso", updatedPost, 200);
 
+         io.to("postsRoom").emit("postUpdated", updatedPost)
+            console.log("Emitindo postUpdated", updatedPost.id_post)
+        
+
         }
         catch(e){
             next(e)
