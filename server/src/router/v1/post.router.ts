@@ -14,6 +14,7 @@ postRouter.post("/", validate(postSchema), authMiddleware ,postController.post)
 postRouter.get("/:id_user",  authMiddleware, postController.findForUniqueKey)
 postRouter.get("/", postController.findPosts )
 postRouter.put("/:id_post",authMiddleware, validate(postSchemaPartial) ,   postController.putPost)
+postRouter.delete("/:id_post", authMiddleware, postController.deletePostByUniqueKey )
 
 
 // postRouter.post("/profile" , upload.single("image"), postController.postImage )

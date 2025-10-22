@@ -8,11 +8,25 @@ export type Post = {
     title: string
     content: string
     region?: string
-    images?: string[]   // URLs ou ObjectURL para preview
-    videos?: string[]   // URLs ou ObjectURL para preview
+    images?: string[]  
+    videos?: string[]   
     createdAt?: Date
     updatedAt?: Date
     user?: CommonUser
+}
+
+export type Comment = {
+    id_comment: string;
+    id_post: string;
+    post: Post;          
+    id_user: string;
+    user: CommonUser;    
+    content: string;
+    updatedAt: Date;
+    createdAt: Date;
+    parentCommentId?: string | null;
+    parentComment?: Comment | null;  
+    replies: Comment[];
 }
 
 
@@ -86,6 +100,35 @@ const PostApi = {
         }
     },
 
+    delete: async ({ id_post }: { id_post: string }): Promise<DefaultResponseAPI> => {
+        try {
+            const token = tokenActions.getToken()
+            const postDeleted = await instanceV1.delete("/post/" + id_post, { headers: { Authorization: `bearer ${token}` } })
+            return {
+                message: postDeleted.data.message || "Não foi possível realizar a publicação",
+                success: true,
+                data: postDeleted.data.data as Post
+            }
+        }
+        catch (e) {
+
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+
     update: async (data: Partial<Post>): Promise<DefaultResponseAPI> => {
         try {
             const token = tokenActions.getToken()
@@ -114,7 +157,7 @@ const PostApi = {
             };
         }
     },
-    findPostsByMe: async (id_user: string, {page = 1, limit = 10})=> {
+    findPostsByMe: async (id_user: string, { page = 1, limit = 10 }) => {
         try {
             const token = tokenActions.getToken()
             const isFindedPosts = await instanceV1.get(`/post/${id_user}?page=${page}&limit=${limit}`, { headers: { Authorization: `bearer ${token}` } })

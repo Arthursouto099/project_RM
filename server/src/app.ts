@@ -43,6 +43,7 @@ io.on("connection", (socket) => {
     socket.join("postsRoom")
     console.log(`Socket ${socket.id} entrou na sala de posts`)
   })
+  
 
   // recebo o chatID das rotas de chat
   socket.on("joinChat", (chatId) => {

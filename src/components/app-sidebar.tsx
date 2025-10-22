@@ -1,5 +1,5 @@
-import {  Home, MessageSquare, Settings, Users2 } from "lucide-react"
-import { UserIcon, User2,CirclePlus } from "lucide-react"
+import { Home, MessageSquare, Settings, Users2 } from "lucide-react"
+import { UserIcon, User2, CirclePlus } from "lucide-react"
 
 import {
   Sidebar,
@@ -16,6 +16,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import UserApi, { type CommonUser } from "@/api/UserApi"
 import { useEffect, useState } from "react"
 import { DialogCreatePost } from "./post-create-modal"
+import { ModeToggle } from "./ToggleThemeButton"
 
 // Menu items.
 const items = [
@@ -27,7 +28,7 @@ const items = [
   {
     title: "Profile",
     url: "/profile",
-    icon: User2 ,
+    icon: User2,
   },
   {
     title: "Pedidos",
@@ -43,7 +44,7 @@ const items = [
     title: "Settings",
     url: "#",
     icon: Settings,
-   
+
   },
 ]
 
@@ -111,22 +112,28 @@ export function AppSidebar() {
               <SidebarMenu>
                 <SidebarGroupLabel>Ações</SidebarGroupLabel>
                 <SidebarMenuItem>
-              
+
                   <SidebarMenuButton>
-                    <div  className=" cursor-pointer flex justify-center items-center gap-2" >
-                      <CirclePlus/>
-                      <DialogCreatePost isUpdated={false}>
+                    <div className=" cursor-pointer flex justify-center items-center gap-2" >
+                      <CirclePlus />
+                      <DialogCreatePost onClose={() => { }} isUpdated={false}>
                         <h1>Criar</h1>
                       </DialogCreatePost>
                     </div>
                   </SidebarMenuButton>
-                 
-                
+
+
                 </SidebarMenuItem>
               </SidebarMenu>
+
+
             </SidebarMenu>
+
           </SidebarGroupContent>
         </SidebarGroup>
+        <div className="absolute  left-5 bottom-9">
+          <ModeToggle/>
+        </div>
       </SidebarContent>
     </Sidebar>
   )

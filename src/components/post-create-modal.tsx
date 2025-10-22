@@ -19,10 +19,12 @@ export function DialogCreatePost({
   isUpdated = false,
   children,
   partialUpdatePost,
+  onClose
 }: {
   children: React.ReactNode
   isUpdated: boolean
   partialUpdatePost?: Partial<Post>
+  onClose: () => void
 }) {
   const [preview, setPreview] = useState<string[]>(partialUpdatePost?.images ?? [])
   const [prevTitle, setPrevTitle] = useState<string>(partialUpdatePost?.title ?? "")
@@ -55,6 +57,7 @@ export function DialogCreatePost({
                 onTitleChange={(t) => setPrevTitle(t)}
                 isUpdated={isUpdated}
                 isUpdatePost={partialUpdatePost}
+                onClose={() => onClose()}
               />
             </div>
           </div>
@@ -103,6 +106,7 @@ interface CreatePostProps {
   onPreviewsChange?: (previews: string[]) => void
   onTitleChange?: (title: string) => void
   onContentChange?: (content: string) => void
+  onClose?: () => void
   isUpdated?: boolean
   isUpdatePost?: Partial<Post>
 }
@@ -113,6 +117,7 @@ export function CreatePostForm({
   onContentChange,
   isUpdated = false,
   isUpdatePost,
+  onClose
 }: CreatePostProps) {
   const [title, setTitle] = useState<string>("")
   const [content, setContent] = useState<string>("")
@@ -192,6 +197,7 @@ export function CreatePostForm({
     })
     if (!res.success) return toast.error(res.message)
     toast.success(res.message)
+    if(onClose) onClose()
     return
   }
 

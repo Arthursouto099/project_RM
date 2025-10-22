@@ -45,6 +45,7 @@ model CommonUser {
   FriendRequestSent FriendRequest[] @relation("RequestsSent")
   Message Message[]
   ChatUser ChatUser[]
+  Comments Comment[]
 }
 
 
@@ -122,19 +123,25 @@ model Post {
   videos    String[]
   images    String[]
   region    String     @default("BR")
-  comments  Coment[]
+  comments  Comment[]
   updatedAt DateTime   @default(now()) @updatedAt
   createdAt DateTime   @default(now())
 }
 
-model Coment {
-  id_comment String   @id @default(cuid())
-  id_post    String
-  post       Post     @relation(fields: [id_post], references: [id_post])
-  content    String
-  updatedAt  DateTime @default(now()) @updatedAt
-  createdAt  DateTime @default(now())
+model Comment {
+  id_comment      String    @id @default(cuid())
+  id_post         String
+  post            Post      @relation(fields: [id_post], references: [id_post])
+  id_user         String    // novo campo para usuário
+  user            CommonUser      @relation(fields: [id_user], references: [id_user])
+  content         String
+  updatedAt       DateTime  @default(now()) @updatedAt
+  createdAt       DateTime  @default(now())
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id_comment])
+  parentCommentId String?
+  replies         Comment[] @relation("CommentReplies")
 }
+
 
 //
 

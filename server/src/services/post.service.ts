@@ -1,6 +1,8 @@
 import { PartialPostInputs, PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
+import { string } from "zod";
+import tr from "zod/v4/locales/tr.cjs";
 
 
 
@@ -12,10 +14,10 @@ const postService = {
 
     createPost: async (data: PostInputs, id_user: string) => {
         try {
-            if(!id_user) throw PostErrorHandler.unauthorized("Id não fornecido")
+            if (!id_user) throw PostErrorHandler.unauthorized("Id não fornecido")
             data.id_user = id_user
-            
-            return await prisma.post.create({data})
+
+            return await prisma.post.create({ data })
         }
         catch (e) {
             throw PostErrorHandler.internal("Não foi possivel criar o post", e)
@@ -24,10 +26,10 @@ const postService = {
 
     putPost: async (data: PartialPostInputs, id_post: string) => {
         try {
-            return await prisma.post.update({data, where: {id_post}})
+            return await prisma.post.update({ data, where: { id_post } })
         }
 
-        catch(e) {
+        catch (e) {
             throw PostErrorHandler.internal("Não foi possivel editar o post")
         }
 
@@ -35,14 +37,34 @@ const postService = {
     },
 
 
-    findPosts: async ({page = 1, limit = 10}) => {
-        const skip = (page - 1)  * limit 
-        
+    findPostById: async ({ id_post }: { id_post: string }) => {
+        try {
+            return await prisma.post.findUnique({ where: { id_post }, include: { comments: {  include: { replies: true , user: true}   },  user: {
+                        select: {
+                            id_user: true,
+                            username: true,
+                            email: true,
+                            profile_image: true,
+                         
+                        }
+                    }
+                }
+            });
+
+        }
+        catch (e) {
+            throw e
+        }
+    },
+
+    findPosts: async ({ page = 1, limit = 10 }) => {
+        const skip = (page - 1) * limit
+
 
 
         // executando duas querys
         const [posts, total] = await Promise.all([
-            prisma.post.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}, include: {user: true}}),
+            prisma.post.findMany({ skip: skip, take: limit, orderBy: { createdAt: "desc" }, include: { user: true, comments: {include: { replies: true , user: true}} } }),
             prisma.post.count()
         ])
 
@@ -55,14 +77,16 @@ const postService = {
         }
     },
 
-    findPostsByIdUser: async (id_user: string, {page = 1, limit = 10}) => {
+    findPostsByIdUser: async (id_user: string, { page = 1, limit = 10 }) => {
         const skip = (page - 1) * limit
 
 
-        return await prisma.post.findMany({ where: { id_user }, skip: skip, take: limit, include: {user: true, comments: true}, orderBy: {createdAt: "desc"} }) ?? []
+        return await prisma.post.findMany({ where: { id_user }, skip: skip, take: limit, include: { user: true, comments: true }, orderBy: { createdAt: "desc" } }) ?? []
     },
 
-    
+    deletePostById: async (id_post: string) => {
+        return await prisma.post.delete({ where: { id_post } })
+    }
 
 
 

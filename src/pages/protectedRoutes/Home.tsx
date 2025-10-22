@@ -98,10 +98,18 @@ export default function Home() {
             });
         });
 
+        // toda vez que um post é deletado
+        socketInstance.on("postDeleted", (postDeleted: Post) => {
+            setPosts((prev) => 
+            prev.filter(post => post.id_post !== postDeleted.id_post)
+            );
+        });
+
 
         return () => {
             socketInstance.off("postCreated");
             socketInstance.off("postUpdated");
+            socketInstance.off("postDeleted")
             socketInstance.disconnect();
         };
     }, [])

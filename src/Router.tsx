@@ -1,4 +1,4 @@
-import { BrowserRouter, redirect, Route, Routes } from "react-router-dom"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom"
 import Login from "./pages/unprotectedRoutes/AuthPages"
 import ProtectedGroup from "./pages/ProtectedCheck"
 import Home from "./pages/protectedRoutes/Home"
@@ -21,7 +21,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
- 
+  <Route path="/" element={<Navigate to="/login" replace />} />
 
         <Route element={<ProtectedGroup />}>
           {/* Rotas onde o meu layout serve*/}

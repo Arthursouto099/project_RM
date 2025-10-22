@@ -1,5 +1,5 @@
 import type { Post } from "@/api/PostApi";
-import { Calendar, Edit, User2 } from "lucide-react";
+import { Calendar, Delete, Edit, User2 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import React, { useEffect, useState } from "react";
 import useAuth, { type Payload } from "@/hooks/useAuth";
@@ -10,6 +10,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { DialogCreatePost } from "./post-create-modal";
+import DialogDeletePost from "./post-delete-model";
+import { toast, ToastContainer } from "react-toastify";
 
 export default function Posts({ post }: { post: Post }) {
 
@@ -123,35 +125,48 @@ export default function Posts({ post }: { post: Post }) {
 }
 
 
-export function PostOptions({children, partialPost} : {children: React.ReactNode, partialPost?: Partial<Post>})  {
+export function PostOptions({ children, partialPost }: { children: React.ReactNode; partialPost?: Partial<Post> }) {
+  const [open, setOpen] = useState(false);
 
+  const handleClose = () => setOpen(false);
 
   return (
-    <Dialog >
-      <DialogTrigger>
+    <Dialog open={open} onOpenChange={setOpen}>
+
+
+      <DialogTrigger asChild>
         {children}
       </DialogTrigger>
 
+      <DialogContent className="bg-sidebar text-sidebar-foreground flex-row gap-2">
+        <DialogCreatePost
+          onClose={handleClose}
+          partialUpdatePost={{
+            id_post: partialPost?.id_post,
+            title: partialPost?.title,
+            content: partialPost?.content,
+            images: partialPost?.images
+          }}
+          isUpdated={true}
+        >
+          <div className="flex border-b-1 p-2 border-gray-200/20 cursor-pointer gap-4">
+            <Edit />
+            <h1>Editar Post</h1>
+          </div>
+        </DialogCreatePost>
 
-      <DialogContent className="bg-sidebar text-sidebar-foreground">
-            <DialogCreatePost partialUpdatePost={{
-              id_post: partialPost?.id_post,
-              title: partialPost?.title,
-              content: partialPost?.content,
-              images: partialPost?.images
-            }} isUpdated={true}>
-              <div className="flex cursor-pointer gap-4"> <Edit/> <h1>Editar Post</h1></div>
-            </DialogCreatePost>    
+        <DialogDeletePost onDeleted={(e) => {
+          return toast.success(e)
+        }} onClose={handleClose}   id_post={partialPost?.id_post ?? ""}>
+          <div className="flex  border-b-1 p-2 border-gray-200/20 cursor-pointer gap-4">
+            <Delete />
+            <h1>Deletar Post</h1>
+          </div>
+        </DialogDeletePost>
 
-
-
-
+        
+        
       </DialogContent>
     </Dialog>
-    
-
   )
-
-
-
 }

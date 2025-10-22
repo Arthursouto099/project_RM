@@ -13,12 +13,15 @@ const postController = {
     post: async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
             if (!req.userLogged?.id_user) throw PostErrorHandler.unauthorized("id não fornecido")
-            const post = await postService.createPost(req.body, req.userLogged.id_user)
-            responseOk(res, "Post criado com sucesso", post, 201);
+
+
+            const postCreated = await postService.createPost(req.body, req.userLogged.id_user)   
+            const postFinded = await postService.findPostById({id_post: postCreated.id_post})            
+            responseOk(res, "Post criado com sucesso", postCreated, 201);
 
             //envia um evento para todos clientes que estão em postsRoom
-            io.to("postsRoom").emit("postCreated", post)
-            console.log("Emitindo postCreated:", post.id_post)
+            io.to("postsRoom").emit("postCreated", postFinded)
+            console.log("Emitindo postCreated:", postCreated.id_post)
         }
 
         catch (e) {
@@ -34,7 +37,7 @@ const postController = {
         responseOk(res, "Post editado com sucesso", updatedPost, 200);
 
          io.to("postsRoom").emit("postUpdated", updatedPost)
-            console.log("Emitindo postUpdated", updatedPost.id_post)
+        console.log("Emitindo postUpdated", updatedPost.id_post)
         
 
         }
@@ -68,6 +71,22 @@ const postController = {
             next(e)
         }
     },
+
+
+    deletePostByUniqueKey: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+           const postDeleted = await postService.deletePostById(req.params.id_post)
+            responseOk(res, "Post deletado com sucesso", null)
+
+
+            io.to("postsRoom").emit("postDeleted", postDeleted )
+            console.log("Post deletado", postDeleted.id_post)
+        }   
+
+        catch(e) {
+            next(e)
+        }
+    }
 
   
 }
