@@ -13,20 +13,21 @@ export type Post = {
     createdAt?: Date
     updatedAt?: Date
     user?: CommonUser
+    comments?: Comment[]
 }
 
 export type Comment = {
-    id_comment: string;
+    id_comment?: string;
     id_post: string;
-    post: Post;          
-    id_user: string;
-    user: CommonUser;    
+    post?: Post;          
+    id_user?: string;
+    user?: CommonUser;    
     content: string;
-    updatedAt: Date;
-    createdAt: Date;
+    updatedAt?: Date;
+    createdAt?: Date;
     parentCommentId?: string | null;
     parentComment?: Comment | null;  
-    replies: Comment[];
+    replies?: Comment[];
 }
 
 
@@ -68,6 +69,65 @@ const PostApi = {
         }
 
 
+    },
+
+    findComments: async (page: number, limit = 10, id_post: string) => {
+
+        try {
+            const allComments = await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)
+            return {
+                message: allComments.data.message,
+                success: true,
+                data: allComments.data.data as Posts
+            }
+        }
+        catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+
+
+    },
+
+     createComment: async (data: Comment) => {
+        try {
+            const token = tokenActions.getToken()
+            const comment = await instanceV1.post(`/post/comment/${data.id_post}`, data, { headers: { Authorization: `bearer ${token}` } })
+            return {
+                message: comment.data.message || "Não foi possível realizar a publicação",
+                success: true,
+                data: comment.data.data as Post
+            }
+        }
+        catch (e) {
+
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
     },
 
 

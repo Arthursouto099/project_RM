@@ -112,13 +112,18 @@ const commonUserController = {
     },
 
 
+    
+
+
     findForUniqueKey: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { id_user, email, cpf } = req.query;
 
 
             if (!id_user && !email && !cpf) {
-                responseOk(res, "Busca realizada com sucesso", (await commonUserService.findUsers({})).users[0], 200)
+                responseOk(res, "Busca realizada com sucesso", (await commonUserService.findUsers({ page: Number(req.query.page ?? 1), 
+                limit: Number(req.query.limit ?? 10)},
+                {region: String(req.query.region) ?? "RS"} )).users[0], 200)
             }
 
             const cm = await commonUserService.findUser({
@@ -174,7 +179,7 @@ const commonUserController = {
 
     get: async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
-            const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 10) })
+            const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 10)}, {region: String(req.query.region) ?? "RS"})
             responseOk(res, "consulta feita com sucesso", { users: users.users.filter((u) => u.id_user !== req.userLogged?.id_user ), page: users.page, pages: users.pages, total: users.total }, 200)
         }
         catch (e) {

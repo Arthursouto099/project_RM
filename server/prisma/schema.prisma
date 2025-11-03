@@ -25,7 +25,7 @@ model CommonUser {
   contact           String?
   gender            String?
   emergency_contact String?
-  region            String       @default("BR")
+  region            String       @default("RS")
   address           Address?     @relation(fields: [fk_address], references: [id_address])
   posts             Post[]
   updatedAt         DateTime     @default(now()) @updatedAt()
@@ -122,6 +122,7 @@ model Post {
   content   String
   videos    String[]
   images    String[]
+  like    Int @default(0)
   region    String     @default("BR")
   comments  Comment[]
   updatedAt DateTime   @default(now()) @updatedAt

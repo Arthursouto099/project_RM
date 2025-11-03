@@ -5,7 +5,9 @@ import { useEffect, useRef, useState } from "react"
 import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
 import { motion } from "framer-motion"
-import { io, type Socket } from "socket.io-client"
+import { io } from "socket.io-client"
+import SuggestionFriends from "@/components/suggestion-friends"
+
 
 
 
@@ -100,8 +102,8 @@ export default function Home() {
 
         // toda vez que um post é deletado
         socketInstance.on("postDeleted", (postDeleted: Post) => {
-            setPosts((prev) => 
-            prev.filter(post => post.id_post !== postDeleted.id_post)
+            setPosts((prev) =>
+                prev.filter(post => post.id_post !== postDeleted.id_post)
             );
         });
 
@@ -144,19 +146,15 @@ export default function Home() {
 
     return (
 
-        <section className="w-screen overflow-x-hidden  md:w-full  flex justify-center items-start text-sidebar-foreground">
-            <div className="w-[100%]  md:w-[90%] flex justify-center">
+        <section className="w-screen overflow-x-hidden  md:w-full  flex  items-start text-sidebar-foreground">
+            <div className="w-[100%] p-8 md:w-[100%] md:flex ">
 
 
 
-                {/* Área principal de posts */}
-                <div className="flex flex-col items-center w-full max-w-4xl">
-                    <div className="w-full mt-4 mb-5 md:w-[70%] ">
-                        <div className="ml-8 md:ml-0">
-                            <h1 className="font-semibold    text-2xl">PROJECT<span className="text-accent">RM</span></h1>
-                        </div>
-                        <div className="w-screen md:w-[87.5%] h-[1.1px]  bg-gray-200/20 mt-5 "></div>
-                    </div>
+
+                <div className="flex flex-col items-center w-full ">
+
+
 
 
                     {/* Div rolável */}
@@ -165,7 +163,7 @@ export default function Home() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="w-full md:w-[70%] pb-40 md:pb-0  flex flex-col overflow-y-auto no-scrollbar max-h-[100vh] md:max-h-[80vh] m-5"
+                        className="w-full md:w-[100%] pb-40 md:pb-0  gap-5 flex flex-col overflow-y-auto no-scrollbar max-h-[100vh] md:max-h-[80vh] m-5"
                     >
                         {posts.map((post) => (
                             <Posts key={post.id_post} post={post} />
@@ -182,7 +180,14 @@ export default function Home() {
                     )}
                 </div>
 
+
+                <div className="flex-1/4">
+                    <SuggestionFriends/>
+                </div>
+
             </div>
+
+
         </section>
 
 

@@ -4,6 +4,7 @@ import { validate } from "../../middlewares/zodMiddleware";
 import authMiddleware from "../../middlewares/authMiddleware";
 import { postSchema, postSchemaPartial } from "../../schemas/post.schema";
 import { partialUserInputs } from "../../schemas/common_user.schema";
+import commentController from "../../controller/comment.controller";
 
 
 
@@ -15,6 +16,8 @@ postRouter.get("/:id_user",  authMiddleware, postController.findForUniqueKey)
 postRouter.get("/", postController.findPosts )
 postRouter.put("/:id_post",authMiddleware, validate(postSchemaPartial) ,   postController.putPost)
 postRouter.delete("/:id_post", authMiddleware, postController.deletePostByUniqueKey )
+postRouter.post("/comment/:id_post", authMiddleware, commentController.createComment)
+postRouter.get("/comment/:id_post", commentController.findComments)
 
 
 // postRouter.post("/profile" , upload.single("image"), postController.postImage )

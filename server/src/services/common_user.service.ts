@@ -70,7 +70,7 @@ const commonUserService = {
     },
 
 
-    findUsers: async ({page = 1, limit = 10}) => {
+    findUsers: async ({page = 1, limit = 10}, {region}: {region: string}) => {
         const skip = (page - 1) * limit
 
 
