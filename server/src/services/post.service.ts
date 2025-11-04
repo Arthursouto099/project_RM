@@ -1,8 +1,7 @@
 import { PartialPostInputs, PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
-import { string } from "zod";
-import tr from "zod/v4/locales/tr.cjs";
+
 
 
 
@@ -29,7 +28,8 @@ const postService = {
             return await prisma.post.update({ data, where: { id_post } })
         }
 
-        catch (e) {
+        catch (e: unknown) {
+            console.log(e)
             throw PostErrorHandler.internal("Não foi possivel editar o post")
         }
 
@@ -38,44 +38,50 @@ const postService = {
 
 
     findPostById: async ({ id_post }: { id_post: string }) => {
-        try {
-            return await prisma.post.findUnique({ where: { id_post }, include: { comments: {  include: { replies: true , user: true}   },  user: {
-                        select: {
-                            id_user: true,
-                            username: true,
-                            email: true,
-                            profile_image: true,
-                         
-                        }
+
+        return await prisma.post.findUnique({
+            where: { id_post }, include: {
+                comments: { include: { replies: true, user: true } }, user: {
+                    select: {
+                        id_user: true,
+                        username: true,
+                        email: true,
+                        profile_image: true,
+
                     }
                 }
-            });
+            }
+        });
 
-        }
-        catch (e) {
-            throw e
-        }
-    },
+    }
 
-    findPosts: async ({ page = 1, limit = 10 }) => {
-        const skip = (page - 1) * limit
+    ,
 
+    findPosts: async ({ page = 1, limit = 10 }: { page: number, limit: number }) => {
+        const skip = (page - 1) * limit;
 
-
-        // executando duas querys
+        // Executando duas queries
         const [posts, total] = await Promise.all([
-            prisma.post.findMany({ skip: skip, take: limit, orderBy: { createdAt: "desc" }, include: { user: true, comments: {include: { replies: true , user: true}} } }),
-            prisma.post.count()
-        ])
-
+            prisma.post.findMany({
+                skip,
+                take: limit,
+                orderBy: { createdAt: "desc" },
+                include: {
+                    user: true,
+                    comments: { include: { replies: true, user: true } },
+                },
+            }),
+            prisma.post.count(),
+        ]);
 
         return {
             posts,
             total,
             pages: Math.ceil(total / limit),
-            page
-        }
+            page,
+        };
     },
+
 
     findPostsByIdUser: async (id_user: string, { page = 1, limit = 10 }) => {
         const skip = (page - 1) * limit
@@ -92,5 +98,4 @@ const postService = {
 
 
 }
-
 export default postService

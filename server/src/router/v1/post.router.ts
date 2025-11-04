@@ -3,7 +3,6 @@ import postController from "../../controller/post.controller";
 import { validate } from "../../middlewares/zodMiddleware";
 import authMiddleware from "../../middlewares/authMiddleware";
 import { postSchema, postSchemaPartial } from "../../schemas/post.schema";
-import { partialUserInputs } from "../../schemas/common_user.schema";
 import commentController from "../../controller/comment.controller";
 
 

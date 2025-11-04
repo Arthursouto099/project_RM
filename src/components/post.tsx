@@ -1,8 +1,15 @@
 import type { Post } from "@/api/PostApi";
-import { Calendar, Delete, Edit, Heart, MessageCircleIcon, User2 } from "lucide-react";
+import {
+  Calendar,
+  Delete,
+  Edit,
+  Heart,
+  MessageCircleIcon,
+  User2,
+} from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import React, { useEffect, useState, type ReactNode } from "react";
-import useAuth, { type Payload } from "@/hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
   Dialog,
@@ -12,129 +19,129 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import { DialogCreatePost } from "./post-create-modal";
 import DialogDeletePost from "./post-delete-model";
 import { toast } from "react-toastify";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import PostApi from "@/api/PostApi";
+import Comments from "./comment";
 
 export default function Posts({ post }: { post: Post }) {
+  const [isUser, setUser] = useState(false);
+  const { payload } = useAuth();
+  const [like, setLike] = useState(false);
 
-  const [isUser, setUser] = useState<boolean>(false)
-  const { payload } = useAuth()
-  const [like, setLike] = useState<boolean>(false)
+
+
 
   useEffect(() => {
-    const checkUser = async (payload: Payload) => {
-
-      if (!payload) return
-      if (payload.id_user === post.user?.id_user) {
-        setUser(true)
-      }
+    if (payload?.id_user === post.user?.id_user) {
+      setUser(true);
     }
-
-    checkUser(payload as Payload)
-  }, [payload, post.user?.id_user])
-
-
-
+  }, [payload, post.user?.id_user]);
 
   return (
-    <Card className="w-full flex-col flex   md:w-[90%]   md:p-0">
-      <div
-        className="flex flex-col w-full md:w-full   md:p-6 gap-3 hover:bg-sidebar-foreground/5 hover:rounded-md transition-colors"
-        key={post.id_post}
-      >
+    <Card className="w-full text-sidebar-foreground md:w-[90%] flex flex-col border border-sidebar-border bg-sidebar/50 backdrop-blur-sm transition-colors hover:bg-sidebar/70">
+      <div className="flex flex-col w-full gap-3 p-4 md:p-6" key={post.id_post}>
         {/* Header */}
-        <CardHeader className="flex gap-3 items-center">
-
+        <CardHeader className="flex gap-3 items-center p-0">
           <Link to={`/profiles/${post.user?.id_user}`}>
-            <div className="h-13 w-13  border-2 cursor-pointer rounded-full overflow-x-hidden overflow-hidden flex items-center justify-center bg-neutral-200">
+            <div className="h-12 w-12 border border-sidebar-foreground/20 rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
               {post.user?.profile_image ? (
                 <img
                   className="h-full w-full object-cover"
                   src={post.user.profile_image}
-                  alt=""
+                  alt="Foto de perfil"
                 />
               ) : (
                 <User2 className="text-neutral-500" />
               )}
             </div>
           </Link>
-          <div className="flex w-full flex-col leading-tight">
-            <div className=" flex justify-between">
 
-              <div className="flex items-center gap-2">
-                <h1 className="font-semibold  text-sm max-w-30 md:max-w-full md:text-shadow-md text-sidebar-foreground">
-                  {post.user?.username}
-                </h1>
-                <h2 className="text-neutral-500">{post.user?.nickname}</h2>
-              </div>
-
-              <div>
-                {isUser ? (
-                  <div className="flex gap-2 "  >
-
-                    <PostOptions partialPost={{
-                      id_post: post.id_post,
-                      title: post.title,
-                      content: post.content,
-                      images: post.images
-
-                    }}>
-                      <h1 className="text-3xl cursor-pointer text-sidebar-foreground">...</h1>
-                    </PostOptions>
-
-                  </div>
-                ) : null}
-              </div>
-
+          <div className="flex w-full justify-between items-center">
+            <div className="flex flex-col leading-tight">
+              <h1 className="font-semibold text-sm md:text-base text-sidebar-foreground truncate">
+                {post.user?.username}
+              </h1>
+              <h2 className="text-neutral-500 text-xs md:text-sm">
+                {post.user?.nickname}
+              </h2>
             </div>
 
+            {isUser && (
+              <PostOptions
+                partialPost={{
+                  id_post: post.id_post,
+                  title: post.title,
+                  content: post.content,
+                  images: post.images,
+                }}
+              >
+                <h1 className="text-3xl cursor-pointer text-sidebar-foreground">
+                  ...
+                </h1>
+              </PostOptions>
+            )}
           </div>
         </CardHeader>
 
+        {/* Conteúdo */}
+        <CardContent className="flex flex-col gap-3 p-0">
+          {post.title && (
+            <h1 className="text-lg font-medium text-sidebar-foreground break-words">
+              {post.title}
+            </h1>
+          )}
+          {post.content && (
+            <p className="text-sidebar-accent-foreground text-sm break-words">
+              {post.content}
+            </p>
+          )}
 
-        <CardContent className="flex flex-col gap-3">
-          <h1 className="text-lg font-medium text-sidebar-foreground  break-words">
-            {post.title}
-          </h1>
-          <p className="text-sidebar-accent-foreground text-sm break-words">{post.content}</p>
-          <div className="w-full flex">
-
-
-            {post.images && post.images.length > 0 && (
-              <div className="w-[100%] h-full rounded-lg overflow-hidden border border-neutral-200">
-                <CarouselImgs urls={post.images} />
-              </div>
-            )}
-          </div>
+          {post.images && post.images.length > 0 && (
+            <div className="w-full md:w-[70%] rounded-lg overflow-hidden border border-neutral-800">
+              <CarouselImgs urls={post.images} />
+            </div>
+          )}
         </CardContent>
 
-        <CardFooter className="flex flex-col items-start gap-5">
-          <div>
-            <div className="flex  gap-2 ">
-              <div className="flex items-center gap-3">
-                <CreateCommentModal
-                id_post={post.id_post!}>
-                  <MessageCircleIcon className="cursor-pointer" />
-                </CreateCommentModal>
+        {/* Rodapé */}
+        <CardFooter className="flex flex-col items-start gap-4 p-0">
+          <div className="mt-5">
 
-              </div>
-              <div className="flex items-center gap-3">
-                <Heart onClick={() => setLike(prev => !prev)} className={`cursor-pointer ${like ? "fill-sidebar-foreground" : ""}`} />
-              </div>
-            </div>
+
+            <Comments
+              comments={
+                post.comments
+                  ? post.comments.length >= 5
+                    ? post.comments.slice(0, 4)
+                    : post.comments
+                  : []
+              }
+              id_post={post.id_post!}
+            />
           </div>
 
+          <div className="flex gap-4 items-center">
+            <CreateCommentModal id_post={post.id_post!}>
+              <MessageCircleIcon className="cursor-pointer hover:text-sidebar-foreground/70 transition-colors" />
+            </CreateCommentModal>
+
+            <Heart
+              onClick={() => setLike((prev) => !prev)}
+              className={`cursor-pointer transition-colors ${like ? "fill-sidebar-foreground" : ""
+                }`}
+            />
+          </div>
 
           <div className="flex items-center gap-2 text-sidebar-foreground/60 text-sm">
             <Calendar className="w-4 h-4" />
             <span>
-              {new Date(post.createdAt!).toLocaleString("pt-BR", {
+              {new Date(post.createdAt!).toLocaleDateString("pt-BR", {
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
@@ -142,116 +149,116 @@ export default function Posts({ post }: { post: Post }) {
             </span>
           </div>
         </CardFooter>
-
-
-
       </div>
     </Card>
-
-  )
+  );
 }
 
-
-export function PostOptions({ children, partialPost }: { children: React.ReactNode; partialPost?: Partial<Post> }) {
+/* =======================
+   Opções de Post
+======================= */
+export function PostOptions({
+  children,
+  partialPost,
+}: {
+  children: React.ReactNode;
+  partialPost?: Partial<Post>;
+}) {
   const [open, setOpen] = useState(false);
-
   const handleClose = () => setOpen(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
 
-
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-
-
-
-
-
-      <DialogContent className="bg-sidebar text-sm text-sidebar-foreground flex-row gap-2">
+      <DialogContent className="bg-sidebar text-sidebar-foreground text-sm">
         <DialogHeader />
         <DialogTitle />
         <DialogDescription />
 
         <DialogCreatePost
           onClose={handleClose}
-          partialUpdatePost={{
-            id_post: partialPost?.id_post,
-            title: partialPost?.title,
-            content: partialPost?.content,
-            images: partialPost?.images
-          }}
+          partialUpdatePost={partialPost}
           isUpdated={true}
         >
-          <div className="flex cursor-pointer gap-4">
-            <Edit />
-            <h1>Editar Post</h1>
+          <div className="flex cursor-pointer items-center gap-3 hover:text-sidebar-accent transition-colors">
+            <Edit className="w-4 h-4" />
+            <span>Editar Post</span>
           </div>
         </DialogCreatePost>
 
-        <DialogDeletePost onDeleted={(e) => {
-          return toast.success(e)
-        }} onClose={handleClose} id_post={partialPost?.id_post ?? ""}>
-          <div className="flex  cursor-pointer gap-4">
-            <Delete />
-            <h1>Deletar Post</h1>
+        <DialogDeletePost
+          onDeleted={(msg) => toast.success(msg)}
+          onClose={handleClose}
+          id_post={partialPost?.id_post ?? ""}
+        >
+          <div className="flex cursor-pointer items-center gap-3 hover:text-red-500 transition-colors">
+            <Delete className="w-4 h-4" />
+            <span>Deletar Post</span>
           </div>
         </DialogDeletePost>
 
         <DialogFooter />
-
       </DialogContent>
-
-
     </Dialog>
-  )
+  );
 }
 
 
+const CreateCommentModal = ({
+  children,
+  id_post,
+}: {
+  children: ReactNode;
+  id_post: string;
+}) => {
+  const [content, setContent] = useState("");
 
-const CreateCommentModal = (props: { children: ReactNode, id_post: string }) => {
-  const [content, setContent] = useState<string>("");
-
-  const onComment =  async () => {
+  const onComment = async () => {
     try {
-      const request = await PostApi.createComment({id_post: props.id_post, content: content })
-      toast.success(request.message)
+      const response = await PostApi.createComment({
+        id_post,
+        content,
+      });
+      toast.success(response.message);
+      setContent("");
+    } catch (e) {
+      toast.error((e as any).message);
     }
-    catch(e) {
-      toast.error((e as any).message)
-    }
-  } 
+  };
 
   return (
     <Dialog>
-      <DialogTrigger>{props.children}</DialogTrigger>
-      <DialogContent className=" bg-sidebar max-w-[24rem] text-sidebar-foreground ">
-        <div className="p-6">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MessageCircleIcon /> Criar Comentário
-            </DialogTitle>
-            <DialogDescription>
-              Escreva seu comentário relacionado ao post
-            </DialogDescription>
-          </DialogHeader>
+      <DialogTrigger>{children}</DialogTrigger>
+      <DialogContent className="bg-sidebar text-sidebar-foreground max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageCircleIcon /> Criar Comentário
+          </DialogTitle>
+          <DialogDescription>
+            Escreva seu comentário sobre o post.
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="mt-5">
-            <Textarea
+        <div className="mt-4">
+          <Textarea
+            value={content}
             onChange={(e) => setContent(e.target.value)}
-              className="w-full box-border  break-words break-all"
-              placeholder="Escreva seu comentário..."
-            />
-          </div>
+            placeholder="Escreva seu comentário..."
+            className="w-full resize-none"
+          />
+        </div>
 
-          <div className="mt-5">
-            <Button onClick={onComment} className="bg-sidebar-accent hover:bg-sidebar-foreground/30">
-              <h1>Comentar</h1>
-            </Button>
-          </div>
+        <div className="mt-5 flex justify-end">
+          <Button
+            onClick={onComment}
+            disabled={!content.trim()}
+            className="bg-sidebar-accent hover:bg-sidebar-accent/80"
+          >
+            Comentar
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};

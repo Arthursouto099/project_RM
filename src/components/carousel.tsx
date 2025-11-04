@@ -18,7 +18,7 @@ export function CarouselImgs({ urls }: CarouselImages) {
         <Carousel className="w-[100%] ">
             <CarouselContent className="">
                 {urls.map((image) => (
-                    <CarouselItem>
+                    <CarouselItem key={image}>
                         <img className="rounded-md" src={image} alt="" />
                     </CarouselItem>
                 ))}

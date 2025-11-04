@@ -1,17 +1,15 @@
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "../src/components/app-sidebar"
 import { Outlet } from "react-router-dom"
 
 export default function Layout() {
   return (
     <SidebarProvider>
-      <AppSidebar />
-      <main className=" bg-sidebar overflow-y-hidden h-screen w-screen">
-        <div className="block md:hidden bg-sidebar">
-          <SidebarTrigger className="text-sidebar-foreground" />
-        </div>
-        <Outlet /> {/* Renderiza as rotas filhas com o layout que estabeleci */}
-      </main>
+       <main className="w-screen h-screen bg-sidebar flex">
+          <AppSidebar/>
+
+           <Outlet/>
+       </main>
     </SidebarProvider>
   );
 }

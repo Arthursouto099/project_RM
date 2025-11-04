@@ -34,9 +34,10 @@ const postController = {
         try{
         if (!req.userLogged?.id_user || !req.params.id_post) throw PostErrorHandler.unauthorized("id não fornecido")
         const updatedPost = await postService.putPost(req.body, req.params.id_post)
+        const postFinded = await postService.findPostById({id_post: updatedPost.id_post})    
         responseOk(res, "Post editado com sucesso", updatedPost, 200);
 
-         io.to("postsRoom").emit("postUpdated", updatedPost)
+         io.to("postsRoom").emit("postUpdated", postFinded)
         console.log("Emitindo postUpdated", updatedPost.id_post)
         
 

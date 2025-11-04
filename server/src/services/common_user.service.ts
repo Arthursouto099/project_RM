@@ -72,7 +72,7 @@ const commonUserService = {
 
     findUsers: async ({page = 1, limit = 10}, {region}: {region: string}) => {
         const skip = (page - 1) * limit
-
+        console.log(region)
 
         const [users, total] = await Promise.all([
             prisma.commonUser.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}, omit:{password: true, }, include: {posts: true, friends: true}}),

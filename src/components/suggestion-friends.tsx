@@ -23,7 +23,7 @@ export default function SuggestionFriends() {
 
     useEffect(() => {
         const getUsers = async () => {
-            const request = await UserApi.getUsers(page, 10);
+            const request = await UserApi.getUsers(page, 3);
             setUsers(prev => {
                 const users = request.data ?? []
                 const fill = users.filter(np => !prev.some(u => u.id_user === np.id_user))
@@ -36,7 +36,7 @@ export default function SuggestionFriends() {
     }, [page])
 
     return (
-        <Card className="max-h-[80%]">
+        <Card className=" h-[50%] ">
             <CardHeader>
                 <CardTitle className=" flex gap-3 items-center"><Users2 /> Sugestões de amizade</CardTitle>
                 <CardDescription>Connect com pessoas da sua região!</CardDescription>
@@ -70,7 +70,7 @@ export default function SuggestionFriends() {
                                     <button className="p-2 text-sm rounded-md  flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer" onClick={() => {
                                         if (!user.id_user) return
                                         sendFriendRequest(user.id_user)
-                                    }}> <SendToBack className="text-sm" /> Add</button>
+                                    }}> <SendToBack className="text-sm" /> </button>
                                 </div>
                             </div>
                         </div>
@@ -87,3 +87,5 @@ export default function SuggestionFriends() {
         </Card>
     )
 }
+
+
