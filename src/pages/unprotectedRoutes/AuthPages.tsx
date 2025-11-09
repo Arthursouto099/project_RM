@@ -15,7 +15,7 @@ export default function Login() {
     <main className="w-screen h-screen overflow-y-hidden">
       <div className="w-full h-full flex">
 
-        <div className="h-full w-[50%] flex justify-center items-center ">
+        <div className="h-full  w-[50%] flex justify-center items-center ">
           <div className=" mt-16 w-[60%] h-[90%] ">
             <div className="flex items-end  gap-5">
               <img src={image} className="w-[10%]" alt="" />

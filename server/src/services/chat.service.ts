@@ -36,23 +36,23 @@ const chatService = {
             if (existingChat) return {
                 data: existingChat,
                 message: "Chat Encontrado com sucesso"
-            }  
+            }
 
 
             return {
                 data: await prisma.chat.create({
-                data: {
-                    isGroup: false,
-                    participants: {
-                        create: [
-                            { id_user: UserA },
-                            { id_user: UserB }
-                        ]
+                    data: {
+                        isGroup: false,
+                        participants: {
+                            create: [
+                                { id_user: UserA },
+                                { id_user: UserB }
+                            ]
+                        }
                     }
-                }
-            }) ,
-            message: "Chat criado com sucesso"
-            } 
+                }),
+                message: "Chat criado com sucesso"
+            }
 
         }
         catch (e) {
@@ -71,9 +71,54 @@ const chatService = {
 
 
 
-    getPrivateMessas: async  ( id_chat: string  , {page = 1, limit = 20}) => {
+    findChat: async (UserA: string, UserB: string) => {
+
+
+
+        try {
+            const existingChat = await prisma.chat.findFirst({
+                where: {
+                    // como é privado o isGroup é false
+                    isGroup: false,
+                    // procuro todos os chats onde temos participante A && B
+                    AND: [
+                        { participants: { some: { id_user: UserA } } },
+                        // verifico os chats onde temos o usuario A
+                        { participants: { some: { id_user: UserA } } },
+                        // verifico os chats onde temos o usuario B
+                        // verifico se em participantes <every caso todas as condições seja, certa>
+                        // Verifico se em participantes existe os ids 
+                        { participants: { every: { id_user: { in: [UserA, UserB] } } } }
+                    ]
+                },
+                include: { participants: true, messages: {take: 1, orderBy: {
+                    createdAt: "desc"
+                }} }
+            })
+
+            return {
+                data: existingChat,
+                message: "Chat Encontrado com sucesso"
+            }
+
+        }
+
+        catch (e) {
+            console.log(e)
+
+            if (e instanceof ChatErrorHandler) throw e
+
+            if (e instanceof PrismaClientKnownRequestError) throw ChatErrorHandler.internal(e.message)
+
+            throw ChatErrorHandler.internal()
+        }
+    },
+
+
+
+    getPrivateMessas: async (id_chat: string, { page = 1, limit = 20 }) => {
         const skip = (page - 1) * limit
-        const messages = await prisma.message.findMany({where: {id_chat}, take: limit, skip: skip, orderBy: {createdAt: "desc"}, include: {sender: true}} ,)
+        const messages = await prisma.message.findMany({ where: { id_chat }, take: limit, skip: skip, orderBy: { createdAt: "desc" }, include: { sender: true } },)
         return messages ?? []
     },
 
@@ -95,7 +140,7 @@ const chatService = {
                     images: images ?? [],
                     videos: videos ?? []
                 }
-                ,include: {sender: true}
+                , include: { sender: true }
             })
 
 

@@ -1,8 +1,9 @@
 
 import UserApi, { type CommonUser } from "@/api/UserApi";
+import Avatar from "@/api_avatar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { SendToBack, User2, Users2 } from "lucide-react"
-import { use, useEffect, useState } from "react";
+import {  useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 
@@ -38,7 +39,7 @@ export default function SuggestionFriends() {
     return (
         <Card className=" h-[50%] ">
             <CardHeader>
-                <CardTitle className=" flex gap-3 items-center"><Users2 /> Sugestões de amizade</CardTitle>
+                <CardTitle className=" flex gap-3   items-center"><Users2 /> Sugestões de amizade</CardTitle>
                 <CardDescription>Connect com pessoas da sua região!</CardDescription>
             </CardHeader>
             <CardContent className="h-[50%] ">
@@ -55,7 +56,7 @@ export default function SuggestionFriends() {
                                             alt=""
                                         />
                                     ) : (
-                                        <User2 className="w-full h-full" />
+                                        <Avatar name={user.username} />
                                     )}
                                 </div>
 

@@ -217,7 +217,7 @@ export function CreatePostForm({
               if (onTitleChange) onTitleChange(e.target.value)
             }}
             placeholder="Digite o título da publicação"
-            className="w-full mt-1 rounded-lg border border-gray-300/20 p-2 focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
+            className="w-full mt-1 rounded-lg  border border-gray-300/20 p-2 focus:ring-2 focus:ring-accent-normal focus:outline-none transition-all"
           />
         </div>
 

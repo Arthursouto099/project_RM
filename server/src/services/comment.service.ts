@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client"
 import prisma from "../prisma.config"
 import PostErrorHandler from "../errors/PostErrorHandler";
+import { Pagination } from "../interfaces/Pagination";
 
 
 
@@ -30,13 +31,24 @@ export const commentService = {
     },
 
 
-    findAllCommentsByPost: async ({ page = 1, limit = 20 }: { page: number, limit: number }, { id_post }: { id_post: string }) => {
+    findAllCommentsByPost: async ({ page = 1, limit = 5 }: Pagination, { id_post }: { id_post: string }) => {
         const skip = (page - 1) * limit
 
         return await prisma.comment.findMany({
             where: {id_post},
             skip,
-            include: {replies: true},
+            take: limit,
+            include: {replies: {include: {user: {select: {
+                id_user: true,
+                nickname: true,
+                profile_image: true,
+                username: true
+            }}}}, user: {select: {
+                id_user: true,
+                nickname: true,
+                profile_image: true,
+                username: true
+            }}},
             orderBy: {createdAt: "desc"}
 
         }) ?? []

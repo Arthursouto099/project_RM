@@ -1,5 +1,5 @@
 import { Home, MessageSquare, Settings, Users2 } from "lucide-react"
-import { UserIcon, User2, CirclePlus } from "lucide-react"
+import {  User2, CirclePlus } from "lucide-react"
 
 import {
   Sidebar,
@@ -17,6 +17,7 @@ import UserApi, { type CommonUser } from "@/api/UserApi"
 import { useEffect, useState } from "react"
 import { DialogCreatePost } from "./post-create-modal"
 import { ModeToggle } from "./ToggleThemeButton"
+import Avatar from "@/api_avatar"
 
 // Menu items.
 const items = [
@@ -82,7 +83,9 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <div className="p-4 flex gap-2 cursor-pointer items-center" onClick={navigateToMe}>
-            <div className="bg-accent-light rounded-md w-11  flex  justify-center items-center"> {me?.profile_image ? (<img className="rounded-md  bg-accent-dark border-1" src={me?.profile_image} alt="" />) : (<UserIcon className=" m-2 text-background-light" />)}
+            <div className=" rounded-md w-11   flex   justify-center items-center"> {me?.profile_image ? (<img className="rounded-md  bg-accent-dark border-1" src={me?.profile_image} alt="" />) : (
+              <Avatar name={me ? me.username : ""}/>
+            )}
             </div>
 
             <div>

@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import type { CommonUser } from "@/api/UserApi"
 import { useEffect, useState } from "react"
 import UserApi from "@/api/UserApi"
+import Avatar from "@/api_avatar"
 
 
 
@@ -46,7 +47,7 @@ export default function SuggestionChats() {
                                                 alt=""
                                             />
                                         ) : (
-                                            <User2 className="w-full h-full" />
+                                            <Avatar name={user.username}/>
                                         )}
                                     </div>
 

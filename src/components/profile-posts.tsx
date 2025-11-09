@@ -67,7 +67,7 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
     return (
         <div
             ref={postRef}
-            className="flex flex-col items-center justify-start w-full min-h-screen m-5 overflow-y-auto no-scrollbar "
+            className="flex flex-col  items-center  justify-start w-full min-h-screen m-5 overflow-y-auto no-scrollbar "
         >
             {/* Container central com limite de largura */}
             <div className="w-full  flex flex-col items-center gap-6 py-10">
@@ -86,7 +86,7 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     className="w-full flex flex-col items-center gap-6">
                     {posts.map((post) => (
-                        <Posts key={post.id_post} post={post} />
+                        <Posts key={post.id_post} post={post}  />
                     ))}
                 </motion.div>
             </div>

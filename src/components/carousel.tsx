@@ -19,7 +19,7 @@ export function CarouselImgs({ urls }: CarouselImages) {
             <CarouselContent className="">
                 {urls.map((image) => (
                     <CarouselItem key={image}>
-                        <img className="rounded-md" src={image} alt="" />
+                        <img className="rounded-md " src={image} alt="" />
                     </CarouselItem>
                 ))}
             </CarouselContent>

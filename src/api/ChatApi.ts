@@ -58,6 +58,33 @@ const ChatAPi = {
             };
         }
     },
+      returnChat: async (id_user: string) => {
+        try {
+            const token = tokenActions.getToken()
+            const chatCreated = await instanceV1.get(`/chat/private/${id_user}`, {headers: {Authorization: `bearer ${token}`}})
+            return {
+                message: chatCreated.data.message,
+                success: true,
+                data: chatCreated.data.data  as Chat
+            }
+        }
+        catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
     sendMessage: async ({id_chat, content} : {id_chat: string, content: string}) => {
         try {
             const token = tokenActions.getToken()

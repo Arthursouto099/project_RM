@@ -1,7 +1,7 @@
 import { PartialPostInputs, PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
-
+import { Pagination } from "../interfaces/Pagination";
 
 
 
@@ -38,37 +38,34 @@ const postService = {
 
 
     findPostById: async ({ id_post }: { id_post: string }) => {
-
         return await prisma.post.findUnique({
-            where: { id_post }, include: {
-                comments: { include: { replies: true, user: true } }, user: {
+            where: { id_post },
+            include: {
+                user: {
                     select: {
                         id_user: true,
                         username: true,
                         email: true,
                         profile_image: true,
-
-                    }
-                }
+                    },
+                },
+                
             }
-        });
-
+        })
     }
 
     ,
 
-    findPosts: async ({ page = 1, limit = 10 }: { page: number, limit: number }) => {
+    findPosts: async ({ page, limit }: Pagination) => {
         const skip = (page - 1) * limit;
 
-        // Executando duas queries
         const [posts, total] = await Promise.all([
             prisma.post.findMany({
                 skip,
                 take: limit,
                 orderBy: { createdAt: "desc" },
                 include: {
-                    user: true,
-                    comments: { include: { replies: true, user: true } },
+                    user: { select: { id_user: true, username: true, profile_image: true } },
                 },
             }),
             prisma.post.count(),
@@ -83,11 +80,17 @@ const postService = {
     },
 
 
-    findPostsByIdUser: async (id_user: string, { page = 1, limit = 10 }) => {
+
+    findPostsByIdUser: async (id_user: string, { limit, page }: Pagination) => {
         const skip = (page - 1) * limit
 
 
-        return await prisma.post.findMany({ where: { id_user }, skip: skip, take: limit, include: { user: true, comments: true }, orderBy: { createdAt: "desc" } }) ?? []
+        return await prisma.post.findMany({
+            where: { id_user }, skip: skip, take: limit, include: {
+                user: true,
+                comments: { include: { replies: { include: { user: { omit: { password: true } } } }, user: { omit: { password: true } } } }
+            }, orderBy: { createdAt: "desc" }
+        }) ?? []
     },
 
     deletePostById: async (id_post: string) => {

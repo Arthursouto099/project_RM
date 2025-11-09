@@ -23,6 +23,17 @@ createPrivateChat: async (req: CustomRequest, res: Response, next: NextFunction)
     }
 },
 
+findPrivateChat: async (req: CustomRequest, res: Response, next: NextFunction) => {
+    try{
+        if(!req.userLogged) throw ChatErrorHandler.unauthorized()
+        const chat = await chatService.findChat(req.userLogged?.id_user, req.params.id_user)
+        responseOk(res, chat.message, chat.data, 201)
+    }
+    catch(e) {
+        next(e)
+    }
+},
+
 sendMessage: async (req: CustomRequest, res: Response, next: NextFunction) => {
     try{
         if(!req.userLogged) throw ChatErrorHandler.unauthorized()

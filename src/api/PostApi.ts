@@ -102,9 +102,16 @@ const PostApi = {
     },
 
      createComment: async (data: Comment) => {
+        let url_string: string = ""
+
+        if(data.parentCommentId) {
+            url_string = `/post/comment/${data.id_post}?parentCommentId=${data.parentCommentId}`
+        }
+        else url_string = `/post/comment/${data.id_post}`
+
         try {
             const token = tokenActions.getToken()
-            const comment = await instanceV1.post(`/post/comment/${data.id_post}`, data, { headers: { Authorization: `bearer ${token}` } })
+            const comment = await instanceV1.post(url_string, data, { headers: { Authorization: `bearer ${token}` } })
             return {
                 message: comment.data.message || "Não foi possível realizar a publicação",
                 success: true,

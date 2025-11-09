@@ -7,7 +7,6 @@ export default function Layout() {
     <SidebarProvider>
        <main className="w-screen h-screen bg-sidebar flex">
           <AppSidebar/>
-
            <Outlet/>
        </main>
     </SidebarProvider>

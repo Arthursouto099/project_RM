@@ -155,7 +155,7 @@ export function DirectChat() {
   }
 
   return (
-    <section className="m-5 h-[95%] bg-sidebar-accent/30 rounded-md flex text-sidebar-foreground gap-5">
+    <section className="m-5 w-full h-[95%] bg-sidebar-accent/30 rounded-md flex text-sidebar-foreground gap-5">
       <div className="w-full h-full overflow-hidden relative p-5 flex flex-col">
         {/* Header */}
         <header className="w-full flex items-center mb-4 border-b border-gray-300 pb-2">

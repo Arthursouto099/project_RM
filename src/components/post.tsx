@@ -1,11 +1,11 @@
-import type { Post } from "@/api/PostApi";
+import type { Comment, Post } from "@/api/PostApi";
 import {
   Calendar,
+  ChevronDown,
   Delete,
   Edit,
   Heart,
   MessageCircleIcon,
-  User2,
 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import React, { useEffect, useState, type ReactNode } from "react";
@@ -27,15 +27,33 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import PostApi from "@/api/PostApi";
-import Comments from "./comment";
+import Comments from "./comment-post";
+import instanceV1 from "@/api/api@instance/ap-v1i";
+import Avatar from "@/api_avatar";
 
-export default function Posts({ post }: { post: Post }) {
+const findCommentsByIdPost = async (id_post: string, {page, limit} : {page: number, limit: number}, set: React.Dispatch<React.SetStateAction<Comment[]>>) => {
+  const comments =  (await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)).data.data as Comment[]
+  set((prev) => {
+        const filtered =comments.filter(
+          (np) => !prev.some((p) => p.id_comment === np.id_comment)
+        )
+        return [...prev, ...filtered]
+      })
+
+}
+
+export default function Posts({ post}: { post: Post,  }) {
   const [isUser, setUser] = useState(false);
   const { payload } = useAuth();
+  const [page, setPage] = useState<number>(1)
   const [like, setLike] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([])
+  
 
-
-
+  useEffect(() => {
+    findCommentsByIdPost(post.id_post!, {page, limit: 5}, setComments)
+  }, [post.id_post ,page])
+  
 
   useEffect(() => {
     if (payload?.id_user === post.user?.id_user) {
@@ -57,7 +75,7 @@ export default function Posts({ post }: { post: Post }) {
                   alt="Foto de perfil"
                 />
               ) : (
-                <User2 className="text-neutral-500" />
+                <Avatar name={post.user?.username ?? ""}/>
               )}
             </div>
           </Link>
@@ -89,7 +107,7 @@ export default function Posts({ post }: { post: Post }) {
           </div>
         </CardHeader>
 
-        {/* Conteúdo */}
+
         <CardContent className="flex flex-col gap-3 p-0">
           {post.title && (
             <h1 className="text-lg font-medium text-sidebar-foreground break-words">
@@ -116,15 +134,22 @@ export default function Posts({ post }: { post: Post }) {
 
             <Comments
               comments={
-                post.comments
-                  ? post.comments.length >= 5
-                    ? post.comments.slice(0, 4)
-                    : post.comments
-                  : []
+                comments
               }
               id_post={post.id_post!}
             />
           </div>
+
+          {comments ?  (
+            <div onClick={() => {
+              setPage(prev => prev + 1)
+            }} className="flex items-center gap-1">
+                 <ChevronDown/>
+                <h1 className="text-sm">Ver mais comentarios</h1>
+            </div>
+          ) : (
+            <div></div>
+          )}
 
           <div className="flex gap-4 items-center">
             <CreateCommentModal id_post={post.id_post!}>
@@ -192,7 +217,7 @@ export function PostOptions({
           onClose={handleClose}
           id_post={partialPost?.id_post ?? ""}
         >
-          <div className="flex cursor-pointer items-center gap-3 hover:text-red-500 transition-colors">
+          <div className="flex cursor-pointer   items-center gap-3 hover:text-red-500 transition-colors">
             <Delete className="w-4 h-4" />
             <span>Deletar Post</span>
           </div>
@@ -223,7 +248,7 @@ const CreateCommentModal = ({
       toast.success(response.message);
       setContent("");
     } catch (e) {
-      toast.error((e as any).message);
+      toast.error((e as  Error).message);
     }
   };
 

@@ -6,7 +6,7 @@ import { CustomRequest } from "../types/CustomRequest"
 const commentController = {
     findComments: async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const comments = await commentService.findAllCommentsByPost({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 20) }, { id_post: req.params.id_post })
+            const comments = await commentService.findAllCommentsByPost({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 5) }, { id_post: req.params.id_post })
             responseOk(res, "consulta feita com sucesso", comments, 200)
         }
         catch (e) {
@@ -24,6 +24,7 @@ const commentController = {
 
             const comment = await commentService.createComment({ content: req.body.content }, {
                 id_post: req.body.id_post,
+                // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
                 id_user: req.userLogged?.id_user!,
                 parentCommentId
             })

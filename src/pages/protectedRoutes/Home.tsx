@@ -85,23 +85,25 @@ export default function Home() {
 
   // 🧠 Layout principal
   return (
-    <section className="w-full h-screen ">
-        <div className="flex w-full h-full gap-5 p-5">
+  <section className="w-full  overflow-y-auto">
+  <div className="flex flex-col md:flex-row w-full h-full gap-5 p-5 overflow-auto">
+    {/* Sidebar */}
+    <div className="text-sidebar-foreground w-full md:w-96 flex flex-col gap-5">
+      <SuggestionFriends />
+      <SuggestionChats />
+    </div>
 
-            <div className="text-sidebar-foreground w-96 flex flex-col gap-5">
-                <SuggestionFriends/>
+    {/* Feed de posts */}
+    <div
+      ref={postRef}
+      className="md:w-2xl gap-5 flex flex-col  md:overflow-y-auto no-scrollbar"
+    >
+      {posts.map((post) => (
+        <Posts key={post.id_post} post={post} />
+      ))}
+    </div>
+  </div>
+</section>
 
-                <SuggestionChats/>
-             
-            </div>
-
-            <div ref={postRef} className="w-2xl gap-5 flex flex-col h-full overflow-y-auto no-scrollbar ">
-                    {posts.map(post => (<Posts key={post.id_post} post={post}/>))}
-            </div>
-
-
-
-        </div>
-    </section>
   )
 }

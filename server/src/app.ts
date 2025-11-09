@@ -27,40 +27,23 @@ const httpServer = createServer(app);
 // Cria o Socket.IO e exporta
 // Nesse socket eu defino o IO que recebe metodos como GET E Post e aceita apenas 
 // da url do meu front end
-export const io = new Server(httpServer, {
+ const io = new Server(httpServer, {
   cors: {
     origin: "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
 
-// Eventos Socket.IO
-io.on("connection", (socket) => {
-  console.log("Novo cliente conectado:", socket.id);
-  // sala dos posts
 
-  socket.on("joinPosts", () => {
-    socket.join("postsRoom")
-    console.log(`Socket ${socket.id} entrou na sala de posts`)
-  })
-  
-
-  // recebo o chatID das rotas de chat
-  socket.on("joinChat", (chatId) => {
-    // entro na sala com o chatID
-    socket.join(chatId)
-    console.log(`Socket ${socket.id} entrou na sala ${chatId}`)
-  })
-
-  socket.on("disconnect", () => {
-    console.log("Cliente desconectado:", socket.id);
-  })
-})
+export {io, httpServer}
 
 
+// io.on("connection", (socket) => {
+//   socket.on("joinPosts", () => {socket.join("postsRoom")})
 
-// Agora quem sobe é o httpServer, não o app
-const PORT = process.env.PORT ?? 3000;
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando em http://localhost:${PORT}`);
-});
+//   socket.on("joinChat", (chatId) => {socket.join(chatId)})
+
+//   socket.on("disconnect", () => {})
+// })
+
+

@@ -21,7 +21,7 @@ export default function Router() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-  <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
         <Route element={<ProtectedGroup />}>
           {/* Rotas onde o meu layout serve*/}

@@ -5,10 +5,12 @@ import useAuth, { type Payload } from "@/hooks/useAuth";
 import { toast, ToastContainer } from "react-toastify"
 
 
-import { Calendar, CheckCheck, MessageSquare, Search, SearchX, SendToBack, User2, X, } from "lucide-react";
+import { Calendar, CalendarArrowUp, CheckCheck, Clock, MessageSquare, Search, SearchX, SendToBack, User2, X, } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import ChatAPi from "@/api/ChatApi";
+import ChatAPi, { type Chat } from "@/api/ChatApi";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import Avatar from "@/api_avatar";
 
 
 
@@ -52,76 +54,76 @@ export default function Friends() {
 
 
   return (
-    
-      <section className="m-5 h-[95%] flex text-sidebar-foreground  gap-5">
-        <header className="w-full">
-          <div className="w-full p-4 mt-2 mb-2 rounded-xl bg-sidebar-accent shadow-md flex items-center justify-between">
-            <h1 className="text-sidebar-foreground text-xl font-semibold tracking-wide">
-              Solicitações e Usuários
-            </h1>
+
+    <section className="m-5 h-[95%] flex text-sidebar-foreground  gap-5">
+      <header className="w-full">
+        <div className="w-full p-4 mt-2 mb-2 rounded-xl bg-sidebar-accent shadow-md flex items-center justify-between">
+          <h1 className="text-sidebar-foreground text-xl font-semibold tracking-wide">
+            Solicitações e Usuários
+          </h1>
+        </div>
+        <div className="w-[100%] relative">
+
+
+
+
+          <div className="flex gap-3 mt-4 mb-4">
+            <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "pedidos" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("pedidos")}>Pedidos</h1>
+            <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "usuarios" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("usuarios")} >Usuarios</h1>
           </div>
-          <div className="w-[100%] relative">
+
+          <Search className="absolute  top-13 right-4" />
+          <input className="w-full rounded-md border mb-5 p-2" placeholder="@usuario" type="text" name="" id="" />
+
+
+          {field === "usuarios" && (
+            <div>
+
+
+
+              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]" >
+                {users.filter((u) => u.id_user !== (payload as Payload).id_user).map((u) => (
+                  <CardUserFriend key={u.id_user} commonUser={u} />
+                ))}
 
 
 
 
-            <div className="flex gap-3 mt-4 mb-4">
-              <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "pedidos" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("pedidos")}>Pedidos</h1>
-              <h1 className={`border-t-0 cursor-pointer border-l-0 border-r-0 ${field && field === "usuarios" ? "border-b-accent border-2" : ""} `} onClick={() => setFields("usuarios")} >Usuarios</h1>
+              </div>
+
+              <div className="p-3" >
+                <button className="bg-sidebar-accent p-3 rounded-md" onClick={() => setPage(prev => prev + 1)}>Ver Mais Usuarios</button>
+              </div>
+
+
             </div>
 
-            <Search className="absolute  top-13 right-4" />
-            <input className="w-full rounded-md border mb-5 p-2" placeholder="@usuario" type="text" name="" id="" />
+          )}
 
-
-            {field === "usuarios" && (
-              <div>
-
-
-
-                <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]" >
-                  {users.filter((u) => u.id_user !== (payload as Payload).id_user).map((u) => (
-                    <CardUserFriend key={u.id_user} commonUser={u} />
-                  ))}
-
-
-
-
-                </div>
-
-                <div className="p-3" >
-                  <button className="bg-sidebar-accent p-3 rounded-md" onClick={() => setPage(prev => prev + 1)}>Ver Mais Usuarios</button>
-                </div>
-
-
-              </div>
-
-            )}
-
-            {field === "pedidos" && requests.length > 0 ? (
-              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]">
-                {requests.map((req) => (
-                  <CardRequest key={req.id_request} request={req} />
-                ))}
-              </div>
-            ) : field === "pedidos" ? (
-              <div className="bg-sidebar-accent p-5 h-[50vh] rounded-md border-2 border-dotted flex flex-col items-center justify-center gap-4">
-                <SearchX className="w-12 h-12 text-gray-400" />
-                <h1 className="text-[17px] text-sidebar-foreground/50 text-center">
-                  Você não possui nenhuma solicitação!
-                </h1>
-              </div>
-            ) : null}
+          {field === "pedidos" && requests.length > 0 ? (
+            <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]">
+              {requests.map((req) => (
+                <CardRequest key={req.id_request} request={req} />
+              ))}
+            </div>
+          ) : field === "pedidos" ? (
+            <div className="bg-sidebar-accent p-5 h-[50vh] rounded-md border-2 border-dotted flex flex-col items-center justify-center gap-4">
+              <SearchX className="w-12 h-12 text-gray-400" />
+              <h1 className="text-[17px] text-sidebar-foreground/50 text-center">
+                Você não possui nenhuma solicitação!
+              </h1>
+            </div>
+          ) : null}
 
 
 
-          </div>
+        </div>
 
-        </header>
+      </header>
 
 
-      </section>
-   
+    </section>
+
   )
 }
 
@@ -190,42 +192,75 @@ function CardUserFriend({ commonUser }: { commonUser: CommonUser }) {
 
 export function CardFriend({ friend }: { friend: CommonUser }) {
 
+  const [chat, setChat] = useState<Chat | null>(null)
 
   const createOrGetChat = async (id_user: string) => {
-      const request = await ChatAPi.createOrReturnChat(id_user)
-      console.log(request)
+    const chat = (await ChatAPi.createOrReturnChat(id_user)).data
+
+    return chat
+
   }
 
+  const getChat = async (id_user: string) => {
+    const chat = (await ChatAPi.returnChat(id_user)).data
+    setChat(chat ?? null)
+
+  }
+
+  useEffect(() => {
+    getChat(friend.id_user!)
+  }, [friend.id_user])
+
   return (
-    <div className="w-full p-5 rounded-md bg-sidebar-accent/30 relative">
+    <Card className="w-full -p-3 p-4  h-full rounded-md bg-sidebar-accent/30 relative">
 
 
 
 
       <ToastContainer position="top-center" />
 
-      <div className="flex gap-3 items-center">
-        <div className="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center bg-neutral-200">
-          {friend.profile_image ? (
-            <img
-              className="h-full w-full object-cover"
-              src={friend.profile_image}
-              alt=""
-            />
-          ) : (
-            <User2 className="text-neutral-500" />
-          )}
+      <CardHeader className="">
+
+        <div className=" pb-2">
+          <div className="flex text-sm text-sidebar-foreground/30 items-center gap-2">
+
+            <CalendarArrowUp className="w-4" />
+            <h1 className="">
+              Chat criado em{" "}
+              {chat?.createdAt
+                ? new Date(chat.createdAt).toLocaleDateString("pt-BR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })
+                : "data desconhecida"}
+            </h1>
+
+          </div>
         </div>
-        <div className="flex w-full flex-col leading-tight">
-          <div className=" flex justify-between">
 
-            <div className="flex items-center gap-2">
-              <h1 className="font-semibold ">
-                {friend.username}
-              </h1>
-              <h2 className="text-neutral-500">{friend.nickname}</h2>
+        <div className="flex  gap-3 items-center">
+          <div className="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center bg-neutral-200">
+            {friend.profile_image ? (
+              <img
+                className="h-full w-full object-cover"
+                src={friend.profile_image}
+                alt=""
+              />
+            ) : (
+              <Avatar name={friend.username} />
+            )}
+          </div>
+          <div className="flex w-full flex-col leading-tight">
+            <div className=" flex justify-between">
+
+              <div className="flex items-center gap-2">
+                <h1 className="font-semibold ">
+                  {friend.username}
+                </h1>
+                <h2 className="text-neutral-500">{friend.nickname}</h2>
+              </div>
             </div>
-
 
 
           </div>
@@ -234,21 +269,50 @@ export function CardFriend({ friend }: { friend: CommonUser }) {
 
         </div>
 
-      </div>
+      </CardHeader>
 
 
-      <div className="mt-5 flex gap-3">
-        <Link onClick={async ()  => {
-          await createOrGetChat(friend.id_user!)
-        }}
-          to={`/direct/${friend.id_user}`}
-          className="p-2 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
-        >
-          <MessageSquare /> Abrir Chat
-        </Link>
 
-      </div>
-    </div>
+
+      <CardContent className="-mt-3">
+
+        {chat && chat.messages && chat.messages[0] ? (
+          <div className="pt-2 pb-2 ">
+            <div className=" flex items-center gap-2 text-sidebar-foreground/30 pb-2">
+              <Clock className="w-4"/>
+              <h2 className="text-xs">Ultima mensagem enviada</h2>
+            </div>
+            <h1 className="text-md text-sidebar-foreground/60">{chat.messages[0].content ?? ""}</h1>
+            <div className="text-sm text-sidebar-foreground/30">
+              <h1 className="">
+                enviada em {" "}
+                {chat?.messages[0]
+                  ? new Date(chat.messages[0].createdAt).toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  })
+                  : "data desconhecida"}
+              </h1>
+            </div>
+          </div>
+        ) : null}
+
+
+        <div className="flex gap-3">
+          <Link onClick={async () => {
+            await createOrGetChat(friend.id_user!)
+          }}
+            to={`/direct/${friend.id_user}`}
+            className="pt-3 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
+          >
+            <MessageSquare /> Abrir Chat
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 

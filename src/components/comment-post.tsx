@@ -1,25 +1,38 @@
+
 import React, { useState } from "react";
 import type { Comment } from "@/api/PostApi";
-import { Calendar, MessageCircleIcon, User2 } from "lucide-react";
+import { Calendar, LucideReplyAll, MessageCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
 import PostApi from "@/api/PostApi";
+import Avatar from "@/api_avatar";
+
 
 type CommentsProps = {
   comments: Comment[];
   id_post: string;
 };
 
+
+
+
 export default function Comments({ comments, id_post }: CommentsProps) {
   if (!comments?.length) {
+    return <p className="text-neutral-500    text-sm">Nenhum comentário ainda.</p>;
+  }
+
+  const parentComments = comments.filter(c => !c.parentCommentId);
+
+  if (!parentComments.length) {
     return <p className="text-neutral-500 text-sm">Nenhum comentário ainda.</p>;
   }
 
+
   return (
     <div className="flex flex-col gap-4 w-full">
-      {comments.map((comment) => (
+      {parentComments.map((comment) => (
         <CommentItem key={comment.id_comment} comment={comment} id_post={id_post} />
       ))}
     </div>
@@ -34,8 +47,9 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
 
   return (
     <div className="flex flex-col border-l-2 border-sidebar-border pl-3">
+
       <div className="flex items-start gap-3">
-        <div className="h-8 w-8 rounded-full overflow-hidden bg-neutral-200 border border-sidebar-foreground/10 flex items-center justify-center">
+        <div className="h-full w-10 rounded-full text overflow-hidden bg-neutral-200 border border-sidebar-foreground/10 flex items-center justify-center">
           {comment.user?.profile_image ? (
             <img
               src={comment.user.profile_image}
@@ -43,7 +57,7 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
               className="h-full w-full object-cover"
             />
           ) : (
-            <User2 className="text-neutral-500 w-4 h-4" />
+           <Avatar name={comment.user?.username ?? ""}/>
           )}
         </div>
 
@@ -58,26 +72,36 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
             </span>
           </div>
 
-          <p className="text-sm text-sidebar-accent-foreground mt-1 break-words">
+          <p className="text-sm tex text-sidebar-accent-foreground mt-1 break-words">
             {comment.content}
           </p>
 
           {/* Botão de responder */}
           <div className="mt-2">
-            <ReplyModal id_post={id_post} parentCommentId={comment.id_comment!}>
-              <Button variant="ghost" size="sm" className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground">
-                <MessageCircleIcon className="w-3 h-3 mr-1" />
-                Responder
-              </Button>
-            </ReplyModal>
+            {comment.parentCommentId ? (
+              <div>
+                <div className="flex gap-2 items-center text-sidebar-foreground/30">
+                  <h1 className="text-xs">Resposta ao comentario</h1>
+                  <LucideReplyAll className="w-4 h-4" />
+                </div>
+              </div>
+            ) : (
+              <ReplyModal id_post={id_post} parentCommentId={comment.id_comment!}>
+                <Button variant="ghost" size="sm" className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground">
+                  <MessageCircleIcon className="w-3 h-3 mr-1" />
+                  Responder
+                </Button>
+              </ReplyModal>
+            )}
+
           </div>
 
           {/* Respostas */}
           {comment.replies && comment.replies.length > 0 && (
-            <div className="mt-2 ml-4">
+            <div className="mt-2  ml-4">
               <button
                 onClick={() => setShowReplies(!showReplies)}
-                className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground "
               >
                 {showReplies ? "Ocultar respostas" : `Ver ${comment.replies.length} respostas`}
               </button>
@@ -121,7 +145,7 @@ function ReplyModal({
       toast.success(response.message);
       setContent("");
     } catch (e) {
-      toast.error((e as any).message);
+      toast.error((e as Error).message);
     }
   };
 
@@ -146,7 +170,7 @@ function ReplyModal({
           <Button
             onClick={onReply}
             disabled={!content.trim()}
-            className="bg-sidebar-accent hover:bg-sidebar-accent/80"
+            className="bg-sidebar-accent  hover:bg-sidebar-accent/80"
           >
             Responder
           </Button>

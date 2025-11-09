@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import * as bc from "bcrypt"
+import { Pagination } from "../interfaces/Pagination";
 
 
 
@@ -70,7 +71,7 @@ const commonUserService = {
     },
 
 
-    findUsers: async ({page = 1, limit = 10}, {region}: {region: string}) => {
+    findUsers: async ({page = 1, limit = 10}: Pagination, {region}: {region: string}) => {
         const skip = (page - 1) * limit
         console.log(region)
 
