@@ -5,7 +5,7 @@ import useAuth from "@/hooks/useAuth"
 import { Send, User2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
-import { io, Socket } from "socket.io-client"
+import { io } from "socket.io-client"
 
 export function DirectChat() {
   const { id_user } = useParams<{ id_user: string }>()
@@ -13,7 +13,6 @@ export function DirectChat() {
   const [otherUser, setOtherUser] = useState<CommonUser | null>(null)
   const [content, setContent] = useState<string>("")
   const [messages, setMessages] = useState<Message[]>([])
-  const [socket, setSocket] = useState<Socket | null>(null)
   const [page, setPage] = useState<number>(1)
   const [hasMore, setHasMore] = useState<boolean>(true)
 
@@ -103,8 +102,7 @@ export function DirectChat() {
     if (!chat?.id_chat) return
 
     const newSocket = io("http://localhost:3300") // porta do backend
-    setSocket(newSocket)
-
+   
     newSocket.emit("joinChat", chat.id_chat)
 
     newSocket.on("newMessage", (msg: Message) => {

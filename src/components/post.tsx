@@ -30,30 +30,48 @@ import PostApi from "@/api/PostApi";
 import Comments from "./comment-post";
 import instanceV1 from "@/api/api@instance/ap-v1i";
 import Avatar from "@/api_avatar";
+import { io } from "socket.io-client";
 
-const findCommentsByIdPost = async (id_post: string, {page, limit} : {page: number, limit: number}, set: React.Dispatch<React.SetStateAction<Comment[]>>) => {
-  const comments =  (await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)).data.data as Comment[]
+const findCommentsByIdPost = async (id_post: string, { page, limit }: { page: number, limit: number }, set: React.Dispatch<React.SetStateAction<Comment[]>>) => {
+  const comments = (await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)).data.data as Comment[]
   set((prev) => {
-        const filtered =comments.filter(
-          (np) => !prev.some((p) => p.id_comment === np.id_comment)
-        )
-        return [...prev, ...filtered]
-      })
+    const filtered = comments.filter(
+      (np) => !prev.some((p) => p.id_comment === np.id_comment)
+    )
+    return [...prev, ...filtered]
+  })
 
 }
 
-export default function Posts({ post}: { post: Post,  }) {
+export default function Posts({ post }: { post: Post, }) {
   const [isUser, setUser] = useState(false);
   const { payload } = useAuth();
   const [page, setPage] = useState<number>(1)
   const [like, setLike] = useState(false);
   const [comments, setComments] = useState<Comment[]>([])
-  
+
 
   useEffect(() => {
-    findCommentsByIdPost(post.id_post!, {page, limit: 5}, setComments)
-  }, [post.id_post ,page])
-  
+    findCommentsByIdPost(post.id_post!, { page, limit: 5 }, setComments)
+  }, [post.id_post, page])
+
+  useEffect(() => {
+    const socket = io("http://localhost:3300")
+    socket.emit("joinComments")
+
+    socket.on("commentCreated", (newComment: Comment) => {
+      setComments((prev) => {
+        if(prev.some((comment) => comment.id_comment === newComment.id_comment)) return prev
+        return [newComment, ...prev]
+      })
+    })
+
+    return () => {
+      socket.disconnect()
+    }
+
+  }, [])
+
 
   useEffect(() => {
     if (payload?.id_user === post.user?.id_user) {
@@ -75,7 +93,7 @@ export default function Posts({ post}: { post: Post,  }) {
                   alt="Foto de perfil"
                 />
               ) : (
-                <Avatar name={post.user?.username ?? ""}/>
+                <Avatar name={post.user?.username ?? ""} />
               )}
             </div>
           </Link>
@@ -140,12 +158,12 @@ export default function Posts({ post}: { post: Post,  }) {
             />
           </div>
 
-          {comments ?  (
+          {comments ? (
             <div onClick={() => {
               setPage(prev => prev + 1)
             }} className="flex items-center gap-1">
-                 <ChevronDown/>
-                <h1 className="text-sm">Ver mais comentarios</h1>
+              <ChevronDown />
+              <h1 className="text-sm">Ver mais comentarios</h1>
             </div>
           ) : (
             <div></div>
@@ -248,7 +266,7 @@ const CreateCommentModal = ({
       toast.success(response.message);
       setContent("");
     } catch (e) {
-      toast.error((e as  Error).message);
+      toast.error((e as Error).message);
     }
   };
 

@@ -48,7 +48,7 @@ export function Direct() {
 
                 </CardHeader>
 
-                <CardContent className="w-full flex flex-col gap-4">
+                <CardContent className="w-full overflow-y-auto no-scrollbar flex flex-col gap-4">
 
                     {friends.map((f) => (
                         <CardFriend  key= {f.id_user} friend={f} />

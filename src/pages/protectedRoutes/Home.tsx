@@ -52,15 +52,15 @@ export default function Home() {
     return () => el.removeEventListener("scroll", handleScroll)
   }, [hasMore])
 
-  // ⚡ Socket.IO para tempo real
+
   useEffect(() => {
     const socket = io("http://localhost:3300")
     socket.emit("joinPosts")
 
-    socket.on("postCreated", (post: Post) => {
+    socket.on("postCreated", (newPost: Post) => {
       setPosts((prev) => {
-        if (prev.some((p) => p.id_post === post.id_post)) return prev
-        return [post, ...prev]
+        if (prev.some((p) => p.id_post === newPost.id_post)) return prev
+        return [newPost, ...prev]
       })
     })
 
@@ -85,25 +85,27 @@ export default function Home() {
 
   // 🧠 Layout principal
   return (
-  <section className="w-full  overflow-y-auto">
-  <div className="flex flex-col md:flex-row w-full h-full gap-5 p-5 overflow-auto">
-    {/* Sidebar */}
-    <div className="text-sidebar-foreground w-full md:w-96 flex flex-col gap-5">
-      <SuggestionFriends />
-      <SuggestionChats />
-    </div>
+    <section className="w-full  overflow-y-auto">
+      <div className="flex flex-col md:flex-row w-full h-full gap-5 p-5 overflow-auto">
+        {/* Feed de posts */}
+        <div
+          ref={postRef}
+          className="md:w-4xl gap-5 flex flex-col  md:overflow-y-auto no-scrollbar"
+        >
+          {posts.map((post) => (
+            <Posts key={post.id_post} post={post} />
+          ))}
+        </div>
 
-    {/* Feed de posts */}
-    <div
-      ref={postRef}
-      className="md:w-2xl gap-5 flex flex-col  md:overflow-y-auto no-scrollbar"
-    >
-      {posts.map((post) => (
-        <Posts key={post.id_post} post={post} />
-      ))}
-    </div>
-  </div>
-</section>
+        {/* Sidebar */}
+        <div className="text-sidebar-foreground w-full md:w-96 flex flex-col gap-5">
+          <SuggestionFriends />
+          <SuggestionChats />
+        </div>
+
+
+      </div>
+    </section>
 
   )
 }

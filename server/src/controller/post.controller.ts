@@ -21,7 +21,7 @@ const postController = {
 
             //envia um evento para todos clientes que estão em postsRoom
             io.to("postsRoom").emit("postCreated", postFinded)
-            console.log("Emitindo postCreated:", postCreated.id_post)
+            
         }
 
         catch (e) {
@@ -38,7 +38,7 @@ const postController = {
             responseOk(res, "Post editado com sucesso", updatedPost, 200);
 
             io.to("postsRoom").emit("postUpdated", postFinded)
-            console.log("Emitindo postUpdated", updatedPost.id_post)
+            
 
 
         }

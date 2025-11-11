@@ -19,6 +19,11 @@ type CommentsProps = {
 
 
 export default function Comments({ comments, id_post }: CommentsProps) {
+
+
+  
+
+
   if (!comments?.length) {
     return <p className="text-neutral-500    text-sm">Nenhum comentário ainda.</p>;
   }

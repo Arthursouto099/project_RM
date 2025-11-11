@@ -33,7 +33,7 @@ export default function SuggestionChats() {
                 <CardTitle className=" flex gap-3 text-2xl items-center"><MessagesSquareIcon/> Converse com seus amigos</CardTitle>
                 <CardDescription>Inicie chats privados com seus amigos para compartilhas suas historias!</CardDescription>
             </CardHeader>
-            <CardContent className="h-[50%] ">
+            <CardContent className="h-[40%] ">
                 <div className="w-full flex flex-col gap-5 max-h-[100%] no-scrollbar overflow-y-auto">
                     {friends.map((user) => (
                         <div className="" key={user.id_user}>
