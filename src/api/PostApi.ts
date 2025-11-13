@@ -31,6 +31,11 @@ export type Comment = {
 }
 
 
+type CommentUpdateProps = { 
+    content: string
+    id_comment: string
+}
+
 export type Posts = {
     posts: Post[]
     page: number,
@@ -112,6 +117,37 @@ const PostApi = {
         try {
             const token = tokenActions.getToken()
             const comment = await instanceV1.post(url_string, data, { headers: { Authorization: `bearer ${token}` } })
+            return {
+                message: comment.data.message || "Não foi possível realizar a publicação",
+                success: true,
+                data: comment.data.data as Post
+            }
+        }
+        catch (e) {
+
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+    },
+
+        updateComment: async (data: CommentUpdateProps) => {
+       
+
+        try {
+            const token = tokenActions.getToken()
+            const comment = await instanceV1.put(`/post/comment/${data.id_comment}`, {content: data.content}, { headers: { Authorization: `bearer ${token}` } })
             return {
                 message: comment.data.message || "Não foi possível realizar a publicação",
                 success: true,

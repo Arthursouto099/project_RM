@@ -55,6 +55,20 @@ const commentController = {
         catch (e) {
             next(e)
         }
+    },
+
+    putComment: async (req:  CustomRequest, res: Response, next: NextFunction) => {
+        try {
+            const comment = await commentService.putComment({id_comment: req.params.id_comment, data: req.body.content})
+            
+
+            io.to("commentRoom").emit("commentUpdated", await commentService.findCommentById({id_comment: comment.id_comment}))
+            responseOk(res, "comentario editado com sucesso", comment, 200)
+        }
+        catch(e) {
+           
+            next(e)
+        }
     }
 }
 

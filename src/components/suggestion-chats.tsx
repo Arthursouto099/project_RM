@@ -28,12 +28,12 @@ export default function SuggestionChats() {
     }, [page])
 
     return (
-        <Card className="h-[50%]">
+        <Card className="h-full w-full">
             <CardHeader>
                 <CardTitle className=" flex gap-3 text-2xl items-center"><MessagesSquareIcon/> Converse com seus amigos</CardTitle>
                 <CardDescription>Inicie chats privados com seus amigos para compartilhas suas historias!</CardDescription>
             </CardHeader>
-            <CardContent className="h-[40%] ">
+            <CardContent className="h-[100%] ">
                 <div className="w-full flex flex-col gap-5 max-h-[100%] no-scrollbar overflow-y-auto">
                     {friends.map((user) => (
                         <div className="" key={user.id_user}>
@@ -69,17 +69,7 @@ export default function SuggestionChats() {
                     ))}
                 </div>
             </CardContent>
-            <CardFooter>
-                <div className="w-full">
-                    <h1 className=" flex  items-center gap-2 border-b border-sidebar-accent pb-5 font-semibold text-2xl">
-                        <StarsIcon/>
-                        Dica 
-                    </h1>
-                    <p className="mt-4">Entre em comunidades ou debata assuntos em nossas pautas e grupos</p>
-
-                </div>
-
-            </CardFooter>
+        
         </Card>
     )
     

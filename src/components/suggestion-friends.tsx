@@ -37,12 +37,12 @@ export default function SuggestionFriends() {
     }, [page])
 
     return (
-        <Card className=" h-[50%] ">
+        <Card className=" h-full w-full ">
             <CardHeader>
                 <CardTitle className=" flex gap-3   items-center"><Users2 /> Sugestões de amizade</CardTitle>
                 <CardDescription>Connect com pessoas da sua região!</CardDescription>
             </CardHeader>
-            <CardContent className="h-[50%] ">
+            <CardContent className="h-[100%] ">
                 <div className="w-full flex flex-col gap-5 max-h-[100%] no-scrollbar overflow-y-auto">
                     {users.map((user) => (
                         <div className="" key={user.id_user}>
@@ -78,13 +78,7 @@ export default function SuggestionFriends() {
                     ))}
                 </div>
             </CardContent>
-            <CardFooter>
-            <div>
-              <h1 className=" border-b border-sidebar-accent pb-5 font-semibold text-2xl">Faça amigos e compartilhe suas experiencias!</h1>  
-              
-            </div>
-              
-            </CardFooter>
+         
         </Card>
     )
 }

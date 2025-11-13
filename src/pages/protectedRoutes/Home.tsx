@@ -5,8 +5,9 @@ import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
 
 import { io } from "socket.io-client"
-import SuggestionFriends from "@/components/suggestion-friends"
 import SuggestionChats from "@/components/suggestion-chats"
+import SuggestionFriends from "@/components/suggestion-friends"
+
 
 export default function Home() {
   const [page, setPage] = useState(1)
@@ -90,18 +91,29 @@ export default function Home() {
         {/* Feed de posts */}
         <div
           ref={postRef}
-          className="md:w-4xl gap-5 flex flex-col  md:overflow-y-auto no-scrollbar"
+          className="md:w-full   gap-5 flex flex-col  md:overflow-y-auto no-scrollbar"
         >
           {posts.map((post) => (
             <Posts key={post.id_post} post={post} />
           ))}
         </div>
 
-        {/* Sidebar */}
-        <div className="text-sidebar-foreground w-full md:w-96 flex flex-col gap-5">
-          <SuggestionFriends />
-          <SuggestionChats />
+        <div className="grid md:grid-cols-2 gap-4 md:w-6xl text-sidebar-accent-foreground">
+          <div>
+            <SuggestionChats/>
+          </div>
+          <div>
+            <SuggestionFriends/>
+          </div>
+          <div>
+            <SuggestionChats/>
+          </div>
+          <div>
+            <SuggestionFriends/>
+          </div>
+
         </div>
+          
 
 
       </div>

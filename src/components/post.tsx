@@ -63,7 +63,13 @@ export default function Posts({ post }: { post: Post, }) {
       setComments((prev) => {
         if(prev.some((comment) => comment.id_comment === newComment.id_comment)) return prev
         return [newComment, ...prev]
-      })
+      })    
+    })
+
+    socket.on("commentUpdated", (commentUpdated: Comment) => {
+      setComments((prev) => 
+      prev.map((p) => (p.id_comment === commentUpdated.id_comment ? commentUpdated : p))
+      )
     })
 
     return () => {
@@ -80,7 +86,7 @@ export default function Posts({ post }: { post: Post, }) {
   }, [payload, post.user?.id_user]);
 
   return (
-    <Card className="w-full text-sidebar-foreground md:w-[90%] flex flex-col border border-sidebar-border bg-sidebar/50 backdrop-blur-sm transition-colors hover:bg-sidebar/70">
+    <Card className="w-full text-sidebar-foreground md:w-[100%] flex flex-col border border-sidebar-border bg-sidebar/50 backdrop-blur-sm transition-colors hover:bg-sidebar/70">
       <div className="flex flex-col w-full gap-3 p-4 md:p-6" key={post.id_post}>
         {/* Header */}
         <CardHeader className="flex gap-3 items-center p-0">
@@ -158,7 +164,7 @@ export default function Posts({ post }: { post: Post, }) {
             />
           </div>
 
-          {comments ? (
+          {comments && comments.length >= 5 ? (
             <div onClick={() => {
               setPage(prev => prev + 1)
             }} className="flex items-center gap-1">

@@ -1,13 +1,14 @@
 
 import React, { useState } from "react";
 import type { Comment } from "@/api/PostApi";
-import { Calendar, LucideReplyAll, MessageCircleIcon } from "lucide-react";
+import { Calendar, Edit, LucideReplyAll, MessageCircleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
 import PostApi from "@/api/PostApi";
 import Avatar from "@/api_avatar";
+import useAuth from "@/hooks/useAuth";
 
 
 type CommentsProps = {
@@ -21,7 +22,7 @@ type CommentsProps = {
 export default function Comments({ comments, id_post }: CommentsProps) {
 
 
-  
+
 
 
   if (!comments?.length) {
@@ -48,6 +49,7 @@ export default function Comments({ comments, id_post }: CommentsProps) {
    Componente individual
 ======================= */
 function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }) {
+  const { payload } = useAuth()
   const [showReplies, setShowReplies] = useState(false);
 
   return (
@@ -62,7 +64,7 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
               className="h-full w-full object-cover"
             />
           ) : (
-           <Avatar name={comment.user?.username ?? ""}/>
+            <Avatar name={comment.user?.username ?? ""} />
           )}
         </div>
 
@@ -81,8 +83,8 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
             {comment.content}
           </p>
 
-          {/* Botão de responder */}
-          <div className="mt-2">
+
+          <div className="mt-2 flex gap-4">
             {comment.parentCommentId ? (
               <div>
                 <div className="flex gap-2 items-center text-sidebar-foreground/30">
@@ -98,6 +100,18 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
                 </Button>
               </ReplyModal>
             )}
+
+            {comment.id_user === payload?.id_user ? (
+              <div>
+                <ReplyModal id_post={id_post} parentCommentId={comment.id_comment!} id_comment={comment.id_comment}>
+                  <Button variant="ghost" size="sm" className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground">
+                    <Edit className="w-3 h-3 mr-1" />
+                    Editar
+                  </Button>
+                </ReplyModal>
+              </div>
+            ) : null}
+
 
           </div>
 
@@ -133,20 +147,32 @@ function ReplyModal({
   children,
   id_post,
   parentCommentId,
+  id_comment
 }: {
   children: React.ReactNode;
   id_post: string;
   parentCommentId: string;
+  id_comment?: string
 }) {
   const [content, setContent] = useState("");
 
   const onReply = async () => {
     try {
-      const response = await PostApi.createComment({
-        id_post,
-        content,
-        parentCommentId,
-      });
+
+      let response;
+
+      if (id_comment) {
+        response = await PostApi.updateComment({ id_comment, content })
+        console.log(response)
+      }
+      else {
+        response = await PostApi.createComment({
+          id_post,
+          content,
+          parentCommentId,
+        });
+      }
+
       toast.success(response.message);
       setContent("");
     } catch (e) {
@@ -160,7 +186,7 @@ function ReplyModal({
       <DialogContent className="bg-sidebar text-sidebar-foreground max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <MessageCircleIcon /> Responder Comentário
+            <MessageCircleIcon /> {id_comment ? "Editar Comentario" : "Responder Comentario"}
           </DialogTitle>
         </DialogHeader>
 
@@ -177,7 +203,7 @@ function ReplyModal({
             disabled={!content.trim()}
             className="bg-sidebar-accent  hover:bg-sidebar-accent/80"
           >
-            Responder
+            {id_comment ? "Editar Comentario" : "Responder Comentario"}
           </Button>
         </div>
       </DialogContent>

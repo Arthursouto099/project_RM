@@ -17,6 +17,7 @@ postRouter.put("/:id_post",authMiddleware, validate(postSchemaPartial) ,   postC
 postRouter.delete("/:id_post", authMiddleware, postController.deletePostByUniqueKey )
 postRouter.post("/comment/:id_post", authMiddleware, commentController.createComment)
 postRouter.get("/comment/:id_post", commentController.findComments)
+postRouter.put("/comment/:id_comment", commentController.putComment)
 
 
 // postRouter.post("/profile" , upload.single("image"), postController.postImage )

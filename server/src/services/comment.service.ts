@@ -12,6 +12,14 @@ export const UserRequiredProps = {
 
 }
 
+interface commentUpdateProps {
+    data: string
+    id_comment: string
+}
+
+
+
+
 export const commentService = {
     createComment: async (data: { content: string, }, { id_user, id_post, parentCommentId }: { id_user: string, id_post: string, parentCommentId?: string }) => {
         try {
@@ -31,7 +39,6 @@ export const commentService = {
 
         }
         catch (e) {
-            console.log(e)
             throw PostErrorHandler.internal("Não foi possivel criar o comentario", e)
 
         }
@@ -74,6 +81,19 @@ export const commentService = {
         })
 
         return findComment ?? null
+    },
+
+
+    putComment: async ({ id_comment, data }: commentUpdateProps) => {
+        try {
+            return await prisma.comment.update({
+                where: {id_comment},
+                data: {content: data}
+            })
+        }
+        catch (e) {
+            throw PostErrorHandler.internal("Não foi possivel editar o comentario", e)
+        }
     }
 
 
