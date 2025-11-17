@@ -2,6 +2,7 @@ import { PartialPostInputs, PostInputs } from "../schemas/post.schema";
 import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
 import { Pagination } from "../interfaces/Pagination";
+import { getSkipQuantity } from "../utils";
 
 
 
@@ -49,20 +50,20 @@ const postService = {
                         profile_image: true,
                     },
                 },
-                
+
             }
         })
     }
 
     ,
 
-    findPosts: async ({ page, limit }: Pagination) => {
-        const skip = (page - 1) * limit;
+    findPosts: async (pagination: Pagination) => {
+
 
         const [posts, total] = await Promise.all([
             prisma.post.findMany({
-                skip,
-                take: limit,
+                skip: getSkipQuantity(pagination),
+                take: pagination.limit,
                 orderBy: { createdAt: "desc" },
                 include: {
                     user: { select: { id_user: true, username: true, profile_image: true } },
@@ -74,21 +75,24 @@ const postService = {
         return {
             posts,
             total,
-            pages: Math.ceil(total / limit),
-            page,
+            pages: Math.ceil(total / pagination.limit),
+            page: pagination.page,
         };
     },
 
 
 
-    findPostsByIdUser: async (id_user: string, { limit, page }: Pagination) => {
-        const skip = (page - 1) * limit
-
+    findPostsByIdUser: async (id_user: string, pagination: Pagination) => {
 
         return await prisma.post.findMany({
-            where: { id_user }, skip: skip, take: limit, include: {
+            where: { id_user }, skip: getSkipQuantity(pagination), take: pagination.limit, include: {
                 user: true,
-                comments: { include: { replies: { include: { user: { omit: { password: true } } } }, user: { omit: { password: true } } } }
+                comments: {
+                    include: {
+                        replies: { include: { user: { omit: { password: true } } } },
+                        user: { omit: { password: true } }
+                    }
+                }
             }, orderBy: { createdAt: "desc" }
         }) ?? []
     },

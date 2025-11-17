@@ -7,6 +7,7 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import UserErrorHandler from "../errors/UserErrorHandler";
 import * as bc from "bcrypt"
 import { Pagination } from "../interfaces/Pagination";
+import { getSkipQuantity } from "../utils";
 
 
 
@@ -50,7 +51,7 @@ const commonUserService = {
             }
 
 
-            return await prisma.commonUser.findFirst({ where: where , include: {posts: true, friends: true}})
+            return await prisma.commonUser.findFirst({ where: where, include: { posts: true, friends: true } })
         }
 
         catch (e) {
@@ -71,22 +72,26 @@ const commonUserService = {
     },
 
 
-    findUsers: async ({page = 1, limit = 10}: Pagination, {region}: {region: string}) => {
-        const skip = (page - 1) * limit
-        console.log(region)
+    findUsers: async (pagination: Pagination, { region }: { region: string }) => {
 
         const [users, total] = await Promise.all([
-            prisma.commonUser.findMany({skip: skip, take: limit, orderBy: {createdAt: "desc"}, omit:{password: true, }, include: {posts: true, friends: true}}),
+            prisma.commonUser.findMany({
+                skip: getSkipQuantity(pagination),
+                take: pagination.limit,
+                orderBy: { createdAt: "desc" },
+                omit: { password: true, },
+                include: { posts: true, friends: true }
+            }),
             prisma.commonUser.count({})
         ])
 
         return {
             users,
             total,
-            pages: Math.ceil(total / limit),
-            page
+            pages: Math.ceil(total / pagination.limit),
+            page: pagination.page
         }
-        
+
     },
 
 
@@ -94,8 +99,8 @@ const commonUserService = {
     addFriend: async (friend1ID: string, friend2ID: string) => {
         try {
             const initRelation = await prisma.$transaction([
-                 prisma.commonUser.update({where: {id_user: friend1ID}, data: {friends: {connect: {id_user: friend2ID}}}}),
-                 prisma.commonUser.update({where: {id_user: friend2ID}, data: {friends: {connect: {id_user: friend1ID}}}})
+                prisma.commonUser.update({ where: { id_user: friend1ID }, data: { friends: { connect: { id_user: friend2ID } } } }),
+                prisma.commonUser.update({ where: { id_user: friend2ID }, data: { friends: { connect: { id_user: friend1ID } } } })
 
             ])
 
@@ -106,13 +111,13 @@ const commonUserService = {
 
         }
 
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
-            
+
         }
 
 
@@ -120,20 +125,28 @@ const commonUserService = {
     },
 
 
-    getFriends: async (id_user: string, {page = 1, limit = 10}) => {
-        try{
-            const skip = (page - 1) * limit
-            
-            const friends = await prisma.commonUser.findUnique({where: {id_user}, select:{friends: {skip: skip, take: limit, orderBy: {createdAt: "desc"}}}})
-            return friends
-            
-            
-        }
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+    getFriends: async (id_user: string, pagination: Pagination) => {
+        try {
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+
+            const friends = await prisma.commonUser.findUnique({
+                where: { id_user }, select: {
+                    friends:
+                    {
+                        skip: getSkipQuantity(pagination),
+                        take: pagination.limit, orderBy: { createdAt: "desc" }
+                    }
+                }
+            })
+            return friends
+
+
+        }
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
+
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
         }
     }
@@ -143,9 +156,9 @@ const commonUserService = {
 
     getMutualFriends: async (id_user: string) => {
         try {
-           
 
-            const friends = await prisma.commonUser.findUnique({where: {id_user}, select: {friendOf: true, friends: true}})
+
+            const friends = await prisma.commonUser.findUnique({ where: { id_user }, select: { friendOf: true, friends: true } })
 
 
             // filtro as amizades<1 === 1> para ambos
@@ -155,41 +168,41 @@ const commonUserService = {
             })
             return mutualFriends
         }
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
         }
     },
 
-    sendRequestFriend: async ( id_requester: string, id_received: string) => {
+    sendRequestFriend: async (id_requester: string, id_received: string) => {
         try {
 
-            const isFriends = await prisma.commonUser.findFirst({where: {id_user: id_received}, include: {friendOf: true}})
+            const isFriends = await prisma.commonUser.findFirst({ where: { id_user: id_received }, include: { friendOf: true } })
 
             const alreadyFriends = isFriends?.friendOf.some((u) => u.id_user === id_requester)
-            
-            if(alreadyFriends) throw UserErrorHandler.validation("Você e esse usuario já são amigos")
+
+            if (alreadyFriends) throw UserErrorHandler.validation("Você e esse usuario já são amigos")
 
             // verifico se ja existe
-            const isRequest  = await prisma.friendRequest.findFirst({where: {id_requester: id_requester, id_receiver: id_received}})
-            if(isRequest) throw UserErrorHandler.validation("Você já tem uma solicitação em aberto com esse usuario")
-
-            
-            const sendRequest = await prisma.friendRequest.create({data: {id_requester: id_requester, id_receiver: id_received  }})
+            const isRequest = await prisma.friendRequest.findFirst({ where: { id_requester: id_requester, id_receiver: id_received } })
+            if (isRequest) throw UserErrorHandler.validation("Você já tem uma solicitação em aberto com esse usuario")
 
 
+            const sendRequest = await prisma.friendRequest.create({ data: { id_requester: id_requester, id_receiver: id_received } })
 
-            
+
+
+
             return sendRequest
         }
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
         }
     }
@@ -197,51 +210,51 @@ const commonUserService = {
 
     getFriendRequestForUser: async (id_user: string) => {
         try {
-            const receivedRequest = await prisma.friendRequest.findMany({where: {id_receiver: id_user}, include: {receiver: true, requester: true}})
-            
+            const receivedRequest = await prisma.friendRequest.findMany({ where: { id_receiver: id_user }, include: { receiver: true, requester: true } })
+
             return receivedRequest
         }
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
         }
     }
 
     ,
 
-    acceptRequestFriend: async(id_request: string) => {
-         try {
-            const sendRequest = await prisma.friendRequest.update({data: {status: "accepted"}, where: {id_request}})
-            if(!sendRequest) throw new UserErrorHandler("Requisição de amizade não encontrada", "REQUEST_ERROR", 500)
+    acceptRequestFriend: async (id_request: string) => {
+        try {
+            const sendRequest = await prisma.friendRequest.update({ data: { status: "accepted" }, where: { id_request } })
+            if (!sendRequest) throw new UserErrorHandler("Requisição de amizade não encontrada", "REQUEST_ERROR", 500)
 
 
             // verificar se já são amigos
-            const isFriends = await prisma.commonUser.findFirst({where: {id_user: sendRequest.id_receiver}, include: {friendOf: true}})
+            const isFriends = await prisma.commonUser.findFirst({ where: { id_user: sendRequest.id_receiver }, include: { friendOf: true } })
             const alreadyFriends = isFriends?.friendOf.some((u) => u.id_user === sendRequest.id_requester)
 
             let accepted = null
 
-            if(!alreadyFriends) {
+            if (!alreadyFriends) {
                 accepted = await commonUserService.addFriend(sendRequest.id_requester, sendRequest.id_receiver)
             }
 
 
-            if(!accepted) throw UserErrorHandler.validation("Você já é amigo desse usuario")
-            
-            
+            if (!accepted) throw UserErrorHandler.validation("Você já é amigo desse usuario")
+
+
             return {
                 sendRequest,
                 accepted
             }
         }
-        catch(e) {
-            if(e instanceof UserErrorHandler) throw e
+        catch (e) {
+            if (e instanceof UserErrorHandler) throw e
 
-            if(e instanceof PrismaClientKnownRequestError) throw  UserErrorHandler.internal(e.message)
-            
+            if (e instanceof PrismaClientKnownRequestError) throw UserErrorHandler.internal(e.message)
+
             throw UserErrorHandler.internal()
         }
     },

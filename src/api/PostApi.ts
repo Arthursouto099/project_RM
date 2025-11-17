@@ -8,8 +8,8 @@ export type Post = {
     title: string
     content: string
     region?: string
-    images?: string[]  
-    videos?: string[]   
+    images?: string[]
+    videos?: string[]
     createdAt?: Date
     updatedAt?: Date
     user?: CommonUser
@@ -19,21 +19,22 @@ export type Post = {
 export type Comment = {
     id_comment?: string;
     id_post: string;
-    post?: Post;          
+    post?: Post;
     id_user?: string;
-    user?: CommonUser;    
+    user?: CommonUser;
     content: string;
     updatedAt?: Date;
     createdAt?: Date;
     parentCommentId?: string | null;
-    parentComment?: Comment | null;  
+    parentComment?: Comment | null;
     replies?: Comment[];
 }
 
 
-type CommentUpdateProps = { 
+type CommentUpdateProps = {
     content: string
     id_comment: string
+    parentCommentId?: string
 }
 
 export type Posts = {
@@ -83,7 +84,36 @@ const PostApi = {
             return {
                 message: allComments.data.message,
                 success: true,
-                data: allComments.data.data as Posts
+                data: allComments.data.data as Comment[]
+            }
+        }
+        catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+
+
+    },
+    findReplies: async (page: number, limit = 10, id_comment: string) => {
+
+        try {
+            const allReplies = await instanceV1.get(`/post/comment/replies/${id_comment}?page=${page}&limit=${limit}`)
+            return {
+                message: allReplies.data.message,
+                success: true,
+                data: allReplies.data.data as Comment[]
             }
         }
         catch (e) {
@@ -106,12 +136,41 @@ const PostApi = {
 
     },
 
-     createComment: async (data: Comment) => {
+    deleteComment: async (id_comment: string) => {
+
+        try {
+            const token = tokenActions.getToken()
+            const deletedComment = await instanceV1.delete(`/post/comment/delete/${id_comment}`, {headers: {Authorization: `bearer ${token}`}})
+            return {
+                message: deletedComment.data.message,
+                success: true,
+                data: null
+            }
+        }
+        catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+
+
+    },
+
+    createComment: async (data: Comment) => {
         let url_string: string = ""
 
-        if(data.parentCommentId) {
-            url_string = `/post/comment/${data.id_post}?parentCommentId=${data.parentCommentId}`
-        }
+        if (data.parentCommentId) url_string = `/post/comment/${data.id_post}?parentCommentId=${data.parentCommentId}`
         else url_string = `/post/comment/${data.id_post}`
 
         try {
@@ -142,12 +201,17 @@ const PostApi = {
         }
     },
 
-        updateComment: async (data: CommentUpdateProps) => {
-       
+    updateComment: async (data: CommentUpdateProps) => {
+        let url_string;
+
+
+        console.log(data)
+        if(data.parentCommentId) url_string = `/post/comment/${data.id_comment}?parentCommentId=${data.parentCommentId}`
+        else url_string = `/post/comment/${data.id_comment}`
 
         try {
             const token = tokenActions.getToken()
-            const comment = await instanceV1.put(`/post/comment/${data.id_comment}`, {content: data.content}, { headers: { Authorization: `bearer ${token}` } })
+            const comment = await instanceV1.put(url_string, { content: data.content }, { headers: { Authorization: `bearer ${token}` } })
             return {
                 message: comment.data.message || "Não foi possível realizar a publicação",
                 success: true,

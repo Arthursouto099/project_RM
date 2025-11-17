@@ -52,7 +52,7 @@ export default function Posts({ post }: { post: Post, }) {
 
 
   useEffect(() => {
-    findCommentsByIdPost(post.id_post!, { page, limit: 5 }, setComments)
+    findCommentsByIdPost(post.id_post!, { page, limit: 20 }, setComments)
   }, [post.id_post, page])
 
   useEffect(() => {
@@ -60,10 +60,14 @@ export default function Posts({ post }: { post: Post, }) {
     socket.emit("joinComments")
 
     socket.on("commentCreated", (newComment: Comment) => {
-      setComments((prev) => {
+
+      if(newComment.id_post === post.id_post) {
+        setComments((prev) => {
         if(prev.some((comment) => comment.id_comment === newComment.id_comment)) return prev
         return [newComment, ...prev]
-      })    
+      })
+      }
+          
     })
 
     socket.on("commentUpdated", (commentUpdated: Comment) => {

@@ -1,6 +1,8 @@
 import prisma from "../prisma.config"
 import ChatErrorHandler from "../errors/ChatErrorHandler"
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library"
+import { Pagination } from "../interfaces/Pagination"
+import { getSkipQuantity } from "../utils"
 
 
 
@@ -91,9 +93,13 @@ const chatService = {
                         { participants: { every: { id_user: { in: [UserA, UserB] } } } }
                     ]
                 },
-                include: { participants: true, messages: {take: 1, orderBy: {
-                    createdAt: "desc"
-                }} }
+                include: {
+                    participants: true, messages: {
+                        take: 1, orderBy: {
+                            createdAt: "desc"
+                        }
+                    }
+                }
             })
 
             return {
@@ -116,9 +122,14 @@ const chatService = {
 
 
 
-    getPrivateMessas: async (id_chat: string, { page = 1, limit = 20 }) => {
-        const skip = (page - 1) * limit
-        const messages = await prisma.message.findMany({ where: { id_chat }, take: limit, skip: skip, orderBy: { createdAt: "desc" }, include: { sender: true } },)
+    getPrivateMessas: async (id_chat: string, pagination: Pagination) => {
+        const messages = await prisma.message.findMany({
+            where: { id_chat },
+            take: pagination.limit,
+            skip: getSkipQuantity(pagination),
+            orderBy: { createdAt: "desc" },
+            include: { sender: true }
+        },)
         return messages ?? []
     },
 

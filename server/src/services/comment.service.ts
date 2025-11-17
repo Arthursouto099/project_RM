@@ -1,7 +1,8 @@
-import { Prisma } from "@prisma/client"
+import { Comment, Prisma } from "@prisma/client"
 import prisma from "../prisma.config"
 import PostErrorHandler from "../errors/PostErrorHandler";
 import { Pagination } from "../interfaces/Pagination";
+import { getSkipQuantity } from "../utils";
 import { string } from "zod";
 
 export const UserRequiredProps = {
@@ -12,10 +13,13 @@ export const UserRequiredProps = {
 
 }
 
+
 interface commentUpdateProps {
     data: string
     id_comment: string
 }
+
+
 
 
 
@@ -45,13 +49,13 @@ export const commentService = {
     },
 
 
-    findAllCommentsByPost: async ({ page = 1, limit = 5 }: Pagination, { id_post }: { id_post: string }) => {
-        const skip = (page - 1) * limit
+    findAllCommentsByPost: async (pagination: Pagination, { id_post }: { id_post: string }) => {
+        
 
         return await prisma.comment.findMany({
             where: { id_post },
-            skip,
-            take: limit,
+            skip: getSkipQuantity(pagination),
+            take: pagination.limit,
             include: {
                 replies:
                     { include: { user: { select: UserRequiredProps } } },
@@ -61,6 +65,18 @@ export const commentService = {
 
         }) ?? []
     },
+
+
+
+    findRepliesByIdComment: async ({ id_comment, pagination }: { id_comment: string, pagination: Pagination }) => {
+        return await prisma.comment.findMany({
+            skip: getSkipQuantity(pagination),
+            take: pagination.limit,
+            where: { parentCommentId: id_comment },
+            include: { user: { select: UserRequiredProps } }
+        }) ?? []
+    },
+
 
 
     findCommentById: async ({ id_comment }: { id_comment: string }) => {
@@ -83,18 +99,31 @@ export const commentService = {
         return findComment ?? null
     },
 
+    deleteComment: async ({id_comment}: {id_comment: string}) => {
+        try {
+            return await prisma.comment.delete({where: {id_comment}})
+        }
+        catch(e) {
+            throw PostErrorHandler.internal("Não foi possivel deletar o comentario", e)
+        }
+
+    }
+
+    ,
 
     putComment: async ({ id_comment, data }: commentUpdateProps) => {
         try {
             return await prisma.comment.update({
-                where: {id_comment},
-                data: {content: data}
+                where: { id_comment },
+                data: { content: data }
             })
         }
         catch (e) {
             throw PostErrorHandler.internal("Não foi possivel editar o comentario", e)
         }
     }
+
+    
 
 
 

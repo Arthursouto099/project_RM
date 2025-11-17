@@ -1,14 +1,16 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { Comment } from "@/api/PostApi";
-import { Calendar, Edit, LucideReplyAll, MessageCircleIcon } from "lucide-react";
+import { Calendar, DeleteIcon, Edit, LucideReplyAll, MessageCircleIcon, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "react-toastify";
 import PostApi from "@/api/PostApi";
 import Avatar from "@/api_avatar";
 import useAuth from "@/hooks/useAuth";
+import { io } from "socket.io-client";
+
 
 
 type CommentsProps = {
@@ -17,6 +19,33 @@ type CommentsProps = {
 };
 
 
+type Pagination = {
+  limit: number,
+  page: number
+}
+
+
+type RepliesSelectorProps = {
+  id_comment: string,
+  setReplies: Dispatch<SetStateAction<Comment[]>>
+  pagination: Pagination
+
+}
+
+
+
+const findRepliesByComment = async ({ id_comment, setReplies, pagination }: RepliesSelectorProps) => {
+  const repliesByComment: Comment[] | undefined = (await PostApi.findReplies(pagination.page, pagination.limit, id_comment)).data
+
+
+  setReplies(prev => {
+    const newReplies = repliesByComment ?? [];
+    const uniqueReplies = newReplies.filter(
+      nr => !prev.some(pr => pr.id_comment === nr.id_comment)
+    );
+    return [...prev, ...uniqueReplies];
+  });
+}
 
 
 export default function Comments({ comments, id_post }: CommentsProps) {
@@ -24,16 +53,9 @@ export default function Comments({ comments, id_post }: CommentsProps) {
 
 
 
+  // separo os comentarios que não possuiem parentCommentID
+  const parentComments = comments.filter(comments => !comments.parentCommentId);
 
-  if (!comments?.length) {
-    return <p className="text-neutral-500    text-sm">Nenhum comentário ainda.</p>;
-  }
-
-  const parentComments = comments.filter(c => !c.parentCommentId);
-
-  if (!parentComments.length) {
-    return <p className="text-neutral-500 text-sm">Nenhum comentário ainda.</p>;
-  }
 
 
   return (
@@ -50,7 +72,51 @@ export default function Comments({ comments, id_post }: CommentsProps) {
 ======================= */
 function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }) {
   const { payload } = useAuth()
-  const [showReplies, setShowReplies] = useState(false);
+  const [page, setPage] = useState<number>(1)
+  const [replies, setReplies] = useState<Comment[]>([])
+  const [showReplies, setShowReplies] = useState(true);
+
+
+  useEffect(() => {
+    setReplies([])
+    findRepliesByComment({ id_comment: comment.id_comment!, pagination: { page: page, limit: 20 }, setReplies })
+  }, [comment.id_comment, id_post])
+
+
+  useEffect(() => {
+    const socket = io("http://localhost:3300")
+    socket.emit("joinComments")
+
+
+
+    socket.on("replyCreated", (newComment: Comment) => {
+
+
+      if (newComment.parentCommentId === comment.id_comment) {
+        setReplies((prev) => {
+          if (prev.some((comment) => comment.id_comment === newComment.id_comment)) return prev
+          return [newComment, ...prev]
+        })
+      }
+
+
+
+    })
+
+
+    socket.on("replyUpdated", (commentUpdated: Comment) => {
+      setReplies((prev) =>
+        prev.map((p) => (p.id_comment === commentUpdated.id_comment ? commentUpdated : p))
+      )
+    })
+
+
+    
+
+    return () => { socket.disconnect() }
+
+
+  }, [])
 
   return (
     <div className="flex flex-col border-l-2 border-sidebar-border pl-3">
@@ -84,50 +150,69 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
           </p>
 
 
-          <div className="mt-2 flex gap-4">
-            {comment.parentCommentId ? (
-              <div>
-                <div className="flex gap-2 items-center text-sidebar-foreground/30">
-                  <h1 className="text-xs">Resposta ao comentario</h1>
-                  <LucideReplyAll className="w-4 h-4" />
-                </div>
-              </div>
-            ) : (
-              <ReplyModal id_post={id_post} parentCommentId={comment.id_comment!}>
-                <Button variant="ghost" size="sm" className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground">
-                  <MessageCircleIcon className="w-3 h-3 mr-1" />
-                  Responder
+          <div className="flex flex-wrap items-center gap-3 mt-2">
+
+            {/* Responder */}
+            {!comment.parentCommentId && (
+              <ReplyModal id_post={id_post} parentCommentId={comment.id_comment}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground transition"
+                >
+                  <MessageCircleIcon className="w-4 h-4" />
+                  <span className="hidden sm:block">Responder</span>
                 </Button>
               </ReplyModal>
             )}
 
-            {comment.id_user === payload?.id_user ? (
-              <div>
-                <ReplyModal id_post={id_post} parentCommentId={comment.id_comment!} id_comment={comment.id_comment}>
-                  <Button variant="ghost" size="sm" className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground">
-                    <Edit className="w-3 h-3 mr-1" />
-                    Editar
-                  </Button>
-                </ReplyModal>
-              </div>
-            ) : null}
+            {/* Editar (dono do comentário) */}
+            {comment.id_user === payload?.id_user && (
+              <ReplyModal
+                id_post={id_post}
+                parentCommentId={comment.parentCommentId ?? undefined}
+                id_comment={comment.id_comment}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground transition"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span className="hidden sm:block">Editar</span>
+                </Button>
+              </ReplyModal>
+            )}
 
+            {/* Deletar (dono do comentário) */}
+            {comment.id_user === payload?.id_user && (
+              <ReplyModalDelete id_comment={comment.id_comment!}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1 text-xs hover:bg-red-500/10 transition"
+                >
+                  <X className="w-4 h-4" />
+                  <span className="hidden sm:block">Deletar</span>
+                </Button>
+              </ReplyModalDelete>
+            )}
 
           </div>
 
           {/* Respostas */}
-          {comment.replies && comment.replies.length > 0 && (
+          {replies && replies.length > 0 && (
             <div className="mt-2  ml-4">
               <button
                 onClick={() => setShowReplies(!showReplies)}
                 className="text-xs text-sidebar-foreground/60 hover:text-sidebar-foreground "
               >
-                {showReplies ? "Ocultar respostas" : `Ver ${comment.replies.length} respostas`}
+                {showReplies ? "Ocultar respostas" : `Ver ${replies.length} respostas`}
               </button>
 
               {showReplies && (
                 <div className="mt-2 flex flex-col gap-2">
-                  {comment.replies.map((reply) => (
+                  {replies.map((reply) => (
                     <CommentItem key={reply.id_comment} comment={reply} id_post={id_post} />
                   ))}
                 </div>
@@ -140,9 +225,7 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
   );
 }
 
-/* =======================
-   Modal para responder
-======================= */
+
 function ReplyModal({
   children,
   id_post,
@@ -151,7 +234,7 @@ function ReplyModal({
 }: {
   children: React.ReactNode;
   id_post: string;
-  parentCommentId: string;
+  parentCommentId?: string;
   id_comment?: string
 }) {
   const [content, setContent] = useState("");
@@ -162,8 +245,7 @@ function ReplyModal({
       let response;
 
       if (id_comment) {
-        response = await PostApi.updateComment({ id_comment, content })
-        console.log(response)
+        response = await PostApi.updateComment({ id_comment, content, parentCommentId })
       }
       else {
         response = await PostApi.createComment({
@@ -198,13 +280,82 @@ function ReplyModal({
         />
 
         <div className="mt-4 flex justify-end">
+          <DialogClose asChild>
+            <Button
+              onClick={onReply}
+              disabled={!content.trim()}
+              className="bg-sidebar-accent  hover:bg-sidebar-accent/80"
+            >
+              {id_comment ? "Editar Comentario" : "Responder Comentario"}
+            </Button>
+          </DialogClose>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+function ReplyModalDelete({
+  children,
+  id_comment
+}: {
+  children: React.ReactNode;
+
+  id_comment: string
+}) {
+
+
+
+  const onDelete = async () => {
+    try {
+      const response = await PostApi.deleteComment(id_comment)
+      toast.success(response.message)
+
+    } catch (e) {
+      toast.error((e as Error).message)
+    }
+  };
+
+  return (
+    <Dialog >
+      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogContent className="bg-sidebar text-sidebar-foreground max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageCircleIcon /> Exluir Comentario
+          </DialogTitle>
+        </DialogHeader>
+
+
+        {/* <div className="mt-4 flex justify-end">
           <Button
-            onClick={onReply}
+            onClick={onDelete}
             disabled={!content.trim()}
             className="bg-sidebar-accent  hover:bg-sidebar-accent/80"
           >
-            {id_comment ? "Editar Comentario" : "Responder Comentario"}
+            Excluir Comentario
           </Button>
+        </div> */}
+
+        <div className="flex justify-center items-center">
+          <div className="flex justify-center h-20 items-center gap-4">
+            <DialogClose asChild>
+              <Button className="bg-sidebar-accent hover:bg-sidebar-accent/80">
+                Cancelar
+              </Button>
+            </DialogClose>
+
+            <DialogClose asChild>
+              <Button
+                onClick={onDelete}
+                className="bg-sidebar-accent  hover:bg-sidebar-accent/80"
+              >
+                Excluir Comentario
+              </Button>
+            </DialogClose>
+
+          </div>
         </div>
       </DialogContent>
     </Dialog>

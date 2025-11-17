@@ -132,13 +132,13 @@ model Post {
 model Comment {
   id_comment      String    @id @default(cuid())
   id_post         String
-  post            Post      @relation(fields: [id_post], references: [id_post])
+  post            Post      @relation(fields: [id_post], references: [id_post], onDelete: Cascade)
   id_user         String    // novo campo para usuário
   user            CommonUser      @relation(fields: [id_user], references: [id_user])
   content         String
   updatedAt       DateTime  @default(now()) @updatedAt
   createdAt       DateTime  @default(now())
-  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id_comment])
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id_comment] , onDelete: Cascade)
   parentCommentId String?
   replies         Comment[] @relation("CommentReplies")
 }
