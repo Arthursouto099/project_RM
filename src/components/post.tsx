@@ -76,6 +76,12 @@ export default function Posts({ post }: { post: Post, }) {
       )
     })
 
+
+
+    socket.on("commentDeleted", (commentDeleted: Comment) => {
+      setComments((prev) => prev.filter((comment) => comment.id_comment !== commentDeleted.id_comment))
+    })
+
     return () => {
       socket.disconnect()
     }
@@ -168,16 +174,7 @@ export default function Posts({ post }: { post: Post, }) {
             />
           </div>
 
-          {comments && comments.length >= 5 ? (
-            <div onClick={() => {
-              setPage(prev => prev + 1)
-            }} className="flex items-center gap-1">
-              <ChevronDown />
-              <h1 className="text-sm">Ver mais comentarios</h1>
-            </div>
-          ) : (
-            <div></div>
-          )}
+     
 
           <div className="flex gap-4 items-center">
             <CreateCommentModal id_post={post.id_post!}>

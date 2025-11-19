@@ -4,7 +4,7 @@ import chatService from "../services/chat.service";
 import { CustomRequest } from "../types/CustomRequest";
 import ChatErrorHandler from "../errors/ChatErrorHandler";
 import { io } from "../app";
-
+import {emitSinalByWebSocket} from "../interfaces/Socket"
 
 
 
@@ -43,8 +43,12 @@ sendMessage: async (req: CustomRequest, res: Response, next: NextFunction) => {
 
         // aviso o IO quando uma nova mensagem e enviada para sala,
         // envio a mensagem nessa sala
-        io.to(sendMessage.id_chat).emit("newMessage", sendMessage)
-
+        emitSinalByWebSocket({
+            io,
+            toString: sendMessage.id_chat,
+            emitString: "newMessage",
+            args: sendMessage
+        })
 
         responseOk(res, "Messagem enviada com sucesso!", sendMessage, 201)
     }
@@ -63,9 +67,14 @@ getMessages: async (req: CustomRequest, res: Response, next: NextFunction) => {
         {IO DO APP} algumas informações  como o chatID e o timeStamp
 
         /*/
-        io.to(req.params.id_chat).emit("chatViewed", {
-            chatId: req.params.id_chat,
-            timeStamp: new Date()
+        emitSinalByWebSocket({
+            io,
+            toString: req.params.id_chat,
+            emitString: "chatViewed",
+            args: {
+                chatId: req.params.id_chat,
+                timeStamp: new Date()
+            }
         })
 
         responseOk(res, "Mensagens encontradas com sucesso!", sendMessage, 200)

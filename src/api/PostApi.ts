@@ -3,6 +3,7 @@ import instanceV1 from "./api@instance/ap-v1i";
 import type { CommonUser, DefaultResponseAPI } from "./UserApi";
 import { tokenActions } from "@/@tokenSettings/token";
 
+
 export type Post = {
     id_post?: string
     title: string
@@ -106,6 +107,38 @@ const PostApi = {
 
 
     },
+    findComment: async (id_comment: string) => {
+        try {
+            const token = tokenActions.getToken()
+            const comment = await instanceV1.get(`/post/comment/find/${id_comment}`, {headers: {
+                Authorization: `bearer ${token}`
+            }})
+            console.log(comment.data)
+            return {
+                message: comment.data.message,
+                success: true,
+                data: comment.data.data as Comment
+            }
+        }
+        catch (e) {
+            if (isAxiosError(e)) {
+                return {
+                    message: e.response?.data?.message || "Erro ao conectar com o servidor",
+                    success: false,
+                    code: e.response?.status,
+                    requestTime: new Date().toISOString(),
+                };
+            }
+
+            return {
+                message: "Erro inesperado",
+                success: false,
+                requestTime: new Date().toISOString(),
+            };
+        }
+
+
+    },
     findReplies: async (page: number, limit = 10, id_comment: string) => {
 
         try {
@@ -136,11 +169,18 @@ const PostApi = {
 
     },
 
-    deleteComment: async (id_comment: string) => {
+    deleteComment: async (id_comment: string, parentCommentId?: string) => {
+        let urlString
+
+        if (parentCommentId) urlString = `/post/comment/delete/${id_comment}?parentCommentId=${parentCommentId} `
+        else urlString = `/post/comment/delete/${id_comment}`
+
+
+
 
         try {
             const token = tokenActions.getToken()
-            const deletedComment = await instanceV1.delete(`/post/comment/delete/${id_comment}`, {headers: {Authorization: `bearer ${token}`}})
+            const deletedComment = await instanceV1.delete(urlString, { headers: { Authorization: `bearer ${token}` } })
             return {
                 message: deletedComment.data.message,
                 success: true,
@@ -206,7 +246,7 @@ const PostApi = {
 
 
         console.log(data)
-        if(data.parentCommentId) url_string = `/post/comment/${data.id_comment}?parentCommentId=${data.parentCommentId}`
+        if (data.parentCommentId) url_string = `/post/comment/${data.id_comment}?parentCommentId=${data.parentCommentId}`
         else url_string = `/post/comment/${data.id_comment}`
 
         try {

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import type { Comment } from "@/api/PostApi";
-import { Calendar, DeleteIcon, Edit, LucideReplyAll, MessageCircleIcon, X } from "lucide-react";
+import { Calendar, DeleteIcon, Edit, LucideReplyAll, MessageCircleIcon, ReplyAll, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -75,7 +75,24 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
   const [page, setPage] = useState<number>(1)
   const [replies, setReplies] = useState<Comment[]>([])
   const [showReplies, setShowReplies] = useState(true);
+  const [parentComment, setParentComment] = useState<Comment | null>(null)
 
+  useEffect(() => {
+    if (!comment.parentCommentId) return;
+
+    const loadParentComment = async () => {
+      try {
+        if (!comment.parentCommentId) return
+        const response = await PostApi.findComment(comment.parentCommentId)
+        console.log(response)
+        setParentComment(response.data ?? null)
+      } catch (err) {
+        console.error("Erro ao carregar comentário pai:", err)
+      }
+    }
+
+    loadParentComment()
+  }, [comment.parentCommentId])
 
   useEffect(() => {
     setReplies([])
@@ -111,7 +128,13 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
     })
 
 
-    
+    socket.on("replyDeleted", (commentDeleted: Comment) => {
+      setReplies((prev) =>
+        prev.filter((p) => (p.id_comment !== commentDeleted.id_comment))
+      )
+    })
+
+
 
     return () => { socket.disconnect() }
 
@@ -135,6 +158,9 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
         </div>
 
         <div className="flex flex-col w-full">
+          <span className="font-medium mb-2 text-xs text-sidebar-foreground/50">
+            {comment.user?.nickname}
+          </span>
           <div className="flex justify-between">
             <span className="font-medium text-sm text-sidebar-foreground">
               {comment.user?.username ?? "Usuário"}
@@ -150,21 +176,32 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
           </p>
 
 
+          {comment.parentCommentId && (
+
+            <div className="text-[10px] md:text-xs mt-2 text-sidebar-accent-foreground/50 flex gap-2 items-center">
+              <ReplyAll className="h-4 w-4" />
+              <p>Resposta ao comentario de {parentComment?.user?.nickname ?? "rwoiherghui"}</p>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-3 mt-2">
 
-            {/* Responder */}
-            {!comment.parentCommentId && (
+
+            {(
               <ReplyModal id_post={id_post} parentCommentId={comment.id_comment}>
                 <Button
                   variant="ghost"
                   size="sm"
                   className="flex items-center gap-1 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground transition"
                 >
-                  <MessageCircleIcon className="w-4 h-4" />
+                  <MessageCircleIcon className="w-2 h-2" />
                   <span className="hidden sm:block">Responder</span>
                 </Button>
               </ReplyModal>
             )}
+
+
+
 
             {/* Editar (dono do comentário) */}
             {comment.id_user === payload?.id_user && (
@@ -178,21 +215,21 @@ function CommentItem({ comment, id_post }: { comment: Comment; id_post: string }
                   size="sm"
                   className="flex items-center gap-1 text-xs text-sidebar-foreground/70 hover:text-sidebar-foreground transition"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-2 h-2" />
                   <span className="hidden sm:block">Editar</span>
                 </Button>
               </ReplyModal>
             )}
 
-            {/* Deletar (dono do comentário) */}
+
             {comment.id_user === payload?.id_user && (
-              <ReplyModalDelete id_comment={comment.id_comment!}>
+              <ReplyModalDelete id_comment={comment.id_comment!} parentCommentId={comment.parentCommentId ? comment.parentCommentId : undefined}>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex items-center gap-1 text-xs hover:bg-red-500/10 transition"
+                  className="flex items-center text-sidebar-accent-foreground/70 gap-1 text-xs hover:bg-red-500/10 transition"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-2 h-2" />
                   <span className="hidden sm:block">Deletar</span>
                 </Button>
               </ReplyModalDelete>
@@ -234,7 +271,7 @@ function ReplyModal({
 }: {
   children: React.ReactNode;
   id_post: string;
-  parentCommentId?: string;
+  parentCommentId?: string | undefined;
   id_comment?: string
 }) {
   const [content, setContent] = useState("");
@@ -298,10 +335,11 @@ function ReplyModal({
 
 function ReplyModalDelete({
   children,
-  id_comment
+  id_comment,
+  parentCommentId
 }: {
   children: React.ReactNode;
-
+  parentCommentId?: string | undefined
   id_comment: string
 }) {
 
@@ -309,7 +347,12 @@ function ReplyModalDelete({
 
   const onDelete = async () => {
     try {
-      const response = await PostApi.deleteComment(id_comment)
+
+
+      let response;
+
+      if (parentCommentId) response = await PostApi.deleteComment(id_comment, parentCommentId)
+      else response = await PostApi.deleteComment(id_comment)
       toast.success(response.message)
 
     } catch (e) {

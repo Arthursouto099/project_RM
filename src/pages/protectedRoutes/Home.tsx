@@ -98,24 +98,6 @@ export default function Home() {
           ))}
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 md:w-6xl text-sidebar-accent-foreground">
-          <div>
-            <SuggestionChats/>
-          </div>
-          <div>
-            <SuggestionFriends/>
-          </div>
-          <div>
-            <SuggestionChats/>
-          </div>
-          <div>
-            <SuggestionFriends/>
-          </div>
-
-        </div>
-          
-
-
       </div>
     </section>
 

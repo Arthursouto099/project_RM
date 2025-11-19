@@ -3,12 +3,30 @@ import commentService from "../services/comment.service"
 import { responseOk } from "../config/responses/app.response"
 import { CustomRequest } from "../types/CustomRequest"
 import { io } from "../app"
+import {emitSinalByWebSocket} from '../interfaces/Socket'
+
+const checkParentCommentId = (req: CustomRequest): string | undefined => {
+    return req.query.parentCommentId && req.query.parentCommentId !== "undefined" ? String(req.query.parentCommentId) : undefined
+}
 
 
 
 
 
 const commentController = {
+    
+    findComment: async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const comment = await commentService.findCommentById({id_comment: req.params.id_comment})
+            responseOk(res, "Comentario Encontrado", comment, 200)
+        }
+        catch(e) {
+            next(e)
+        }
+    },
+
+
+
     findComments: async (req: Request, res: Response, next: NextFunction) => {
         try {
             const comments = await commentService.findAllCommentsByPost({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 5) }, { id_post: req.params.id_post })
@@ -21,7 +39,7 @@ const commentController = {
 
 
     createComment: async (req: CustomRequest, res: Response, next: NextFunction) => {
-        const parentCommentId = req.query.parentCommentId && req.query.parentCommentId !== "undefined" ? String(req.query.parentCommentId) : undefined;
+        const parentCommentId = checkParentCommentId(req)
 
         try {
             const comment = await commentService.createComment({ content: req.body.content }, {
@@ -33,10 +51,20 @@ const commentController = {
 
             // caso tenha o id de um comentario pai
             // neste caso eu retorno o comentario pai completo com todas as repostas
-            if (parentCommentId) io.to("commentRoom").emit("replyCreated", await commentService.findCommentById({ id_comment: comment.id_comment }))
-             else io.to("commentRoom").emit("commentCreated", await commentService.findCommentById({ id_comment: comment.id_comment }))
+            if (parentCommentId) emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "replyCreated",
+                args: commentService.findCommentById({ id_comment: comment.id_comment })
+            })
+            else emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "commentCreated",
+                args: await commentService.findCommentById({ id_comment: comment.id_comment })
+            })
 
-            
+
 
             responseOk(res, "comentario criado com sucesso", comment, 200)
         }
@@ -46,14 +74,23 @@ const commentController = {
     },
 
     putComment: async (req: CustomRequest, res: Response, next: NextFunction) => {
-        const parentCommentId = req.query.parentCommentId && req.query.parentCommentId !== "undefined" ? String(req.query.parentCommentId) : undefined;
+        const parentCommentId = checkParentCommentId(req)
+
         try {
             const comment = await commentService.putComment({ id_comment: req.params.id_comment, data: req.body.content })
 
-
-            if (parentCommentId) io.to("commentRoom").emit("replyUpdated", await commentService.findCommentById({ id_comment: comment.id_comment }))
-            else io.to("commentRoom").emit("commentUpdated", await commentService.findCommentById({ id_comment: comment.id_comment }))
-
+            if(parentCommentId) emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "replyUpdated",
+                args: await commentService.findCommentById({id_comment: comment.id_comment})
+            }) 
+            else emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "commentUpdated",
+                args: await commentService.findCommentById({id_comment: comment.id_comment})
+            })
 
 
             responseOk(res, "comentario editado com sucesso", comment, 200)
@@ -81,10 +118,28 @@ const commentController = {
 
 
     deleteComment: async (req: CustomRequest, res: Response, next: NextFunction) => {
+        const parentCommentId = checkParentCommentId(req)
+
         try {
             const comment = await commentService.deleteComment({ id_comment: req.params.id_comment })
 
-            io.to("commentRoom").emit("commentDeleted", await commentService.findCommentById({id_comment: comment.id_comment }))
+            if (parentCommentId) io.to("commentRoom").emit("replyDeleted", comment)
+            else io.to("commentRoom").emit("commentDeleted",  comment)
+
+
+            if(parentCommentId) emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "replyDeleted",
+                args: comment
+            })
+            else emitSinalByWebSocket({
+                io,
+                toString: "commentRoom",
+                emitString: "commentDeleted",
+                args: comment
+            })
+
             responseOk(res, "comentario deletado com sucesso")
         }
         catch (e) {
