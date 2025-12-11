@@ -17,7 +17,7 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
   }, [id_user])
 
   return (
-    <div className="w-full max-w-5xl mx-auto p-5 h-full flex flex-col items-center gap-6">
+    <div className="w-full  mx-auto p-5 h-full flex flex-col items-center gap-6">
       <Card className="flex flex-col sm:flex-row items-center sm:items-start gap-6 w-full bg-sidebar-accent/20 rounded-2xl shadow-md p-6 transition-all">
         <div className="flex-shrink-0 relative">
           {user?.profile_image ? (

@@ -31,7 +31,7 @@ export function DialogCreatePost({
   const [prevContent, setPrevContent] = useState<string>(partialUpdatePost?.content ?? "")
 
   return (
-    <Dialog>
+    <Dialog >
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent className="sm:max-w-5xl w-full h-[90%] rounded-2xl shadow-2xl border border-gray-200/20 text-sidebar-foreground bg-sidebar p-0 overflow-hidden">
@@ -111,6 +111,18 @@ interface CreatePostProps {
   isUpdatePost?: Partial<Post>
 }
 
+
+
+export function Loading({ onOpen }: { onOpen: boolean }) {
+  if (!onOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+      <div className="w-16 h-16 border-4 border-t-accent-normal border-gray-300 rounded-full animate-spin"></div>
+    </div>
+  )
+}
+
 export function CreatePostForm({
   onPreviewsChange,
   onTitleChange,
@@ -125,6 +137,7 @@ export function CreatePostForm({
   const [, setImageUrls] = useState<string[]>([])
   const [isFileUpdated, setFileUpdated] = useState<boolean>(false)
   const [previews, setPreviews] = useState<string[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     if (!e.target.files) return
@@ -139,34 +152,56 @@ export function CreatePostForm({
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // --- lógica mantida exatamente igual ---
-    if (isFileUpdated && files) {
-      const urls: string[] = []
-      await Promise.all(
-        Array.from(files).map(async (file) => {
-          const fileExt = file.name.split(".").pop()
-          const fileName = `${Date.now()}-${Math.random()
-            .toString(36)
-            .substring(7)}.${fileExt}`
+    if (!title || !content) return // opcional: validação rápida
 
-          const { error } = await supabase.storage
-            .from("images")
-            .upload(fileName, file, { upsert: true })
+    try {
+      setLoading(true) 
 
-          if (error) {
-            console.error("Erro no upload:", error.message)
-            return
-          }
+      if (isFileUpdated && files) {
+        const urls: string[] = []
 
-          const { data } = supabase.storage.from("images").getPublicUrl(fileName)
-          if (data?.publicUrl) urls.push(data.publicUrl)
+        await Promise.all(
+          files.map(async (file) => {
+            const fileExt = file.type.split("/")[1] || "mp4"
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+
+            const { error } = await supabase.storage
+              .from("images")
+              .upload(fileName, file, { upsert: true })
+
+            if (error) {
+              console.error("Erro no upload:", error)
+              return
+            }
+
+            const { data } = supabase.storage.from("images").getPublicUrl(fileName)
+            if (data?.publicUrl) urls.push(data.publicUrl)
+          })
+        )
+
+        setImageUrls(urls)
+
+        if (!isUpdated) {
+          const res = await PostApi.create({ title, content, images: urls })
+          if (!res.success) return toast.error(res.message)
+          toast.success(res.message)
+          return
+        }
+
+        const res = await PostApi.update({
+          title,
+          content,
+          images: urls,
+          id_post: isUpdatePost?.id_post,
         })
-      )
+        if (!res.success) return toast.error(res.message)
+        toast.success(res.message)
+        return
+      }
 
-      setImageUrls(urls)
-
+      // Caso não haja arquivos novos
       if (!isUpdated) {
-        const res = await PostApi.create({ title, content, images: urls })
+        const res = await PostApi.create({ title, content })
         if (!res.success) return toast.error(res.message)
         toast.success(res.message)
         return
@@ -175,34 +210,23 @@ export function CreatePostForm({
       const res = await PostApi.update({
         title,
         content,
-        images: urls,
         id_post: isUpdatePost?.id_post,
       })
       if (!res.success) return toast.error(res.message)
       toast.success(res.message)
-      return
+      if (onClose) onClose()
+    } catch (err) {
+      console.error(err)
+      toast.error("Ocorreu um erro inesperado.")
+    } finally {
+      if(onClose) onClose()
+      setLoading(false) // 🔹 termina o loading
     }
-
-    if (!isUpdated) {
-      const res = await PostApi.create({ title, content })
-      if (!res.success) return toast.error(res.message)
-      toast.success(res.message)
-      return
-    }
-
-    const res = await PostApi.update({
-      title,
-      content,
-      id_post: isUpdatePost?.id_post,
-    })
-    if (!res.success) return toast.error(res.message)
-    toast.success(res.message)
-    if(onClose) onClose()
-    return
   }
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <Loading onOpen={loading}/>
       <ToastContainer position="top-center" />
 
       <div className="space-y-4">
@@ -239,6 +263,7 @@ export function CreatePostForm({
           <input
             multiple
             type="file"
+            accept="image/*,video/*"
             onChange={(e) => {
               setFileUpdated(true)
               handleFileChange(e)
@@ -253,18 +278,30 @@ export function CreatePostForm({
 
         {/* Preview grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-          {previews.map((src, idx) => (
-            <div
-              key={idx}
-              className="relative w-full aspect-square overflow-hidden rounded-lg border border-gray-200/20 shadow-sm hover:shadow-md transition-all"
-            >
-              <img
-                src={src}
-                alt={`preview-${idx}`}
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              />
-            </div>
-          ))}
+          {previews.map((src, idx) => {
+            const isVideo = /\.(mp4|webm|mov|avi|mkv)$/i.test(src)
+
+            return (
+              <div
+                key={idx}
+                className="relative w-full aspect-square overflow-hidden rounded-lg border border-gray-200/20 shadow-sm hover:shadow-md transition-all"
+              >
+                {isVideo ? (
+                  <video
+                    src={src}
+                    controls
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                ) : (
+                  <img
+                    src={src}
+                    alt={`preview-${idx}`}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                )}
+              </div>
+            )
+          })}
         </div>
 
         <div className="flex gap-2">

@@ -7,13 +7,7 @@ type AvatarProps = {
 }
 
 export default function Avatar({ name, size = 100 }: AvatarProps) {
-
-
-
-
   const avatarUrl = `https://api.dicebear.com/9.x/miniavs/svg?seed=${encodeURIComponent(name)}`
-
-
   return (
     <img
       src={avatarUrl}

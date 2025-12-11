@@ -19,10 +19,10 @@ import Avatar from "@/api_avatar";
 export default function Friends() {
   const [field, setFields] = useState<"pedidos" | "usuarios" | "amigos">("usuarios")
   const [requests, setRequest] = useState<FriendRequest[]>([])
-  const [page, setPage] = useState<number>(1)
+  const [page, ] = useState<number>(1)
   const [users, setUsers] = useState<CommonUser[]>([])
+  const [fill, setFill] = useState<string>("")
   const { payload } = useAuth()
-
 
   useEffect(() => {
     const getUsers = async () => {
@@ -40,6 +40,9 @@ export default function Friends() {
 
 
 
+   const filter = fill && fill !== "" ? users.filter(u => u.username.toUpperCase().includes(fill.toUpperCase())) : users 
+
+
 
 
 
@@ -55,16 +58,11 @@ export default function Friends() {
 
   return (
 
-    <section className="m-5 h-[95%] flex text-sidebar-foreground  gap-5">
+    <section className="flex w-full overflow-hidden text-sidebar-foreground  gap-5">
+      <div className="w-full h-full m-5">
       <header className="w-full">
-        <div className="w-full p-4 mt-2 mb-2 rounded-xl bg-sidebar-accent shadow-md flex items-center justify-between">
-          <h1 className="text-sidebar-foreground text-xl font-semibold tracking-wide">
-            Solicitações e Usuários
-          </h1>
-        </div>
+       
         <div className="w-[100%] relative">
-
-
 
 
           <div className="flex gap-3 mt-4 mb-4">
@@ -73,7 +71,9 @@ export default function Friends() {
           </div>
 
           <Search className="absolute  top-13 right-4" />
-          <input className="w-full rounded-md border mb-5 p-2" placeholder="@usuario" type="text" name="" id="" />
+          <input className="w-full rounded-md border mb-5 p-2" onChange={(e) => {
+            setFill(e.target.value)
+          }} placeholder="@usuario" type="text" name="" id="" />
 
 
           {field === "usuarios" && (
@@ -81,8 +81,8 @@ export default function Friends() {
 
 
 
-              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[68vh]" >
-                {users.filter((u) => u.id_user !== (payload as Payload).id_user).map((u) => (
+              <div className="flex flex-col gap-3 overflow-auto no-scrollbar h-[80vh]" >
+                {filter.filter((u) => u.id_user !== (payload as Payload).id_user).map((u) => (
                   <CardUserFriend key={u.id_user} commonUser={u} />
                 ))}
 
@@ -91,9 +91,9 @@ export default function Friends() {
 
               </div>
 
-              <div className="p-3" >
+              {/* <div className="p-3" >
                 <button className="bg-sidebar-accent p-3 rounded-md" onClick={() => setPage(prev => prev + 1)}>Ver Mais Usuarios</button>
-              </div>
+              </div> */}
 
 
             </div>
@@ -121,7 +121,7 @@ export default function Friends() {
 
       </header>
 
-
+          </div>
     </section>
 
   )

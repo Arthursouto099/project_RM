@@ -1,7 +1,6 @@
 import type { Comment, Post } from "@/api/PostApi";
 import {
   Calendar,
-  ChevronDown,
   Delete,
   Edit,
   Heart,
@@ -32,6 +31,8 @@ import instanceV1 from "@/api/api@instance/ap-v1i";
 import Avatar from "@/api_avatar";
 import { io } from "socket.io-client";
 
+
+
 const findCommentsByIdPost = async (id_post: string, { page, limit }: { page: number, limit: number }, set: React.Dispatch<React.SetStateAction<Comment[]>>) => {
   const comments = (await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)).data.data as Comment[]
   set((prev) => {
@@ -46,7 +47,7 @@ const findCommentsByIdPost = async (id_post: string, { page, limit }: { page: nu
 export default function Posts({ post }: { post: Post, }) {
   const [isUser, setUser] = useState(false);
   const { payload } = useAuth();
-  const [page, setPage] = useState<number>(1)
+  const [page,] = useState<number>(1)
   const [like, setLike] = useState(false);
   const [comments, setComments] = useState<Comment[]>([])
 
@@ -86,6 +87,7 @@ export default function Posts({ post }: { post: Post, }) {
       socket.disconnect()
     }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
 
@@ -102,6 +104,7 @@ export default function Posts({ post }: { post: Post, }) {
         <CardHeader className="flex gap-3 items-center p-0">
           <Link to={`/profiles/${post.user?.id_user}`}>
             <div className="h-12 w-12 border border-sidebar-foreground/20 rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
+            
               {post.user?.profile_image ? (
                 <img
                   className="h-full w-full object-cover"
@@ -157,6 +160,12 @@ export default function Posts({ post }: { post: Post, }) {
           {post.images && post.images.length > 0 && (
             <div className="w-full md:w-[70%] rounded-lg overflow-hidden border border-neutral-800">
               <CarouselImgs urls={post.images} />
+            </div>
+          )}
+
+          {post.videos && post.videos.length > 0 && (
+            <div className="w-full md:w-[70%] rounded-lg overflow-hidden border border-neutral-800">
+              <CarouselImgs urls={post.videos} />
             </div>
           )}
         </CardContent>
