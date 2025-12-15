@@ -51,7 +51,38 @@ export const commonUserSchema = z.object({
       desc : z.string().optional()
       
 
+}).strict(); 
+
+
+export const professionalProfileSchema = z.object({
+  verified: z.boolean().optional(),
+
+  verifiedAt: z.date().optional(),
+
+  verifiedBy: z.string().uuid().optional(),
+
+  accountType: z.enum([
+    "USER",
+    "PROFESSIONAL",
+    "CREATOR",
+    "ADMIN",
+  ]),
+
+  professionalType: z.enum([
+    "PSYCHOLOGIST",
+    "DOCTOR",
+    "LAWYER",
+    "NUTRITIONIST",
+    "THERAPIST",
+    "COACH",
+    "OTHER",
+  ]).optional(),
+
+  professionalBio: z.string().max(1000).optional(),
+
+  specialties: z.array(z.string().min(2)).optional(),
 }).strict();
+
 
 
 export const loginUserInputs = z.object({

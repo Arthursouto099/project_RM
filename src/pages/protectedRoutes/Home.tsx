@@ -5,8 +5,7 @@ import PostApi, { type Post } from "@/api/PostApi"
 import Posts from "@/components/post"
 
 import { io } from "socket.io-client"
-import SuggestionFriends from "@/components/suggestion-friends"
-import SuggestionChats from "@/components/suggestion-chats"
+
 // import SuggestionChats from "@/components/suggestion-chats"
 // import SuggestionFriends from "@/components/suggestion-friends"
 
@@ -100,11 +99,7 @@ export default function Home() {
           ))}
         </div>  
 
-        <div className=" flex-1/2 text-sidebar-foreground flex flex-col gap-2">
-          <SuggestionFriends/>
-          <SuggestionChats/>
-        </div>
-
+      
 
 
       </div>

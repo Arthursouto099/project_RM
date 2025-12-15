@@ -81,12 +81,9 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
-          <div className="p-4 flex gap-2 cursor-pointer items-center" onClick={navigateToMe}>
-            <div className=" rounded-md w-11   flex   justify-center items-center"> {me?.profile_image ? (<img className="rounded-md  bg-accent-dark border-1" src={me?.profile_image} alt="" />) : (
-              <Avatar name={me ? me.username : ""}/>
-            )}
-            </div>
+        <SidebarGroup className="flex justify-center items-center">
+          <div className="p-4  w-full bg-sidebar-accent/40 py-2 mb-5  rounded-md flex gap-2 cursor-pointer items-center" onClick={navigateToMe}>
+            <Avatar name={me?.username} image={me?.profile_image}/>
 
             <div>
               <h1 className="text-[15px] font-semibold">{me?.username.split(" ")[0]} {me?.username.split(" ")[1]} </h1>
@@ -98,8 +95,8 @@ export function AppSidebar() {
           <SidebarSeparator>
 
           </SidebarSeparator>
-          <SidebarGroupLabel>Menu</SidebarGroupLabel>
-          <SidebarGroupContent>
+         
+          <SidebarGroupContent className="py-2">
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>

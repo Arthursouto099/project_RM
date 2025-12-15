@@ -123,6 +123,7 @@ const commonUserController = {
             if (!id_user && !email && !cpf) {
                 responseOk(res, "Busca realizada com sucesso", (await commonUserService.findUsers({ page: Number(req.query.page ?? 1), 
                 limit: Number(req.query.limit ?? 10)},
+                // eslint-disable-next-line no-constant-binary-expression
                 {region: String(req.query.region) ?? "RS"} )).users[0], 200)
             }
 
@@ -179,6 +180,7 @@ const commonUserController = {
 
     get: async (req: CustomRequest, res: Response, next: NextFunction) => {
         try {
+            // eslint-disable-next-line no-constant-binary-expression
             const users = await commonUserService.findUsers({ page: Number(req.query.page ?? 1), limit: Number(req.query.limit ?? 10)}, {region: String(req.query.region) ?? "RS"})
             responseOk(res, "consulta feita com sucesso", { users: users.users.filter((u) => u.id_user !== req.userLogged?.id_user ), page: users.page, pages: users.pages, total: users.total }, 200)
         }

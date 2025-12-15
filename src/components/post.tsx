@@ -5,6 +5,8 @@ import {
   Edit,
   Heart,
   MessageCircleIcon,
+  MessagesSquareIcon,
+  MoreHorizontal,
 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import React, { useEffect, useState, type ReactNode } from "react";
@@ -12,6 +14,7 @@ import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -22,7 +25,12 @@ import {
 import { DialogCreatePost } from "./post-create-modal";
 import DialogDeletePost from "./post-delete-model";
 import { toast } from "react-toastify";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
 import PostApi from "@/api/PostApi";
@@ -31,98 +39,124 @@ import instanceV1 from "@/api/api@instance/ap-v1i";
 import Avatar from "@/api_avatar";
 import { io } from "socket.io-client";
 
-
-
-const findCommentsByIdPost = async (id_post: string, { page, limit }: { page: number, limit: number }, set: React.Dispatch<React.SetStateAction<Comment[]>>) => {
-  const comments = (await instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}`)).data.data as Comment[]
-  set((prev) => {
-    const filtered = comments.filter(
-      (np) => !prev.some((p) => p.id_comment === np.id_comment)
+const findCommentsByIdPost = async (
+  id_post: string,
+  { page, limit }: { page: number; limit: number },
+  set: React.Dispatch<React.SetStateAction<Comment[]>>,
+  noParent?: string
+) => {
+  const parents = (
+    await instanceV1.get(
+      `/post/comment/${id_post}?page=${page}&limit=${limit}${
+        noParent ? `&onlyParents=true` : ""
+      }`
     )
-    return [...prev, ...filtered]
-  })
+  ).data.data as Comment[];
 
-}
+  // ✅ FLATTEN: pais + replies do include
+  const flattened: Comment[] = [
+    ...parents,
+    ...parents.flatMap((p) => p.replies ?? []),
+  ];
 
-export default function Posts({ post }: { post: Post, }) {
+  set((prev) => {
+    const filtered = flattened.filter(
+      (np) => !prev.some((p) => p.id_comment === np.id_comment)
+    );
+    return [...prev, ...filtered];
+  });
+};
+
+export default function Posts({ post }: { post: Post }) {
   const [isUser, setUser] = useState(false);
   const { payload } = useAuth();
-  const [page,] = useState<number>(1)
+  const [page] = useState<number>(1);
   const [like, setLike] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([])
-
-
-  useEffect(() => {
-    findCommentsByIdPost(post.id_post!, { page, limit: 20 }, setComments)
-  }, [post.id_post, page])
+  const [comments, setComments] = useState<Comment[]>([]);
 
   useEffect(() => {
-    const socket = io("http://localhost:3300")
-    socket.emit("joinComments")
+    findCommentsByIdPost(
+      post.id_post!,
+      { page, limit: 2 },
+      setComments,
+      "noParent"
+    );
+  }, [post.id_post, page]);
+
+  console.log(comments);
+
+  useEffect(() => {
+    const socket = io("http://localhost:3300");
+    socket.emit("joinComments");
 
     socket.on("commentCreated", (newComment: Comment) => {
-
-      if(newComment.id_post === post.id_post) {
+      if (newComment.id_post === post.id_post) {
         setComments((prev) => {
-        if(prev.some((comment) => comment.id_comment === newComment.id_comment)) return prev
-        return [newComment, ...prev]
-      })
+          if (prev.some((c) => c.id_comment === newComment.id_comment))
+            return prev;
+          return [newComment, ...prev];
+        });
       }
-          
-    })
+    });
 
     socket.on("commentUpdated", (commentUpdated: Comment) => {
-      setComments((prev) => 
-      prev.map((p) => (p.id_comment === commentUpdated.id_comment ? commentUpdated : p))
-      )
-    })
-
-
+      setComments((prev) =>
+        prev.map((p) =>
+          p.id_comment === commentUpdated.id_comment ? commentUpdated : p
+        )
+      );
+    });
 
     socket.on("commentDeleted", (commentDeleted: Comment) => {
-      setComments((prev) => prev.filter((comment) => comment.id_comment !== commentDeleted.id_comment))
-    })
+      setComments((prev) =>
+        prev.filter((c) => c.id_comment !== commentDeleted.id_comment)
+      );
+    });
 
     return () => {
-      socket.disconnect()
-    }
+      // opcional, mas mais “limpo” para evitar múltiplos listeners
+      socket.off("commentCreated");
+      socket.off("commentUpdated");
+      socket.off("commentDeleted");
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
+      socket.disconnect(); // <- retorna void
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    if (payload?.id_user === post.user?.id_user) {
-      setUser(true);
-    }
+    if (payload?.id_user === post.user?.id_user) setUser(true);
   }, [payload, post.user?.id_user]);
 
   return (
-    <Card className="w-full text-sidebar-foreground md:w-[100%] flex flex-col border border-sidebar-border bg-sidebar/50 backdrop-blur-sm transition-colors hover:bg-sidebar/70">
+    <Card
+      className="
+        w-full flex flex-col
+        bg-sidebar/60 backdrop-blur
+        border border-sidebar-border
+        shadow-sm
+        hover:shadow-md
+        hover:bg-sidebar/80
+        transition-all duration-200
+        text-sidebar-foreground
+      "
+    >
       <div className="flex flex-col w-full gap-3 p-4 md:p-6" key={post.id_post}>
         {/* Header */}
         <CardHeader className="flex gap-3 items-center p-0">
-          <Link to={`/profiles/${post.user?.id_user}`}>
-            <div className="h-12 w-12 border border-sidebar-foreground/20 rounded-full overflow-hidden flex items-center justify-center bg-neutral-200">
-            
-              {post.user?.profile_image ? (
-                <img
-                  className="h-full w-full object-cover"
-                  src={post.user.profile_image}
-                  alt="Foto de perfil"
-                />
-              ) : (
-                <Avatar name={post.user?.username ?? ""} />
-              )}
-            </div>
+          <Link to={`/profiles/${post.user?.id_user}`} className="shrink-0">
+            <Avatar
+              name={post.user?.username}
+              image={post.user?.profile_image}
+            />
           </Link>
 
-          <div className="flex w-full justify-between items-center">
-            <div className="flex flex-col leading-tight">
+          <div className="flex w-full justify-between items-center gap-3">
+            <div className="flex flex-col leading-tight min-w-0">
               <h1 className="font-semibold text-sm md:text-base text-sidebar-foreground truncate">
                 {post.user?.username}
               </h1>
-              <h2 className="text-neutral-500 text-xs md:text-sm">
+              <h2 className="text-muted-foreground text-xs md:text-sm truncate">
                 {post.user?.nickname}
               </h2>
             </div>
@@ -136,73 +170,124 @@ export default function Posts({ post }: { post: Post, }) {
                   images: post.images,
                 }}
               >
-                <h1 className="text-3xl cursor-pointer text-sidebar-foreground">
-                  ...
-                </h1>
+                <button
+                  type="button"
+                  className="
+                    rounded-full p-2
+                    hover:bg-sidebar-accent/20
+                    focus-visible:outline-none
+                    focus-visible:ring-2 focus-visible:ring-sidebar-accent
+                    transition
+                  "
+                  aria-label="Opções do post"
+                >
+                  <MoreHorizontal className="w-5 h-5 text-sidebar-foreground" />
+                </button>
               </PostOptions>
             )}
           </div>
         </CardHeader>
 
-
+        {/* Conteúdo */}
         <CardContent className="flex flex-col gap-3 p-0">
           {post.title && (
             <h1 className="text-lg font-medium text-sidebar-foreground break-words">
               {post.title}
             </h1>
           )}
+
           {post.content && (
-            <p className="text-sidebar-accent-foreground text-sm break-words">
+            <p className="text-sm md:text-base leading-relaxed text-sidebar-accent-foreground whitespace-pre-line break-words">
               {post.content}
             </p>
           )}
 
-          {post.images && post.images.length > 0 && (
-            <div className="w-full md:w-[70%] rounded-lg overflow-hidden border border-neutral-800">
-              <CarouselImgs urls={post.images} />
-            </div>
-          )}
-
-          {post.videos && post.videos.length > 0 && (
-            <div className="w-full md:w-[70%] rounded-lg overflow-hidden border border-neutral-800">
-              <CarouselImgs urls={post.videos} />
+          {((post.images && post.images.length > 0) ||
+            (post.videos && post.videos.length > 0)) && (
+            <div
+              className="
+      w-full
+      md:w-[70%]
+      rounded-xl overflow-hidden
+      border border-sidebar-border
+      bg-black/5
+      shadow-sm
+    "
+            >
+              <CarouselImgs
+                urls={[...(post.images ?? []), ...(post.videos ?? [])]}
+              />
             </div>
           )}
         </CardContent>
 
         {/* Rodapé */}
-        <CardFooter className="flex flex-col items-start gap-4 p-0">
-          <div className="mt-5">
-
-
-            <Comments
-              comments={
-                comments
-              }
-              id_post={post.id_post!}
-            />
+        <CardFooter className="flex flex-col items-start gap-4 p-0 w-full">
+          {/* Comentários */}
+          <div className="w-full border-t border-sidebar-border pt-4 mt-1">
+            <Comments comments={comments} id_post={post.id_post!} />
           </div>
 
-     
-
-          <div className="flex gap-4 items-center">
+          {/* Ações */}
+          <div className="flex w-full  flex-col  md:flex-row no-scrolbar gap-3">
             <CreateCommentModal id_post={post.id_post!}>
-              <MessageCircleIcon className="cursor-pointer hover:text-sidebar-foreground/70 transition-colors" />
+              <Button
+                type="button"
+                className="
+                  flex items-center gap-2
+                  bg-sidebar-accent
+                  shadow-sm
+                  hover:shadow
+                  hover:bg-sidebar-accent/90
+                  transition
+                "
+              >
+                <MessageCircleIcon className="w-4 h-4" />
+                Comentar
+                <span className="ml-1 text-xs opacity-80">
+                  ({comments.length})
+                </span>
+              </Button>
             </CreateCommentModal>
 
-            <Heart
+            <AllCommentsData data={post} />
+
+            <ReportModal />
+
+            <button
+              type="button"
               onClick={() => setLike((prev) => !prev)}
-              className={`cursor-pointer transition-colors ${like ? "fill-sidebar-foreground" : ""
+              className={`
+                flex items-center gap-2
+                rounded-md px-3 py-2
+                transition
+                focus-visible:outline-none
+                focus-visible:ring-2 focus-visible:ring-sidebar-accent
+                ${
+                  like
+                    ? "text-red-500 bg-red-500/10"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/20 hover:text-sidebar-foreground"
+                }
+              `}
+              aria-pressed={like}
+              aria-label="Curtir"
+            >
+              <Heart
+                className={`w-5 h-5 transition ${
+                  like ? "fill-red-500 scale-110" : ""
                 }`}
-            />
+              />
+              <span className="text-sm">Curtir</span>
+            </button>
           </div>
 
-          <div className="flex items-center gap-2 text-sidebar-foreground/60 text-sm">
+          {/* Meta */}
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Calendar className="w-4 h-4" />
             <span>
               {new Date(post.createdAt!).toLocaleDateString("pt-BR", {
                 day: "2-digit",
-                month: "2-digit",
+                month: "short",
                 year: "numeric",
               })}
             </span>
@@ -210,6 +295,153 @@ export default function Posts({ post }: { post: Post, }) {
         </CardFooter>
       </div>
     </Card>
+  );
+}
+
+const findAllCommentsByPostFlat = async (
+  id_post: string,
+  { page, limit }: { page: number; limit: number },
+  set: React.Dispatch<React.SetStateAction<Comment[]>>
+) => {
+  const [parentsRes, repliesRes] = await Promise.all([
+    instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}&onlyParents=true`),
+    instanceV1.get(`/post/comment/${id_post}?page=1&limit=1000&onlyReplies=true`),
+  ]);
+
+  const parents = (parentsRes.data.data ?? []) as Comment[];
+  const replies = (repliesRes.data.data ?? []) as Comment[];
+
+  // ✅ lista FLAT que o componente <Comments /> precisa
+  const merged: Comment[] = [...parents, ...replies];
+
+  set((prev) => {
+    const filtered = merged.filter(
+      (c) => !prev.some((p) => p.id_comment === c.id_comment)
+    );
+    return [...prev, ...filtered];
+  });
+};
+
+interface AllCommentsDataProps {
+  data: Post;
+}
+
+
+const fetchAllCommentsFlat = async (id_post: string) => {
+  const [parentsRes] = await Promise.all([
+    instanceV1.get(`/post/comment/${id_post}?page=1&limit=500`),
+  ]);
+
+  const parents = (parentsRes.data.data ?? []) as Comment[];
+
+  return [...parents];
+};
+
+interface AllCommentsDataProps {
+  data: Post;
+}
+
+export function AllCommentsData({ data }: AllCommentsDataProps) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [open, setOpen] = useState(false);
+
+  // helpers (upsert/remove)
+  const upsert = (c: Comment) => {
+    setComments((prev) => {
+      const idx = prev.findIndex((x) => x.id_comment === c.id_comment);
+      if (idx === -1) return [c, ...prev];
+      const copy = prev.slice();
+      copy[idx] = { ...copy[idx], ...c };
+      return copy;
+    });
+  };
+
+  const remove = (id_comment: string) => {
+    setComments((prev) => prev.filter((c) => c.id_comment !== id_comment));
+  };
+
+  // sempre que abrir o modal, faz um refetch (garante consistência)
+  useEffect(() => {
+    if (!open) return;
+
+    let alive = true;
+    (async () => {
+      const all = await fetchAllCommentsFlat(data.id_post!);
+      if (!alive) return;
+      setComments(all);
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [open, data.id_post]);
+
+  // tempo real via socket
+  useEffect(() => {
+    const socket = io("http://localhost:3300");
+    socket.emit("joinComments");
+
+    const samePost = (c: any) =>
+      c?.id_post === data.id_post || c?.post?.id_post === data.id_post;
+
+    const onCreated = (c: Comment) => {
+      if (!samePost(c)) return;
+      upsert(c);
+    };
+
+    const onUpdated = (c: Comment) => {
+      if (!samePost(c)) return;
+      upsert(c);
+    };
+
+    const onDeleted = (c: Comment) => {
+      if (!samePost(c)) return;
+      if (c.id_comment) remove(c.id_comment);
+    };
+
+    socket.on("commentCreated", onCreated);
+    socket.on("commentUpdated", onUpdated);
+    socket.on("commentDeleted", onDeleted);
+
+    socket.on("replyCreated", onCreated);
+    socket.on("replyUpdated", onUpdated);
+    socket.on("replyDeleted", onDeleted);
+
+    return () => {
+      socket.off("commentCreated", onCreated);
+      socket.off("commentUpdated", onUpdated);
+      socket.off("commentDeleted", onDeleted);
+
+      socket.off("replyCreated", onCreated);
+      socket.off("replyUpdated", onUpdated);
+      socket.off("replyDeleted", onDeleted);
+
+      socket.disconnect();
+    };
+  }, [data.id_post]);
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          type="button"
+          className="flex items-center gap-2 bg-sidebar-accent shadow-sm hover:shadow hover:bg-sidebar-accent/90 transition"
+        >
+          <MessagesSquareIcon />
+          Todos os comentários
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="p-0 text-foreground">
+        <div className="px-4 py-3 border-b">
+          <h2 className="text-sm font-semibold">Comentários</h2>
+        </div>
+
+        <div className="overflow-y-auto max-h-[calc(80vh-56px)] w-full scrollbar-custom px-4 py-3">
+          <Comments comments={comments} id_post={data.id_post!} />
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -230,32 +462,51 @@ export function PostOptions({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
-      <DialogContent className="bg-sidebar text-sidebar-foreground text-sm">
-        <DialogHeader />
-        <DialogTitle />
-        <DialogDescription />
+      <DialogContent className="bg-sidebar text-sidebar-foreground text-sm shadow-lg border border-sidebar-border">
+        <DialogHeader>
+          <DialogTitle className="text-base">Opções do post</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Gerencie seu conteúdo.
+          </DialogDescription>
+        </DialogHeader>
 
-        <DialogCreatePost
-          onClose={handleClose}
-          partialUpdatePost={partialPost}
-          isUpdated={true}
-        >
-          <div className="flex cursor-pointer items-center gap-3 hover:text-sidebar-accent transition-colors">
-            <Edit className="w-4 h-4" />
-            <span>Editar Post</span>
-          </div>
-        </DialogCreatePost>
+        <div className="flex flex-col g">
+          <DialogCreatePost
+            onClose={handleClose}
+            partialUpdatePost={partialPost}
+            isUpdated={true}
+          >
+            <div
+              className="
+                flex cursor-pointer items-center gap-3
+                rounded-md px-3 py-2
+                hover:bg-sidebar-accent/20
+                transition-colors
+              "
+            >
+              <Edit className="w-4 h-4" />
+              <span>Editar Post</span>
+            </div>
+          </DialogCreatePost>
 
-        <DialogDeletePost
-          onDeleted={(msg) => toast.success(msg)}
-          onClose={handleClose}
-          id_post={partialPost?.id_post ?? ""}
-        >
-          <div className="flex cursor-pointer   items-center gap-3 hover:text-red-500 transition-colors">
-            <Delete className="w-4 h-4" />
-            <span>Deletar Post</span>
-          </div>
-        </DialogDeletePost>
+          <DialogDeletePost
+            onDeleted={(msg) => toast.success(msg)}
+            onClose={handleClose}
+            id_post={partialPost?.id_post ?? ""}
+          >
+            <div
+              className="
+                flex cursor-pointer items-center gap-3
+                rounded-md px-3 py-2
+                hover:bg-red-500/10 hover:text-red-500
+                transition-colors
+              "
+            >
+              <Delete className="w-4 h-4" />
+              <span>Deletar Post</span>
+            </div>
+          </DialogDeletePost>
+        </div>
 
         <DialogFooter />
       </DialogContent>
@@ -263,6 +514,32 @@ export function PostOptions({
   );
 }
 
+const ReportModal = () => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          className="
+                  flex items-center gap-2
+                  bg-sidebar-accent
+                  shadow-sm
+                  hover:shadow
+                  hover:bg-sidebar-accent/90
+                  transition
+                "
+        >
+          Reportar
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="text-foreground">
+        <DialogHeader>
+          <DialogTitle>Reportar Postagem</DialogTitle>
+          <DialogDescription>Essa ação não pode ser desfeita</DialogDescription>
+        </DialogHeader>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 const CreateCommentModal = ({
   children,
@@ -288,32 +565,58 @@ const CreateCommentModal = ({
 
   return (
     <Dialog>
-      <DialogTrigger>{children}</DialogTrigger>
-      <DialogContent className="bg-sidebar text-sidebar-foreground max-w-md">
+      <DialogTrigger asChild>{children}</DialogTrigger>
+
+      <DialogContent className="bg-sidebar text-sidebar-foreground max-w-md shadow-lg border border-sidebar-border">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <MessageCircleIcon /> Criar Comentário
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <MessageCircleIcon className="w-5 h-5" /> Criar Comentário
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-muted-foreground">
             Escreva seu comentário sobre o post.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="mt-4">
+        <div className="mt-2">
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Escreva seu comentário..."
-            className="w-full resize-none"
+            className="
+              w-full resize-none
+              bg-sidebar/40
+              border border-sidebar-border
+              focus-visible:ring-2 focus-visible:ring-sidebar-accent
+              transition
+              min-h-[110px]
+            "
           />
         </div>
 
-        <div className="mt-5 flex justify-end">
+        <div className="mt-4 flex justify-end gap-2">
           <Button
+            type="button"
+            variant="ghost"
+            onClick={() => setContent("")}
+            className="hover:bg-sidebar-accent/20"
+          >
+            Limpar
+          </Button>
+
+          <Button
+            type="button"
             onClick={onComment}
             disabled={!content.trim()}
-            className="bg-sidebar-accent hover:bg-sidebar-accent/80"
+            className="
+              flex items-center gap-2
+              bg-sidebar-accent
+              shadow-sm
+              hover:shadow
+              hover:bg-sidebar-accent/90
+              transition
+            "
           >
+            <MessageCircleIcon className="w-4 h-4" />
             Comentar
           </Button>
         </div>

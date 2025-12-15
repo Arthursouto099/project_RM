@@ -72,7 +72,8 @@ const commonUserService = {
     },
 
 
-    findUsers: async (pagination: Pagination, { region }: { region: string }) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    findUsers: async (pagination: Pagination, { region }: { region?: string }) => {
 
         const [users, total] = await Promise.all([
             prisma.commonUser.findMany({

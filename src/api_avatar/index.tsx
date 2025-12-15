@@ -1,20 +1,44 @@
-
+import { useState } from "react";
 
 type AvatarProps = {
-  name: string
-  type?: "human" | "monkey"
-  size?: number
-}
+  name?: string;
+  image?: string;
+  className?: string;
+};
 
-export default function Avatar({ name, size = 100 }: AvatarProps) {
-  const avatarUrl = `https://api.dicebear.com/9.x/miniavs/svg?seed=${encodeURIComponent(name)}`
+export default function Avatar({
+  name = "",
+  image,
+  className = "",
+}: AvatarProps) {
+  const [imageError, setImageError] = useState(false);
+
+  const trimmedName = name.trim();
+  const initial = trimmedName ? trimmedName[0] : "?";
+  const second = trimmedName.length > 1 ? trimmedName[1] : "";
+
+  const showFallback = !image || imageError;
+
   return (
-    <img
-      src={avatarUrl}
-      alt={`Avatar de ${name}`}
-      width={size}
-      height={size}
-      className="rounded-full border-2 w-full h-full border-gray-300 "
-    />
-  )
+    <div className={`h-11 w-11 ${className}`}>
+      <div
+        className={`rounded-full w-full h-full flex items-center justify-center bg-card overflow-hidden `}
+        aria-label={name || "Avatar"}
+      >
+        {!showFallback ? (
+          <img
+            src={image}
+            alt={name}
+            className="w-full h-full "
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <span className="font-semibold text-foreground/40 uppercase select-none">
+            {initial}
+            {second}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 }
