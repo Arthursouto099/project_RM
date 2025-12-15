@@ -220,8 +220,8 @@ export function CreatePostForm({
   isUpdatePost,
   onClose,
 }: CreatePostProps) {
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
+  const [title, setTitle] = useState<string>( isUpdatePost?.title ?? "");
+  const [content, setContent] = useState<string>( isUpdatePost?.content ?? "");
   const [files, setFiles] = useState<File[] | null>();
   const [, setImageUrls] = useState<string[]>([]);
   const [isFileUpdated, setFileUpdated] = useState<boolean>(false);

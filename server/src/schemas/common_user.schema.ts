@@ -83,6 +83,7 @@ export const professionalProfileSchema = z.object({
   specialties: z.array(z.string().min(2)).optional(),
 }).strict();
 
+export type toProfessionalAcount = z.infer<typeof professionalProfileSchema>
 
 
 export const loginUserInputs = z.object({

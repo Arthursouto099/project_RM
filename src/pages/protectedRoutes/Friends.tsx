@@ -240,17 +240,9 @@ export function CardFriend({ friend }: { friend: CommonUser }) {
         </div>
 
         <div className="flex  gap-3 items-center">
-          <div className="h-10 w-10 rounded-md overflow-hidden flex items-center justify-center bg-neutral-200">
-            {friend.profile_image ? (
-              <img
-                className="h-full w-full object-cover"
-                src={friend.profile_image}
-                alt=""
-              />
-            ) : (
-              <Avatar name={friend.username} />
-            )}
-          </div>
+       
+          <Avatar image={friend.profile_image} name={friend.username}/>
+       
           <div className="flex w-full flex-col leading-tight">
             <div className=" flex justify-between">
 
@@ -306,7 +298,7 @@ export function CardFriend({ friend }: { friend: CommonUser }) {
             await createOrGetChat(friend.id_user!)
           }}
             to={`/direct/${friend.id_user}`}
-            className="pt-3 rounded-md text-sm flex items-center gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
+            className="p-2  rounded-md text-sm flex items-center jus gap-2 hover:bg-sidebar-accent/90 cursor-pointer"
           >
             <MessageSquare /> Abrir Chat
           </Link>

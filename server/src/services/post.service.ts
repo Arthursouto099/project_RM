@@ -48,6 +48,10 @@ const postService = {
                         username: true,
                         email: true,
                         profile_image: true,
+                        verified: true,
+                        accountType: true,
+                        professionalType: true,
+                        
                     },
                 },
 
@@ -66,7 +70,7 @@ const postService = {
                 take: pagination.limit,
                 orderBy: { createdAt: "desc" },
                 include: {
-                    user: { select: { id_user: true, username: true, profile_image: true } },
+                    user: { select: { id_user: true, username: true, profile_image: true, verified: true, accountType: true, professionalType: true } },
                 },
             }),
             prisma.post.count(),

@@ -1,5 +1,6 @@
 import type { Comment, Post } from "@/api/PostApi";
 import {
+  BadgeCheck,
   Calendar,
   Delete,
   Edit,
@@ -7,6 +8,7 @@ import {
   MessageCircleIcon,
   MessagesSquareIcon,
   MoreHorizontal,
+  SearchSlash,
 } from "lucide-react";
 import { CarouselImgs } from "./carousel";
 import React, { useEffect, useState, type ReactNode } from "react";
@@ -14,7 +16,6 @@ import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -77,7 +78,7 @@ export default function Posts({ post }: { post: Post }) {
   useEffect(() => {
     findCommentsByIdPost(
       post.id_post!,
-      { page, limit: 2 },
+      { page, limit: 5 },
       setComments,
       "noParent"
     );
@@ -153,38 +154,60 @@ export default function Posts({ post }: { post: Post }) {
 
           <div className="flex w-full justify-between items-center gap-3">
             <div className="flex flex-col leading-tight min-w-0">
-              <h1 className="font-semibold text-sm md:text-base text-sidebar-foreground truncate">
-                {post.user?.username}
+              <h1 className="font-semibold flex flex-col gap-1 text-sm items-center md:text-base text-sidebar-foreground truncate">
+                <div className="flex gap-1 w-full items-center">
+                  {post.user?.username}
+                  {post.user?.verified && (
+                    <BadgeCheck className="text-green-500" size={18} />
+                  )}
+                </div>
+
+                <div className="flex w-full items-center gap-2 border-b border-border/40 pb-2">
+                  {post.user?.accountType &&
+                    post.user?.accountType !== "USER" && (
+                      <span className="rounded-md bg-accent/20 px-2 py-0.5 text-[10px] font-medium uppercase text-accent-foreground/80">
+                        {post.user.accountType}
+                      </span>
+                    )}
+
+                  {post.user?.professionalType && (
+                    <span className="rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">
+                      {post.user.professionalType}
+                    </span>
+                  )}
+                </div>
               </h1>
               <h2 className="text-muted-foreground text-xs md:text-sm truncate">
                 {post.user?.nickname}
               </h2>
             </div>
 
-            {isUser && (
-              <PostOptions
-                partialPost={{
-                  id_post: post.id_post,
-                  title: post.title,
-                  content: post.content,
-                  images: post.images,
-                }}
-              >
-                <button
-                  type="button"
-                  className="
+            <div>
+              {isUser && (
+                <PostOptions
+                  partialPost={{
+                    id_post: post.id_post,
+                    title: post.title,
+                    content: post.content,
+                    images: post.images,
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="
                     rounded-full p-2
                     hover:bg-sidebar-accent/20
                     focus-visible:outline-none
                     focus-visible:ring-2 focus-visible:ring-sidebar-accent
                     transition
                   "
-                  aria-label="Opções do post"
-                >
-                  <MoreHorizontal className="w-5 h-5 text-sidebar-foreground" />
-                </button>
-              </PostOptions>
-            )}
+                    aria-label="Opções do post"
+                  >
+                    <MoreHorizontal className="w-5 h-5 text-sidebar-foreground" />
+                  </button>
+                </PostOptions>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -298,34 +321,9 @@ export default function Posts({ post }: { post: Post }) {
   );
 }
 
-const findAllCommentsByPostFlat = async (
-  id_post: string,
-  { page, limit }: { page: number; limit: number },
-  set: React.Dispatch<React.SetStateAction<Comment[]>>
-) => {
-  const [parentsRes, repliesRes] = await Promise.all([
-    instanceV1.get(`/post/comment/${id_post}?page=${page}&limit=${limit}&onlyParents=true`),
-    instanceV1.get(`/post/comment/${id_post}?page=1&limit=1000&onlyReplies=true`),
-  ]);
-
-  const parents = (parentsRes.data.data ?? []) as Comment[];
-  const replies = (repliesRes.data.data ?? []) as Comment[];
-
-  // ✅ lista FLAT que o componente <Comments /> precisa
-  const merged: Comment[] = [...parents, ...replies];
-
-  set((prev) => {
-    const filtered = merged.filter(
-      (c) => !prev.some((p) => p.id_comment === c.id_comment)
-    );
-    return [...prev, ...filtered];
-  });
-};
-
 interface AllCommentsDataProps {
   data: Post;
 }
-
 
 const fetchAllCommentsFlat = async (id_post: string) => {
   const [parentsRes] = await Promise.all([
@@ -433,9 +431,28 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
       </DialogTrigger>
 
       <DialogContent className="p-0 text-foreground">
-        <div className="px-4 py-3 border-b">
-          <h2 className="text-sm font-semibold">Comentários</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+          <div className="flex flex-col leading-tight">
+            <h2 className="text-sm font-semibold text-foreground">
+              Comentários
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {comments.length} comentário{comments.length !== 1 && "s"}
+            </span>
+          </div>
         </div>
+        
+        {comments.length < 1 && (
+          <div className="w-full flex-col flex text-center gap-4 items-center justify-center">
+              <SearchSlash className="text-foreground/50"/>
+
+              <div  > 
+              <h1>Ninguem chegou aqui ainda...</h1>
+              <p className="text-sm text-center text-foreground/60 ">Espere alguem comentar, ou aproveite a solitude.</p>
+              </div>
+             
+          </div>
+        )} 
 
         <div className="overflow-y-auto max-h-[calc(80vh-56px)] w-full scrollbar-custom px-4 py-3">
           <Comments comments={comments} id_post={data.id_post!} />

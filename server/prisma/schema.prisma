@@ -14,40 +14,65 @@ datasource db {
 }
 
 model CommonUser {
-  id_user           String       @id @default(uuid())
+  id_user           String            @id @default(uuid())
   username          String
-  email             String       @unique
+  email             String            @unique
   password          String
   birth             DateTime?
   profile_image     String?
-  cpf               String       @unique
+  cpf               String            @unique
   fk_address        Int?
   contact           String?
   gender            String?
   emergency_contact String?
-  region            String       @default("RS")
-  address           Address?     @relation(fields: [fk_address], references: [id_address])
+  region            String            @default("RS")
+  address           Address?          @relation(fields: [fk_address], references: [id_address])
   posts             Post[]
-  updatedAt         DateTime     @default(now()) @updatedAt()
-  createdAt         DateTime     @default(now())
-  bio               String?      @default("")
-  desc              String?      @default("")
-  nickname          String       @default("@unk_user")
-  friends           CommonUser[] @relation("UserFriends")
-  friendOf          CommonUser[] @relation("UserFriends")
+  updatedAt         DateTime          @default(now()) @updatedAt()
+  createdAt         DateTime          @default(now())
+  bio               String?           @default("")
+  desc              String?           @default("")
+  nickname          String            @default("@unk_user")
+  friends           CommonUser[]      @relation("UserFriends")
+  friendOf          CommonUser[]      @relation("UserFriends")
 
-  @@map("common_user")
+  
+  verified          Boolean           @default(false)
+  verifiedAt        DateTime?
+  verifiedBy        String? // id do admin ou sistema
+  accountType       AccountType       @default(USER)
+  professionalType  ProfessionalType?
+  professionalBio   String?
+  specialties       String[]
 
   // requests recebidas pelo user
   FriendRequestReceived FriendRequest[] @relation("RequestsReceived")
 
   // requests enviadas pelo user
   FriendRequestSent FriendRequest[] @relation("RequestsSent")
-  Message Message[]
-  ChatUser ChatUser[]
-  Comments Comment[]
+  Message           Message[]
+  ChatUser          ChatUser[]
+  Comments          Comment[]
+
+  @@map("common_user")
 }
 
+enum ProfessionalType {
+  PSYCHOLOGIST
+  DOCTOR
+  LAWYER
+  NUTRITIONIST
+  COACH
+  THERAPIST
+  OTHER
+}
+
+enum AccountType {
+  USER
+  PROFESSIONAL
+  CREATOR
+  ADMIN
+}
 
 enum Status {
   pending
@@ -55,45 +80,42 @@ enum Status {
   rejected
 }
 
-
 model Chat {
-  id_chat String @id @default(cuid())
-  name String? // caso seja um grupo
-  isGroup Boolean @default(false)
+  id_chat      String     @id @default(cuid())
+  name         String? // caso seja um grupo
+  isGroup      Boolean    @default(false)
   participants ChatUser[]
-  messages Message[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  messages     Message[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }
 
-
-
 model ChatUser {
-  id_chat String
-  id_user String
-  chat Chat @relation(fields: [id_chat], references: [id_chat])
-  joinedAt DateTime @default(now())
-  user CommonUser @relation(fields: [id_user], references: [id_user])
-  role String? // Adm member e etc
+  id_chat  String
+  id_user  String
+  chat     Chat       @relation(fields: [id_chat], references: [id_chat])
+  joinedAt DateTime   @default(now())
+  user     CommonUser @relation(fields: [id_user], references: [id_user])
+  role     String? // Adm member e etc
 
   @@id([id_chat, id_user])
-} 
+}
 
 model Message {
-  id_message  String     @id @default(cuid())
-  id_chat     String
-  chat        Chat       @relation(fields: [id_chat], references: [id_chat])
+  id_message String @id @default(cuid())
+  id_chat    String
+  chat       Chat   @relation(fields: [id_chat], references: [id_chat])
 
-  id_sender   String
-  sender      CommonUser @relation(fields: [id_sender], references: [id_user])
+  id_sender String
+  sender    CommonUser @relation(fields: [id_sender], references: [id_user])
 
-  content     String
-  images      String[]   // opcional: anexos/imagens
-  videos      String[]   // opcional: vídeos
+  content String
+  images  String[] // opcional: anexos/imagens
+  videos  String[] // opcional: vídeos
 
-  status      MessageStatus @default(SENT)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  status    MessageStatus @default(SENT)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
 enum MessageStatus {
@@ -108,7 +130,7 @@ model FriendRequest {
   requester    CommonUser @relation("RequestsSent", fields: [id_requester], references: [id_user])
   id_receiver  String
   receiver     CommonUser @relation("RequestsReceived", fields: [id_receiver], references: [id_user])
-  status       Status     @default(pending) 
+  status       Status     @default(pending)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
@@ -122,7 +144,7 @@ model Post {
   content   String
   videos    String[]
   images    String[]
-  like    Int @default(0)
+  like      Int        @default(0)
   region    String     @default("BR")
   comments  Comment[]
   updatedAt DateTime   @default(now()) @updatedAt
@@ -130,19 +152,19 @@ model Post {
 }
 
 model Comment {
-  id_comment      String    @id @default(cuid())
+  id_comment      String     @id @default(cuid())
   id_post         String
-  post            Post      @relation(fields: [id_post], references: [id_post], onDelete: Cascade)
-  id_user         String    // novo campo para usuário
-  user            CommonUser      @relation(fields: [id_user], references: [id_user])
+  post            Post       @relation(fields: [id_post], references: [id_post], onDelete: Cascade)
+  id_user         String // novo campo para usuário
+  user            CommonUser @relation(fields: [id_user], references: [id_user])
   content         String
-  updatedAt       DateTime  @default(now()) @updatedAt
-  createdAt       DateTime  @default(now())
-  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id_comment] , onDelete: Cascade)
+  updatedAt       DateTime   @default(now()) @updatedAt
+  createdAt       DateTime   @default(now())
+  parentComment   Comment?   @relation("CommentReplies", fields: [parentCommentId], references: [id_comment], onDelete: Cascade)
   parentCommentId String?
-  replies         Comment[] @relation("CommentReplies")
-}
 
+  replies Comment[] @relation("CommentReplies")
+}
 
 //
 

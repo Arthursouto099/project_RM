@@ -7,9 +7,9 @@ export default function Profiles() {
     return (
 
     
-     <section className="flex flex-col justify-center items-center w-[100%]  h-[95vh]   overflow-auto no-scrollbar">
+     <section className="flex flex-col justify-center p-5 items-center w-[100%]  h-[95vh]   overflow-auto no-scrollbar">
           <div className="w-full min-h-screen  flex justify-center items-start py-10">
-            <div className="w-[45%]  flex flex-col items-center">
+            <div className=" mx-auto w-7xl  flex flex-col items-center">
               <ProfilePosts id_user={id_user as string} />
             </div>
           </div>
