@@ -55,6 +55,7 @@ model CommonUser {
   Comments          Comment[]
 
   @@map("common_user")
+  reportRequests ReportRequest[] @relation("ReportsRequests")
 }
 
 enum ProfessionalType {
@@ -135,6 +136,24 @@ model FriendRequest {
   updatedAt    DateTime   @updatedAt
 }
 
+
+enum ReportStatus {
+  REVIEW
+  RECEIVED
+  COMPLETED
+}
+
+model ReportRequest {
+  id_report String @id @default(cuid())
+  id_requester String
+  requester CommonUser @relation("ReportsRequests", fields: [id_requester], references: [id_user])
+  motive String 
+  id_post String
+  status ReportStatus @default(REVIEW)
+  post Post @relation(fields: [id_post], references: [id_post], onDelete: Cascade)
+  
+}
+
 // inicialmente dessa forma
 model Post {
   id_post   String     @id @default(cuid())
@@ -149,6 +168,8 @@ model Post {
   comments  Comment[]
   updatedAt DateTime   @default(now()) @updatedAt
   createdAt DateTime   @default(now())
+
+  reportRequests ReportRequest[]
 }
 
 model Comment {

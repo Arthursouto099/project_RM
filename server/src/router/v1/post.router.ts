@@ -21,6 +21,7 @@ postRouter.put("/comment/:id_comment", authMiddleware, commentController.putComm
 postRouter.get("/comment/replies/:id_comment", commentController.findRepliesByParentId)
 postRouter.delete("/comment/delete/:id_comment", authMiddleware, commentController.deleteComment )
 postRouter.get("/comment/find/:id_comment", authMiddleware, commentController.findComment)
+postRouter.post("/report/:id_post", authMiddleware, postController.reportPost)
 
 
 // postRouter.post("/profile" , upload.single("image"), postController.postImage )

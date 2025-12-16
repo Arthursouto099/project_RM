@@ -3,6 +3,7 @@ import prisma from "../prisma.config";
 import PostErrorHandler from "../errors/PostErrorHandler";
 import { Pagination } from "../interfaces/Pagination";
 import { getSkipQuantity } from "../utils";
+import { Prisma } from "@prisma/client";
 
 
 
@@ -54,11 +55,17 @@ const postService = {
                         
                     },
                 },
-
+                reportRequests: true
+            
             }
         })
     }
+    ,
 
+
+    reportPost: async (data: Omit<Prisma.ReportRequestCreateInput, 'id_report'| 'status'>) => {
+        return await prisma.reportRequest.create({data})
+    }
     ,
 
     findPosts: async (pagination: Pagination) => {

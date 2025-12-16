@@ -79,7 +79,8 @@ export const commentService = {
           select: UserRequiredProps,
         },
         replies: {
-          take: 10,
+          
+          take: 100,
           orderBy: {
             createdAt: "desc",
           },
@@ -104,6 +105,7 @@ export const commentService = {
       (await prisma.comment.findMany({
         skip: getSkipQuantity(pagination),
         take: pagination.limit,
+        orderBy: {createdAt: "desc"},
         where: { parentCommentId: id_comment },
         include: { user: { select: UserRequiredProps } },
       })) ?? []
