@@ -16,6 +16,7 @@ createRoot(document.getElementById('root')!).render(
         newestOnTop={false}
         closeOnClick
         rtl={false}
+        theme="dark"
         pauseOnFocusLoss
         draggable
         pauseOnHover

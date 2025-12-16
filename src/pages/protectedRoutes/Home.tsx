@@ -87,7 +87,7 @@ export default function Home() {
 
   // 🧠 Layout principal
   return (
-    <section className="w-full  overflow-y-auto">
+    <section className="w-full dark:bg-black bg-accent/20 overflow-y-auto">
       <div className="flex flex-col md:flex-row w-full h-full gap-5 p-5 overflow-auto">
         {/* Feed de posts */}
         <div

@@ -6,6 +6,7 @@ import {
   Edit,
   Heart,
   MessageCircleIcon,
+  MessageSquareWarning,
   MessagesSquareIcon,
   MoreHorizontal,
   SearchSlash,
@@ -16,6 +17,7 @@ import useAuth from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -39,6 +41,7 @@ import Comments from "./comment-post";
 import instanceV1 from "@/api/api@instance/ap-v1i";
 import Avatar from "@/api_avatar";
 import { io } from "socket.io-client";
+import { tokenActions } from "@/@tokenSettings/token";
 
 const findCommentsByIdPost = async (
   id_post: string,
@@ -64,7 +67,10 @@ const findCommentsByIdPost = async (
     const filtered = flattened.filter(
       (np) => !prev.some((p) => p.id_comment === np.id_comment)
     );
-    return [...prev, ...filtered];
+    return [...prev, ...filtered].sort(
+      (a, b) =>
+        new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
+    );
   });
 };
 
@@ -73,57 +79,9 @@ export default function Posts({ post }: { post: Post }) {
   const { payload } = useAuth();
   const [page] = useState<number>(1);
   const [like, setLike] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
+  
 
-  useEffect(() => {
-    findCommentsByIdPost(
-      post.id_post!,
-      { page, limit: 5 },
-      setComments,
-      "noParent"
-    );
-  }, [post.id_post, page]);
 
-  console.log(comments);
-
-  useEffect(() => {
-    const socket = io("http://localhost:3300");
-    socket.emit("joinComments");
-
-    socket.on("commentCreated", (newComment: Comment) => {
-      if (newComment.id_post === post.id_post) {
-        setComments((prev) => {
-          if (prev.some((c) => c.id_comment === newComment.id_comment))
-            return prev;
-          return [newComment, ...prev];
-        });
-      }
-    });
-
-    socket.on("commentUpdated", (commentUpdated: Comment) => {
-      setComments((prev) =>
-        prev.map((p) =>
-          p.id_comment === commentUpdated.id_comment ? commentUpdated : p
-        )
-      );
-    });
-
-    socket.on("commentDeleted", (commentDeleted: Comment) => {
-      setComments((prev) =>
-        prev.filter((c) => c.id_comment !== commentDeleted.id_comment)
-      );
-    });
-
-    return () => {
-      // opcional, mas mais “limpo” para evitar múltiplos listeners
-      socket.off("commentCreated");
-      socket.off("commentUpdated");
-      socket.off("commentDeleted");
-
-      socket.disconnect(); // <- retorna void
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (payload?.id_user === post.user?.id_user) setUser(true);
@@ -247,35 +205,16 @@ export default function Posts({ post }: { post: Post }) {
         {/* Rodapé */}
         <CardFooter className="flex flex-col items-start gap-4 p-0 w-full">
           {/* Comentários */}
-          <div className="w-full border-t border-sidebar-border pt-4 mt-1">
-            <Comments comments={comments} id_post={post.id_post!} />
-          </div>
 
           {/* Ações */}
-          <div className="flex w-full  flex-col  md:flex-row no-scrolbar gap-3">
-            <CreateCommentModal id_post={post.id_post!}>
-              <Button
-                type="button"
-                className="
-                  flex items-center gap-2
-                  bg-sidebar-accent
-                  shadow-sm
-                  hover:shadow
-                  hover:bg-sidebar-accent/90
-                  transition
-                "
-              >
-                <MessageCircleIcon className="w-4 h-4" />
-                Comentar
-                <span className="ml-1 text-xs opacity-80">
-                  ({comments.length})
-                </span>
-              </Button>
-            </CreateCommentModal>
+          <div className="w-full h-[0.5px] bg-accent/5 "/>
+
+          <div className="flex w-full text-foreground/50  flex-col  md:flex-row items-center no-scrolbar gap-3">
+          
 
             <AllCommentsData data={post} />
 
-            <ReportModal />
+            <ReportModal id_post={post.id_post!} />
 
             <button
               type="button"
@@ -419,18 +358,19 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
   }, [data.id_post]);
 
   return (
+    <div >
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          className="flex items-center gap-2 bg-sidebar-accent shadow-sm hover:shadow hover:bg-sidebar-accent/90 transition"
+        <span
+        
+          className=" cursor-pointer flex items-center gap-2 text-xs"
         >
           <MessagesSquareIcon />
-          Todos os comentários
-        </Button>
+          Ver Comentarios
+        </span>
       </DialogTrigger>
 
-      <DialogContent className="p-0 text-foreground">
+      <DialogContent className="p-0  min-w-[50%] text-foreground">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
           <div className="flex flex-col leading-tight">
             <h2 className="text-sm font-semibold text-foreground">
@@ -441,24 +381,53 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
             </span>
           </div>
         </div>
-        
+
         {comments.length < 1 && (
           <div className="w-full flex-col flex text-center gap-4 items-center justify-center">
-              <SearchSlash className="text-foreground/50"/>
+            <SearchSlash className="text-foreground/50" />
 
-              <div  > 
+            <div>
               <h1>Ninguem chegou aqui ainda...</h1>
-              <p className="text-sm text-center text-foreground/60 ">Espere alguem comentar, ou aproveite a solitude.</p>
-              </div>
-             
+              <p className="text-sm text-center text-foreground/60 ">
+                Espere alguem comentar, ou aproveite a solitude.
+              </p>
+            </div>
           </div>
-        )} 
+        )}
 
         <div className="overflow-y-auto max-h-[calc(80vh-56px)] w-full scrollbar-custom px-4 py-3">
-          <Comments comments={comments} id_post={data.id_post!} />
+          <Comments
+            noShowReplies={false}
+            comments={comments}
+            id_post={data.id_post!}
+          />
         </div>
+        
+      <DialogFooter>
+        <div className="w-full p-4">
+            <CreateCommentModal id_post={data.id_post!}>
+              <Button
+                type="button"
+                className="
+                  flex items-center gap-2
+                  bg-sidebar-accent
+                  shadow-sm
+                  hover:shadow
+                  hover:bg-sidebar-accent/90
+                  transition
+                "
+              >
+                <MessageCircleIcon className="w-4 h-4" />
+                Comentar
+              </Button>
+            </CreateCommentModal>
+        </div>
+        
+      </DialogFooter>
       </DialogContent>
+
     </Dialog>
+    </div>
   );
 }
 
@@ -531,28 +500,88 @@ export function PostOptions({
   );
 }
 
-const ReportModal = () => {
+interface ReportModalProps {
+  id_post: string;
+}
+
+const ReportModal = ({ id_post }: ReportModalProps) => {
+  const motivesList = [
+    "Conteúdo ofensivo ou discurso de ódio",
+    "Spam ou propaganda enganosa",
+    "Informação falsa ou enganosa",
+    "Assédio, bullying ou ameaça",
+    "Conteúdo sexual impróprio",
+    "Violência ou incentivo à violência",
+    "Violação de direitos autorais",
+    "Golpe ou tentativa de fraude",
+  ];
+
+  const [motive, setMotive] = useState<string | null>(null);
+
+  const handleSend = async () => {
+    const report = await instanceV1.post(
+      `/post/report/${id_post}`,
+      { motive },
+      { headers: { Authorization: `bearer ${tokenActions.getToken()}` } }
+    );
+    toast.info("Report Enviado com sucesso");
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          className="
-                  flex items-center gap-2
-                  bg-sidebar-accent
-                  shadow-sm
-                  hover:shadow
-                  hover:bg-sidebar-accent/90
-                  transition
-                "
+            <span
+        
+          className=" cursor-pointer flex items-center gap-2 text-xs"
         >
+          <MessageSquareWarning/>
           Reportar
-        </Button>
+        </span>
       </DialogTrigger>
       <DialogContent className="text-foreground">
-        <DialogHeader>
-          <DialogTitle>Reportar Postagem</DialogTitle>
-          <DialogDescription>Essa ação não pode ser desfeita</DialogDescription>
+        <DialogHeader className="space-y-3 text-center">
+          <DialogTitle className="flex items-center justify-center gap-2 text-base font-semibold">
+            <MessageSquareWarning className="h-5 w-5 text-destructive" />
+            Reportar postagem
+          </DialogTitle>
+
+          <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
+            Selecione o motivo pelo qual você deseja denunciar esta mensagem.
+          </DialogDescription>
         </DialogHeader>
+
+        <div className="bg-card p-3 rounded-xl">
+          <ul className="space-y-3">
+            {motivesList.map((item) => (
+              <li
+                key={item}
+                onClick={() => setMotive(item)}
+                className={`
+        cursor-pointer pb-3 border-b border-b-accent/5
+        text-sm
+        transition-colors
+        hover:text-accent
+        ${motive === item ? "text-accent font-medium" : ""}
+      `}
+              >
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="w-full">
+          <DialogClose asChild>
+            <Button
+              variant={"outline"}
+              onClick={async () => {
+                await handleSend();
+              }}
+            >
+              Proseguir
+            </Button>
+          </DialogClose>
+        </div>
       </DialogContent>
     </Dialog>
   );

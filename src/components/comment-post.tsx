@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react"
-import type { Comment } from "@/api/PostApi"
-import { Calendar, Edit, MessageCircleIcon, ReplyAll, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import React, { useEffect, useMemo, useState } from "react";
+import type { Comment } from "@/api/PostApi";
+import { Calendar, Edit, MessageCircleIcon, ReplyAll, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogClose,
@@ -10,17 +10,18 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { toast } from "react-toastify"
-import PostApi from "@/api/PostApi"
-import Avatar from "@/api_avatar"
-import useAuth from "@/hooks/useAuth"
-import { io } from "socket.io-client"
+} from "@/components/ui/dialog";
+import { toast } from "react-toastify";
+import PostApi from "@/api/PostApi";
+import Avatar from "@/api_avatar";
+import useAuth from "@/hooks/useAuth";
+import { io } from "socket.io-client";
 
 type CommentsProps = {
-  comments: Comment[]
-  id_post: string
-}
+  comments: Comment[];
+  id_post: string;
+  noShowReplies: boolean;
+};
 
 /**
  * REGRAS:
@@ -28,136 +29,142 @@ type CommentsProps = {
  * - UI: para cada pai, renderiza replies ACHATADAS (todos descendentes)
  * - "Respondendo a @X": usa parentCommentId para achar o usuário no Map
  */
-export default function Comments({ comments, id_post }: CommentsProps) {
-  const [all, setAll] = useState<Comment[]>(comments)
+export default function Comments({
+  comments,
+  id_post,
+  noShowReplies,
+}: CommentsProps) {
+  const [all, setAll] = useState<Comment[]>(comments);
 
   useEffect(() => {
-    setAll(comments)
-  }, [comments])
+    setAll(comments);
+  }, [comments]);
 
   // Map por id_comment para lookup rápido
   const byId = useMemo(() => {
-    const m = new Map<string, Comment>()
-    for (const c of all) if (c.id_comment) m.set(c.id_comment, c)
-    return m
-  }, [all])
+    const m = new Map<string, Comment>();
+    for (const c of all) if (c.id_comment) m.set(c.id_comment, c);
+    return m;
+  }, [all]);
 
   // Descobre o ROOT (comentário pai principal) de qualquer comentário
   const rootIdOf = useMemo(() => {
-    const cache = new Map<string, string>()
+    const cache = new Map<string, string>();
 
     const findRoot = (id: string): string => {
-      if (cache.has(id)) return cache.get(id)!
-      const cur = byId.get(id)
-      if (!cur) return id
+      if (cache.has(id)) return cache.get(id)!;
+      const cur = byId.get(id);
+      if (!cur) return id;
 
-      const parentId = cur.parentCommentId
+      const parentId = cur.parentCommentId;
       if (!parentId || !byId.get(parentId)) {
-        cache.set(id, id)
-        return id
+        cache.set(id, id);
+        return id;
       }
-      const root = findRoot(parentId)
-      cache.set(id, root)
-      return root
-    }
+      const root = findRoot(parentId);
+      cache.set(id, root);
+      return root;
+    };
 
-    return findRoot
-  }, [byId])
+    return findRoot;
+  }, [byId]);
 
   // Roots = comentários sem parentCommentId
-  const roots = useMemo(() => all.filter((c) => !c.parentCommentId), [all])
+  const roots = useMemo(() => all.filter((c) => !c.parentCommentId), [all]);
 
   // Agrupa TODOS descendentes de cada root (achatado)
   const repliesByRoot = useMemo(() => {
-    const g = new Map<string, Comment[]>()
+    const g = new Map<string, Comment[]>();
     for (const c of all) {
-      if (!c.id_comment) continue
-      if (!c.parentCommentId) continue
-      const root = rootIdOf(c.id_comment)
-      if (!g.has(root)) g.set(root, [])
-      g.get(root)!.push(c)
+      if (!c.id_comment) continue;
+      if (!c.parentCommentId) continue;
+      const root = rootIdOf(c.id_comment);
+      if (!g.has(root)) g.set(root, []);
+      g.get(root)!.push(c);
     }
 
     // ordena por data (mais antigo -> mais novo). Ajuste se preferir ao contrário.
     for (const [k, arr] of g.entries()) {
       arr.sort((a, b) => {
-        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0
-        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0
-        return da - db
-      })
-      g.set(k, arr)
+        const da = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const db = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return da - db;
+      });
+      g.set(k, arr);
     }
 
-    return g
-  }, [all, rootIdOf])
+    return g;
+  }, [all, rootIdOf]);
 
   const upsert = (c: Comment) => {
     setAll((prev) => {
-      const idx = prev.findIndex((x) => x.id_comment === c.id_comment)
-      if (idx === -1) return [c, ...prev]
-      const copy = prev.slice()
-      copy[idx] = c
-      return copy
-    })
-  }
+      const idx = prev.findIndex((x) => x.id_comment === c.id_comment);
+      if (idx === -1) return [c, ...prev];
+      const copy = prev.slice();
+      copy[idx] = c;
+      return copy;
+    });
+  };
 
   const remove = (id_comment: string) => {
-    setAll((prev) => prev.filter((c) => c.id_comment !== id_comment))
-  }
+    setAll((prev) => prev.filter((c) => c.id_comment !== id_comment));
+  };
 
   // Socket: trate reply como "comment" também (não filtre só pelo pai direto)
   useEffect(() => {
-    const socket = io("http://localhost:3300")
-    socket.emit("joinComments")
+    const socket = io("http://localhost:3300");
+    socket.emit("joinComments");
 
     const onCreated = (newComment: Comment) => {
       // garante que é do post
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pid = (newComment as any)?.post?.id_post ?? (newComment as any)?.id_post
-      if (pid && pid !== id_post) return
-      upsert(newComment)
-    }
+      const pid =
+        (newComment as any)?.post?.id_post ?? (newComment as any)?.id_post;
+      if (pid && pid !== id_post) return;
+      upsert(newComment);
+    };
 
     const onUpdated = (updated: Comment) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pid = (updated as any)?.post?.id_post ?? (updated as any)?.id_post
-      if (pid && pid !== id_post) return
-      upsert(updated)
-    }
+      const pid = (updated as any)?.post?.id_post ?? (updated as any)?.id_post;
+      if (pid && pid !== id_post) return;
+      upsert(updated);
+    };
 
     const onDeleted = (deleted: Comment) => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const pid = (deleted as any)?.post?.id_post ?? (deleted as any)?.id_post
-      if (pid && pid !== id_post) return
-      if (deleted.id_comment) remove(deleted.id_comment)
-    }
+      const pid = (deleted as any)?.post?.id_post ?? (deleted as any)?.id_post;
+      if (pid && pid !== id_post) return;
+      if (deleted.id_comment) remove(deleted.id_comment);
+    };
 
     // Se seu backend emite replyCreated/replyUpdated/replyDeleted, escute também:
-    socket.on("commentCreated", onCreated)
-    socket.on("commentUpdated", onUpdated)
-    socket.on("commentDeleted", onDeleted)
+    socket.on("commentCreated", onCreated);
+    socket.on("commentUpdated", onUpdated);
+    socket.on("commentDeleted", onDeleted);
 
-    socket.on("replyCreated", onCreated)
-    socket.on("replyUpdated", onUpdated)
-    socket.on("replyDeleted", onDeleted)
+    socket.on("replyCreated", onCreated);
+    socket.on("replyUpdated", onUpdated);
+    socket.on("replyDeleted", onDeleted);
 
     return () => {
-      socket.off("commentCreated", onCreated)
-      socket.off("commentUpdated", onUpdated)
-      socket.off("commentDeleted", onDeleted)
+      socket.off("commentCreated", onCreated);
+      socket.off("commentUpdated", onUpdated);
+      socket.off("commentDeleted", onDeleted);
 
-      socket.off("replyCreated", onCreated)
-      socket.off("replyUpdated", onUpdated)
-      socket.off("replyDeleted", onDeleted)
+      socket.off("replyCreated", onCreated);
+      socket.off("replyUpdated", onUpdated);
+      socket.off("replyDeleted", onDeleted);
 
-      socket.disconnect()
-    }
-  }, [id_post])  
+      socket.disconnect();
+    };
+  }, [id_post]);
 
   return (
     <div className="flex flex-col w-full gap-3 sm:gap-4">
       {roots.map((root) => (
         <CommentRootCard
+          noShowReplies={noShowReplies}
           key={root.id_comment}
           comment={root}
           id_post={id_post}
@@ -168,7 +175,7 @@ export default function Comments({ comments, id_post }: CommentsProps) {
         />
       ))}
     </div>
-  )
+  );
 }
 
 function CommentRootCard({
@@ -178,16 +185,18 @@ function CommentRootCard({
   byId,
   onUpsert,
   onRemove,
+  noShowReplies = false,
 }: {
-  comment: Comment
-  id_post: string
-  replies: Comment[]
-  byId: Map<string, Comment>
-  onUpsert: (c: Comment) => void
-  onRemove: (id: string) => void
+  comment: Comment;
+  noShowReplies?: boolean;
+  id_post: string;
+  replies: Comment[];
+  byId: Map<string, Comment>;
+  onUpsert: (c: Comment) => void;
+  onRemove: (id: string) => void;
 }) {
-  const { payload } = useAuth()
-  const [showReplies, setShowReplies] = useState(true)
+  const { payload } = useAuth();
+  const [showReplies, setShowReplies] = useState(false);
 
   return (
     <div className="flex flex-col w-full max-w-full">
@@ -197,7 +206,11 @@ function CommentRootCard({
 
         <div className="mt-0.5 shrink-0">
           <div className="rounded-full ring-1 ring-sidebar-border/60">
-            <Avatar name={comment.user?.username} className="w-11 h-11" image={comment.user?.profile_image} />
+            <Avatar
+              name={comment.user?.username}
+              className="w-11 h-11"
+              image={comment.user?.profile_image}
+            />
           </div>
         </div>
 
@@ -229,7 +242,9 @@ function CommentRootCard({
             <ReplyModal
               id_post={id_post}
               parentCommentId={comment.id_comment}
-              replyingToLabel={`@${comment.user?.nickname ?? comment.user?.username ?? "Usuário"}`}
+              replyingToLabel={`@${
+                comment.user?.nickname ?? comment.user?.username ?? "Usuário"
+              }`}
               onUpsert={onUpsert}
             >
               <Button
@@ -286,13 +301,23 @@ function CommentRootCard({
           {/* Replies achatadas */}
           {replies.length > 0 && (
             <div className="mt-4">
-              <button
-                onClick={() => setShowReplies((s) => !s)}
-                className="text-xs font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground transition inline-flex items-center gap-2 rounded-full border border-sidebar-border/60 bg-sidebar/30 px-3 py-1.5"
-              >
-                <span>{showReplies ? "Ocultar respostas" : `Ver ${replies.length} respostas`}</span>
-              </button>
+              {noShowReplies === false && (
+                <button
+                  onClick={() => {
+                    if (noShowReplies && noShowReplies === true) return;
+                    setShowReplies((s) => !s);
+                  }}
+                  className="text-xs font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground transition inline-flex items-center gap-2 rounded-full border border-sidebar-border/60 bg-sidebar/30 px-3 py-1.5"
+                >
+                  <span>
+                    {showReplies
+                      ? "Ocultar respostas"
+                      : `Ver ${replies.length} respostas`}
+                  </span>
+                </button>
+              )}
 
+         
               {showReplies && (
                 <div className="relative mt-3">
                   <div className="absolute left-3 top-0 bottom-0 w-px bg-sidebar-border/60" />
@@ -315,7 +340,7 @@ function CommentRootCard({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ReplyItem({
@@ -325,23 +350,29 @@ function ReplyItem({
   onUpsert,
   onRemove,
 }: {
-  comment: Comment
-  id_post: string
-  byId: Map<string, Comment>
-  onUpsert: (c: Comment) => void
-  onRemove: (id: string) => void
+  comment: Comment;
+  id_post: string;
+  byId: Map<string, Comment>;
+  onUpsert: (c: Comment) => void;
+  onRemove: (id: string) => void;
 }) {
-  const { payload } = useAuth()
+  const { payload } = useAuth();
 
   // identifica "quem estou respondendo"
-  const replyingTo = comment.parentCommentId ? byId.get(comment.parentCommentId) : null
-  const replyingToLabel = replyingTo?.user?.nickname ?? replyingTo?.user?.username ?? "Usuário"
+  const replyingTo = comment.parentCommentId
+    ? byId.get(comment.parentCommentId)
+    : null;
+  const replyingToLabel =
+    replyingTo?.user?.nickname ?? replyingTo?.user?.username ?? "Usuário";
 
   return (
     <div className="flex items-start gap-3 w-full min-w-0">
       <div className="shrink-0 mt-0.5">
         <div className="h-7 w-7 rounded-full ring-1 ring-sidebar-border/60 overflow-hidden">
-          <Avatar name={comment.user?.username} image={comment.user?.profile_image} />
+          <Avatar
+            name={comment.user?.username}
+            image={comment.user?.profile_image}
+          />
         </div>
       </div>
 
@@ -375,7 +406,9 @@ function ReplyItem({
           <ReplyModal
             id_post={id_post}
             parentCommentId={comment.id_comment}
-            replyingToLabel={`${comment.user?.nickname ?? comment.user?.username ?? "Usuário"}`}
+            replyingToLabel={`${
+              comment.user?.nickname ?? comment.user?.username ?? "Usuário"
+            }`}
             onUpsert={onUpsert}
           >
             <button className="text-[11px] font-medium text-sidebar-foreground/60 hover:text-sidebar-foreground">
@@ -411,7 +444,7 @@ function ReplyItem({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export function ReplyModal({
@@ -423,44 +456,52 @@ export function ReplyModal({
   replyingToLabel,
   onUpsert,
 }: {
-  children: React.ReactNode
-  id_post: string
-  parentCommentId?: string
-  id_comment?: string
-  initialValue?: string
-  replyingToLabel?: string
-  onUpsert: (c: Comment) => void
+  children: React.ReactNode;
+  id_post: string;
+  parentCommentId?: string;
+  id_comment?: string;
+  initialValue?: string;
+  replyingToLabel?: string;
+  onUpsert: (c: Comment) => void;
 }) {
-  const [content, setContent] = useState(initialValue ?? "")
+  const [content, setContent] = useState(initialValue ?? "");
 
   useEffect(() => {
-    setContent(initialValue ?? "")
-  }, [initialValue])
+    setContent(initialValue ?? "");
+  }, [initialValue]);
 
   const onSubmit = async () => {
     try {
       // otimista simples (opcional): cria placeholder local
-      let response: any
+      let response: any;
       if (id_comment) {
-        response = await PostApi.updateComment({ id_comment, content, parentCommentId })
+        response = await PostApi.updateComment({
+          id_comment,
+          content,
+          parentCommentId,
+        });
       } else {
-        response = await PostApi.createComment({ id_post, content, parentCommentId })
+        response = await PostApi.createComment({
+          id_post,
+          content,
+          parentCommentId,
+        });
       }
 
-      toast.success(response.message)
+      toast.success(response.message);
 
       // se a API retornar o comentário criado/atualizado em response.data, use:
       if (response?.data?.id_comment) {
-        onUpsert(response.data)
+        onUpsert(response.data);
       } else {
         // fallback: você pode forçar um refetch do post fora daqui se quiser
       }
 
-      setContent("")
+      setContent("");
     } catch (e) {
-      toast.error((e as Error).message)
+      toast.error((e as Error).message);
     }
-  }
+  };
 
   return (
     <Dialog>
@@ -500,7 +541,7 @@ export function ReplyModal({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function ReplyModalDelete({
@@ -509,24 +550,25 @@ function ReplyModalDelete({
   parentCommentId,
   onRemove,
 }: {
-  children: React.ReactNode
-  parentCommentId?: string
-  id_comment: string
-  onRemove: (id: string) => void
+  children: React.ReactNode;
+  parentCommentId?: string;
+  id_comment: string;
+  onRemove: (id: string) => void;
 }) {
   const onDelete = async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let response: any
-      if (parentCommentId) response = await PostApi.deleteComment(id_comment, parentCommentId)
-      else response = await PostApi.deleteComment(id_comment)
+      let response: any;
+      if (parentCommentId)
+        response = await PostApi.deleteComment(id_comment, parentCommentId);
+      else response = await PostApi.deleteComment(id_comment);
 
-      toast.success(response.message)
-      onRemove(id_comment)
+      toast.success(response.message);
+      onRemove(id_comment);
     } catch (e) {
-      toast.error((e as Error).message)
+      toast.error((e as Error).message);
     }
-  }
+  };
 
   return (
     <Dialog>
@@ -541,7 +583,8 @@ function ReplyModalDelete({
         </DialogHeader>
 
         <div className="mt-2 text-sm text-sidebar-foreground/70">
-          Tem certeza que deseja excluir este comentário? Esta ação não pode ser desfeita.
+          Tem certeza que deseja excluir este comentário? Esta ação não pode ser
+          desfeita.
         </div>
 
         <div className="mt-5 flex justify-end gap-2">
@@ -562,5 +605,5 @@ function ReplyModalDelete({
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

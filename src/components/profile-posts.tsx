@@ -3,99 +3,114 @@ import PostApi from "@/api/PostApi";
 import { useEffect, useRef, useState } from "react";
 import Posts from "./post";
 import ProfileDashboard from "./profile";
-import { motion } from "framer-motion"
-
-
+import { motion } from "framer-motion";
+import { io } from "socket.io-client";
 
 export default function ProfilePosts({ id_user }: { id_user: string }) {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [page, setPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+
+  const postRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = postRef.current;
+    if (!el) return;
+
+    const fetchPosts = async () => {
+      const posts =
+        (await PostApi.findPostsByMe(id_user, { page, limit: 10 })).data ?? [];
+
+      if (!posts || posts.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setPosts((prev) => {
+        const filtered = posts.filter(
+          (np) => !prev.some((p) => p.id_post === np.id_post)
+        );
+        return [...prev, ...filtered];
+      });
+    };
+
+    fetchPosts();
+  }, [page, id_user]);
 
 
-    const [posts, setPosts] = useState<Post[]>([])
-    const [page, setPage] = useState<number>(1)
-    const [hasMore, setHasMore] = useState<boolean>(true)
-
-
-    const postRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-
-        const el = postRef.current
-        if (!el) return
-
-        const fetchPosts = async () => {
-            const posts = (await PostApi.findPostsByMe(id_user, { page, limit: 10 })).data ?? []
-
-
-            if (!posts || posts.length === 0) {
-                setHasMore(false)
-                return
-            }
-
-
-            setPosts((prev) => {
-                const filtered = posts.filter(np => !prev.some(p => p.id_post === np.id_post))
-                return [...prev, ...filtered]
-            })
 
 
 
-        }
+  useEffect(() => {
+    const socket = io("http://localhost:3300");
+    socket.emit("joinPosts");
 
-        fetchPosts()
+    socket.on("postCreated", (newPost: Post) => {
+      setPosts((prev) => {
+        if (prev.some((p) => p.id_post === newPost.id_post)) return prev;
+        return [newPost, ...prev];
+      });
+    });
 
-    }, [page, id_user])
+    socket.on("postUpdated", (updatedPost: Post) => {
+      setPosts((prev) =>
+        prev.map((p) => (p.id_post === updatedPost.id_post ? updatedPost : p))
+      );
+    });
+
+    socket.on("postDeleted", (deleted: Post) => {
+      setPosts((prev) => prev.filter((p) => p.id_post !== deleted.id_post));
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
 
-    useEffect(() => {
-        const el = postRef.current
-        if (!el) return
+  
 
-        const handleScroll = () => {
-            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50 && hasMore) {
-                setPage(prev => prev + 1)
-            }
+  useEffect(() => {
+    const el = postRef.current;
+    if (!el) return;
 
-        }
+    const handleScroll = () => {
+      if (el.scrollTop + el.clientHeight >= el.scrollHeight - 50 && hasMore) {
+        setPage((prev) => prev + 1);
+      }
+    };
 
-        el.addEventListener("scroll", handleScroll)
-        return () => el.removeEventListener("scroll", handleScroll)
+    el.addEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
+  }, [hasMore]);
 
-
-    }, [hasMore])
-
-
-    return (
-        <div
-            ref={postRef}
-            className="flex flex-col  items-center  justify-start w-full min-h-screen m-5 overflow-y-auto no-scrollbar "
+  return (
+    <div
+      ref={postRef}
+      className="flex flex-col  items-center  justify-start w-full min-h-screen m-5 overflow-y-auto no-scrollbar "
+    >
+      {/* Container central com limite de largura */}
+      <div className="w-full  flex flex-col items-center gap-6 py-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="w-full"
         >
-            {/* Container central com limite de largura */}
-            <div className="w-full  flex flex-col items-center gap-6 py-10">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full">
-                    <ProfileDashboard id_user={id_user} />
-                </motion.div>
+          <ProfileDashboard id_user={id_user} />
+        </motion.div>
 
-                < motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="w-full flex flex-col items-center gap-6">
-                    {posts.map((post) => (
-                        <Posts key={post.id_post} post={post}  />
-                    ))}
-                </motion.div>
-            </div>
-        </div>
-    )
-
-
-
-
-
-
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="w-full flex flex-col items-center gap-6"
+        >
+          {posts.map((post) => (
+            <Posts key={post.id_post} post={post} />
+          ))}
+        </motion.div>
+      </div>
+    </div>
+  );
 }
