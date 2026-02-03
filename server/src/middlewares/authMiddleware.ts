@@ -1,35 +1,41 @@
-import { Request, Response, NextFunction } from "express";
-import {tokenConfig} from "../config/@tokenconfig/tokenConfig"
-import { Payload } from "../config/@tokenconfig/tokenConfig"
+import { Response, NextFunction } from "express";
+import { tokenConfig } from "../config/@tokenconfig/tokenConfig";
+import { Payload } from "../config/@tokenconfig/tokenConfig";
 import { CustomRequest } from "../types/CustomRequest";
 
-export default function authMiddleware (req: CustomRequest, res: Response, next: NextFunction) {
-    const authHeader = req.headers.authorization
-    
-    
-    // trocar para um erro mais especializado
-    if(!authHeader) {
-         res.status(401).json({message: "Não autorizado"})
-        return
-    }
 
-    const token = authHeader.split(" ")[1]
-    const payload =   tokenConfig.verifyToken(token) as Payload
+export default function authMiddleware(
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction,
+) {
+  const cookie = req.cookies?.cookie_token;
 
-    if(!payload) {
-         res.status(401).json({message: "Não autorizado"})
-        return
-    }
-    
-    
-    
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    req.userLogged = {
-        email: payload.email,
-        cpf: payload.cpf,
-        id_user: payload.id_user,
-        name: payload.name
-    }
+  // trocar para um erro mais especializado
+  if (!cookie) {
+    res.status(401).json({ message: "Não autorizado" });
+    return;
+  }
 
-    next()
+  let loader: Payload |  null = null;
+
+  try {
+    loader = tokenConfig.verifyToken(cookie) as Payload;
+  } catch {
+    res.status(401).json({ message: "Não autorizado" });
+  }
+
+  if (!loader) {
+    res.status(401).json({ message: "Não autorizado" });
+    return;
+  }
+
+  req.userLogged = {
+    email: loader.email,
+    cpf: loader.cpf,
+    id_user: loader.id_user,
+    name: loader.name,
+  };
+
+  next();
 }

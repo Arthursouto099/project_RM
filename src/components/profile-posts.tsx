@@ -28,7 +28,7 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
 
       setPosts((prev) => {
         const filtered = posts.filter(
-          (np) => !prev.some((p) => p.id_post === np.id_post)
+          (np) => !prev.some((p) => p.id_post === np.id_post),
         );
         return [...prev, ...filtered];
       });
@@ -36,10 +36,6 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
 
     fetchPosts();
   }, [page, id_user]);
-
-
-
-
 
   useEffect(() => {
     const socket = io("http://localhost:3300");
@@ -54,7 +50,7 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
 
     socket.on("postUpdated", (updatedPost: Post) => {
       setPosts((prev) =>
-        prev.map((p) => (p.id_post === updatedPost.id_post ? updatedPost : p))
+        prev.map((p) => (p.id_post === updatedPost.id_post ? updatedPost : p)),
       );
     });
 
@@ -66,9 +62,6 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
       socket.disconnect();
     };
   }, []);
-
-
-  
 
   useEffect(() => {
     const el = postRef.current;
@@ -87,7 +80,7 @@ export default function ProfilePosts({ id_user }: { id_user: string }) {
   return (
     <div
       ref={postRef}
-      className="flex flex-col  items-center  justify-start w-full min-h-screen m-5 overflow-y-auto no-scrollbar "
+      className="flex flex-col  items-cente r  justify-start w-full min-h-screen  overflow-y-auto no-scrollbar "
     >
       {/* Container central com limite de largura */}
       <div className="w-full  flex flex-col items-center gap-6 py-10">

@@ -56,6 +56,8 @@ model CommonUser {
 
   @@map("common_user")
   reportRequests ReportRequest[] @relation("ReportsRequests")
+  communities Community[]
+  myCommunities Community[] @relation("myCommunities")
 }
 
 enum ProfessionalType {
@@ -83,12 +85,16 @@ enum Status {
 
 model Chat {
   id_chat      String     @id @default(cuid())
+  communityId String?
   name         String? // caso seja um grupo
   isGroup      Boolean    @default(false)
   participants ChatUser[]
   messages     Message[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+  community   Community? @relation(fields: [communityId], references: [id_community], onDelete: Cascade)
+
+
 }
 
 model ChatUser {
@@ -96,7 +102,7 @@ model ChatUser {
   id_user  String
   chat     Chat       @relation(fields: [id_chat], references: [id_chat])
   joinedAt DateTime   @default(now())
-  user     CommonUser @relation(fields: [id_user], references: [id_user])
+  user     CommonUser @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
   role     String? // Adm member e etc
 
   @@id([id_chat, id_user])
@@ -108,7 +114,7 @@ model Message {
   chat       Chat   @relation(fields: [id_chat], references: [id_chat])
 
   id_sender String
-  sender    CommonUser @relation(fields: [id_sender], references: [id_user])
+  sender    CommonUser @relation(fields: [id_sender], references: [id_user], onDelete: Cascade)
 
   content String
   images  String[] // opcional: anexos/imagens
@@ -128,9 +134,9 @@ enum MessageStatus {
 model FriendRequest {
   id_request   String     @id @default(cuid())
   id_requester String
-  requester    CommonUser @relation("RequestsSent", fields: [id_requester], references: [id_user])
+  requester    CommonUser @relation("RequestsSent", fields: [id_requester], references: [id_user], onDelete: Cascade)
   id_receiver  String
-  receiver     CommonUser @relation("RequestsReceived", fields: [id_receiver], references: [id_user])
+  receiver     CommonUser @relation("RequestsReceived", fields: [id_receiver], references: [id_user], onDelete: Cascade)
   status       Status     @default(pending)
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
@@ -146,7 +152,7 @@ enum ReportStatus {
 model ReportRequest {
   id_report String @id @default(cuid())
   id_requester String
-  requester CommonUser @relation("ReportsRequests", fields: [id_requester], references: [id_user])
+  requester CommonUser @relation("ReportsRequests", fields: [id_requester], references: [id_user], onDelete: Cascade)
   motive String 
   id_post String
   status ReportStatus @default(REVIEW)
@@ -158,7 +164,7 @@ model ReportRequest {
 model Post {
   id_post   String     @id @default(cuid())
   id_user   String
-  user      CommonUser @relation(fields: [id_user], references: [id_user])
+  user      CommonUser @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
   title     String
   content   String
   videos    String[]
@@ -177,7 +183,7 @@ model Comment {
   id_post         String
   post            Post       @relation(fields: [id_post], references: [id_post], onDelete: Cascade)
   id_user         String // novo campo para usuário
-  user            CommonUser @relation(fields: [id_user], references: [id_user])
+  user            CommonUser @relation(fields: [id_user], references: [id_user], onDelete: Cascade)
   content         String
   updatedAt       DateTime   @default(now()) @updatedAt
   createdAt       DateTime   @default(now())
@@ -201,3 +207,18 @@ model Address {
 
   @@map("address")
 }
+
+
+model Community {
+  id_community String @id  @default(uuid())
+  name String
+  id_owner String
+  description String
+  community_image String?
+  chats Chat[]
+  members CommonUser[]
+  owner CommonUser @relation("myCommunities",fields: [id_owner], references: [id_user], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+

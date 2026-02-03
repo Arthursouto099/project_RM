@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/storage/supabaseClient";
 import React, { useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast, } from "sonner";
 import { CarouselImgs } from "./carousel";
 import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react";
 
@@ -339,7 +339,7 @@ export function CreatePostForm({
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <Loading onOpen={loading} />
-      <ToastContainer position="top-center" />
+     
 
       <div className="space-y-4">
         {/* Título */}

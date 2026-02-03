@@ -1,6 +1,5 @@
 import { isAxiosError } from "axios";
 import instanceV1 from "./api@instance/ap-v1i";
-import { tokenActions } from "@/@tokenSettings/token";
 import type { CommonUser } from "./UserApi";
 
 
@@ -33,8 +32,7 @@ const ChatAPi = {
 
     createOrReturnChat: async (id_user: string) => {
         try {
-            const token = tokenActions.getToken()
-            const chatCreated = await instanceV1.post(`/chat/private/${id_user}`, {}, {headers: {Authorization: `bearer ${token}`}})
+            const chatCreated = await instanceV1.post(`/chat/private/${id_user}`, {}, {withCredentials: true})
             return {
                 message: chatCreated.data.message,
                 success: true,
@@ -60,8 +58,7 @@ const ChatAPi = {
     },
       returnChat: async (id_user: string) => {
         try {
-            const token = tokenActions.getToken()
-            const chatCreated = await instanceV1.get(`/chat/private/${id_user}`, {headers: {Authorization: `bearer ${token}`}})
+            const chatCreated = await instanceV1.get(`/chat/private/${id_user}`, {withCredentials: true})
             return {
                 message: chatCreated.data.message,
                 success: true,
@@ -87,8 +84,7 @@ const ChatAPi = {
     },
     sendMessage: async ({id_chat, content} : {id_chat: string, content: string}) => {
         try {
-            const token = tokenActions.getToken()
-            const messageCreated = await instanceV1.post(`/chat/message`, {id_chat, content}, {headers: {Authorization: `bearer ${token}`}})
+            const messageCreated = await instanceV1.post(`/chat/message`, {id_chat, content}, {withCredentials: true})
             console.log(messageCreated)
             return {
                 message: messageCreated.data.message,
@@ -115,8 +111,7 @@ const ChatAPi = {
     },
     getMessagesByChat: async ({id_chat, page = 1, limit = 20} : {id_chat: string, page: number, limit: number}) => {
         try {
-            const token = tokenActions.getToken()
-            const messages = await instanceV1.get(`/chat/${id_chat}/message?page=${page}&limit=${limit}` , {headers: {Authorization: `bearer ${token}`}})
+            const messages = await instanceV1.get(`/chat/${id_chat}/message?page=${page}&limit=${limit}` , {withCredentials: true})
             return {
                 message: messages.data.message,
                 success: true,

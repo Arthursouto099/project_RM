@@ -1,7 +1,7 @@
 import { isAxiosError } from "axios";
 import instanceV1 from "./api@instance/ap-v1i";
 import type { CommonUser, DefaultResponseAPI } from "./UserApi";
-import { tokenActions } from "@/@tokenSettings/token";
+
 
 
 export type Post = {
@@ -109,10 +109,8 @@ const PostApi = {
     },
     findComment: async (id_comment: string) => {
         try {
-            const token = tokenActions.getToken()
-            const comment = await instanceV1.get(`/post/comment/find/${id_comment}`, {headers: {
-                Authorization: `bearer ${token}`
-            }})
+          
+            const comment = await instanceV1.get(`/post/comment/find/${id_comment}`, {withCredentials: true})
             console.log(comment.data)
             return {
                 message: comment.data.message,
@@ -179,8 +177,8 @@ const PostApi = {
 
 
         try {
-            const token = tokenActions.getToken()
-            const deletedComment = await instanceV1.delete(urlString, { headers: { Authorization: `bearer ${token}` } })
+           
+            const deletedComment = await instanceV1.delete(urlString, {withCredentials: true})
             return {
                 message: deletedComment.data.message,
                 success: true,
@@ -214,8 +212,8 @@ const PostApi = {
         else url_string = `/post/comment/${data.id_post}`
 
         try {
-            const token = tokenActions.getToken()
-            const comment = await instanceV1.post(url_string, data, { headers: { Authorization: `bearer ${token}` } })
+           
+            const comment = await instanceV1.post(url_string, data, {withCredentials: true})
             return {
                 message: comment.data.message || "Não foi possível realizar a publicação",
                 success: true,
@@ -250,8 +248,8 @@ const PostApi = {
         else url_string = `/post/comment/${data.id_comment}`
 
         try {
-            const token = tokenActions.getToken()
-            const comment = await instanceV1.put(url_string, { content: data.content }, { headers: { Authorization: `bearer ${token}` } })
+           
+            const comment = await instanceV1.put(url_string, { content: data.content }, {withCredentials: true})
             return {
                 message: comment.data.message || "Não foi possível realizar a publicação",
                 success: true,
@@ -280,8 +278,8 @@ const PostApi = {
 
     create: async (data: Post): Promise<DefaultResponseAPI> => {
         try {
-            const token = tokenActions.getToken()
-            const isCreatedPost = await instanceV1.post("/post", data, { headers: { Authorization: `bearer ${token}` } })
+           
+            const isCreatedPost = await instanceV1.post("/post", data, {withCredentials: true})
             return {
                 message: isCreatedPost.data.message || "Não foi possível realizar a publicação",
                 success: true,
@@ -309,8 +307,8 @@ const PostApi = {
 
     delete: async ({ id_post }: { id_post: string }): Promise<DefaultResponseAPI> => {
         try {
-            const token = tokenActions.getToken()
-            const postDeleted = await instanceV1.delete("/post/" + id_post, { headers: { Authorization: `bearer ${token}` } })
+           
+            const postDeleted = await instanceV1.delete("/post/" + id_post, {withCredentials: true})
             return {
                 message: postDeleted.data.message || "Não foi possível realizar a publicação",
                 success: true,
@@ -338,8 +336,8 @@ const PostApi = {
 
     update: async (data: Partial<Post>): Promise<DefaultResponseAPI> => {
         try {
-            const token = tokenActions.getToken()
-            const isUpdatedPost = await instanceV1.put(`/post/${data.id_post}`, data, { headers: { Authorization: `bearer ${token}` } })
+           
+            const isUpdatedPost = await instanceV1.put(`/post/${data.id_post}`, data, {withCredentials: true})
             return {
                 message: isUpdatedPost.data.message || "Não foi possível realizar a publicação",
                 success: true,
@@ -365,9 +363,8 @@ const PostApi = {
         }
     },
     findPostsByMe: async (id_user: string, { page = 1, limit = 10 }) => {
-        try {
-            const token = tokenActions.getToken()
-            const isFindedPosts = await instanceV1.get(`/post/${id_user}?page=${page}&limit=${limit}`, { headers: { Authorization: `bearer ${token}` } })
+        try {       
+            const isFindedPosts = await instanceV1.get(`/post/${id_user}?page=${page}&limit=${limit}`, {withCredentials: true})
             return {
                 message: isFindedPosts.data.message || "Não foi possível realizar a publicação",
                 success: true,

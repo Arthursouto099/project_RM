@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import PostApi from "@/api/PostApi";
 import Avatar from "@/api_avatar";
 import useAuth from "@/hooks/useAuth";
@@ -117,8 +117,9 @@ export default function Comments({
 
     const onCreated = (newComment: Comment) => {
       // garante que é do post
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
       const pid =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (newComment as any)?.post?.id_post ?? (newComment as any)?.id_post;
       if (pid && pid !== id_post) return;
       upsert(newComment);
@@ -195,7 +196,7 @@ function CommentRootCard({
   onUpsert: (c: Comment) => void;
   onRemove: (id: string) => void;
 }) {
-  const { payload } = useAuth();
+  const { user } = useAuth();
   const [showReplies, setShowReplies] = useState(false);
 
   return (
@@ -258,7 +259,7 @@ function CommentRootCard({
               </Button>
             </ReplyModal>
 
-            {comment.id_user === payload?.id_user && (
+            {comment.id_user === user?.id_user && (
               <ReplyModal
                 id_post={id_post}
                 id_comment={comment.id_comment}
@@ -279,7 +280,7 @@ function CommentRootCard({
               </ReplyModal>
             )}
 
-            {comment.id_user === payload?.id_user && (
+            {comment.id_user === user?.id_user && (
               <ReplyModalDelete
                 id_comment={comment.id_comment!}
                 parentCommentId={comment.parentCommentId ?? undefined}
@@ -317,7 +318,6 @@ function CommentRootCard({
                 </button>
               )}
 
-         
               {showReplies && (
                 <div className="relative mt-3">
                   <div className="absolute left-3 top-0 bottom-0 w-px bg-sidebar-border/60" />
@@ -356,7 +356,7 @@ function ReplyItem({
   onUpsert: (c: Comment) => void;
   onRemove: (id: string) => void;
 }) {
-  const { payload } = useAuth();
+  const { user } = useAuth();
 
   // identifica "quem estou respondendo"
   const replyingTo = comment.parentCommentId
@@ -370,6 +370,7 @@ function ReplyItem({
       <div className="shrink-0 mt-0.5">
         <div className="h-7 w-7 rounded-full ring-1 ring-sidebar-border/60 overflow-hidden">
           <Avatar
+            className="w-full h-full"
             name={comment.user?.username}
             image={comment.user?.profile_image}
           />
@@ -416,7 +417,7 @@ function ReplyItem({
             </button>
           </ReplyModal>
 
-          {comment.id_user === payload?.id_user && (
+          {comment.id_user === user?.id_user && (
             <ReplyModal
               id_post={id_post}
               id_comment={comment.id_comment}
@@ -430,7 +431,7 @@ function ReplyItem({
             </ReplyModal>
           )}
 
-          {comment.id_user === payload?.id_user && (
+          {comment.id_user === user?.id_user && (
             <ReplyModalDelete
               id_comment={comment.id_comment!}
               parentCommentId={comment.parentCommentId ?? undefined}
@@ -473,6 +474,7 @@ export function ReplyModal({
   const onSubmit = async () => {
     try {
       // otimista simples (opcional): cria placeholder local
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let response: any;
       if (id_comment) {
         response = await PostApi.updateComment({

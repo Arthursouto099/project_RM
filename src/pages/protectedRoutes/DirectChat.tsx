@@ -17,7 +17,7 @@ export function DirectChat() {
   const [page, setPage] = useState<number>(1);
   const [hasMore, setHasMore] = useState<boolean>(true);
 
-  const { payload } = useAuth();
+  const { user } = useAuth();
   const messagesRef = useRef<HTMLDivElement>(null);
 
   // Buscar chat e mensagens iniciais
@@ -152,123 +152,120 @@ export function DirectChat() {
   };
 
   return (
-    <section className="m-5 w-full h-[95%]  rounded-md flex text-sidebar-foreground gap-5">
+    <section className="  w-full h-[100%]  rounded-md flex text-sidebar-foreground gap-5">
       <div className="w-full h-full overflow-hidden relative p-5 flex flex-col">
         {/* Header */}
-      <header className="flex items-center justify-between border-b border-border/40 pb-4 mb-4">
-  <div className="flex gap-3 items-center">
-    <Avatar
-      name={otherUser?.username}
-      image={otherUser?.profile_image}
-    />
-    <div className="leading-tight">
-      <h1 className="font-semibold text-sm">
-        {otherUser?.username}
-      </h1>
-      <p className="text-xs text-muted-foreground">
-        {otherUser?.nickname}
-      </p>
-    </div>
-  </div>
-</header>
-
-        {/* Messages */}
-    <div
-  ref={messagesRef}
-  className="flex-1 overflow-auto no-scrollbar flex flex-col gap-3 mb-28 px-2"
->
-  {hasMore && (
-    <p className="text-center text-[11px] text-muted-foreground">
-      Role para cima para carregar mais
-    </p>
-  )}
-
-  {messages
-    .sort(
-      (a, b) =>
-        new Date(a.createdAt).getTime() -
-        new Date(b.createdAt).getTime()
-    )
-    .map((m, idx) => {
-      const isMe = m.sender?.id_user === payload?.id_user;
-
-      return (
-        <div
-          key={idx}
-          className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-        >
-          <div
-            className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
-              isMe
-                ? "bg-sidebar-accent-foreground  text-sidebar rounded-br-md"
-                : "bg-muted text-foreground rounded-bl-md"
-            }`}
-          >
-            {!isMe && (
-              <div className="flex items-center gap-2 mb-1">
-                {m.sender?.profile_image ? (
-                  <img
-                    className="h-4 w-4 rounded-full object-cover"
-                    src={m.sender.profile_image}
-                    alt=""
-                  />
-                ) : (
-                  <User2 className="h-4 w-4 text-muted-foreground" />
-                )}
-                <span className="text-[11px] font-medium text-muted-foreground">
-                  {m.sender?.username}
-                </span>
-              </div>
-            )}
-
-            <p className="leading-relaxed">{m.content}</p>
-
-            <div className="mt-1 text-right text-[10px] text-muted-foreground">
-              {m.createdAt
-                ? new Date(m.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })
-                : ""}
+        <header className="flex items-center justify-between border-b border-border/40 pb-4 mb-4">
+          <div className="flex gap-3 items-center">
+            <Avatar
+              name={otherUser?.username}
+              image={otherUser?.profile_image}
+            />
+            <div className="leading-tight">
+              <h1 className="font-semibold text-sm">{otherUser?.username}</h1>
+              <p className="text-xs text-muted-foreground">
+                {otherUser?.nickname}
+              </p>
             </div>
           </div>
-        </div>
-      );
-    })}
-</div>
+        </header>
 
+        {/* Messages */}
+        <div
+          ref={messagesRef}
+          className="flex-1 overflow-auto no-scrollbar flex flex-col gap-3 mb-28 px-2"
+        >
+          {hasMore && (
+            <p className="text-center text-[11px] text-muted-foreground">
+              Role para cima para carregar mais
+            </p>
+          )}
+
+          {messages
+            .sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() -
+                new Date(b.createdAt).getTime(),
+            )
+            .map((m, idx) => {
+              const isMe = m.sender?.id_user === user?.id_user;
+
+              return (
+                <div
+                  key={idx}
+                  className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[75%] rounded-2xl px-4 py-2 text-sm shadow-sm ${
+                      isMe
+                        ? "bg-sidebar-accent-foreground  text-sidebar rounded-br-md"
+                        : "bg-muted text-foreground rounded-bl-md"
+                    }`}
+                  >
+                    {!isMe && (
+                      <div className="flex items-center gap-2 mb-1">
+                        {m.sender?.profile_image ? (
+                          <img
+                            className="h-4 w-4 rounded-full object-cover"
+                            src={m.sender.profile_image}
+                            alt=""
+                          />
+                        ) : (
+                          <User2 className="h-4 w-4 text-muted-foreground" />
+                        )}
+                        <span className="text-[11px] font-medium text-muted-foreground">
+                          {m.sender?.username}
+                        </span>
+                      </div>
+                    )}
+
+                    <p className="leading-relaxed">{m.content}</p>
+
+                    <div className="mt-1 text-right text-[10px] text-muted-foreground">
+                      {m.createdAt
+                        ? new Date(m.createdAt).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : ""}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
 
         {/* Input */}
-      <div className="absolute bottom-0 left-0 w-full border-t border-border/40 bg-background/80 backdrop-blur p-3">
-  <div className="flex items-center gap-3">
-    <Avatar
-      name={otherUser?.username}
-      image={otherUser?.profile_image}
-      className="h-8 w-8"
-    />
+        <div className="absolute bottom-0 left-0 w-full border-t border-border/40 bg-background/80 backdrop-blur p-3">
+          <div className="flex items-center gap-3">
+            <Avatar
+              name={user?.username}
+              image={user?.profile_image}
+              className="h-8 w-8"
+            />
 
-    <textarea
-      value={content}
-      onChange={(e) => setContent(e.target.value)}
-      rows={1}
-      placeholder="Digite uma mensagem..."
-      className="flex-1 resize-none rounded-full bg-muted px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-      onKeyDown={(e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage(content);
-        }
-      }}
-    />
+            <textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={1}
+              placeholder="Digite uma mensagem..."
+              className="flex-1 resize-none rounded-full bg-muted px-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(content);
+                }
+              }}
+            />
 
-    <button
-      onClick={() => sendMessage(content)}
-      className="flex h-9 w-9 items-center justify-center rounded-full  text-primary-foreground hover:opacity-90 transition"
-    >
-      <Send className="h-4 w-4" />
-    </button>
-  </div>
-</div>
+            <button
+              onClick={() => sendMessage(content)}
+              className="flex h-9 w-9 items-center justify-center rounded-full  text-primary-foreground hover:opacity-90 transition"
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </section>
   );

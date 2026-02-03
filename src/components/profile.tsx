@@ -13,10 +13,9 @@ import { Card } from "./ui/card";
 import Avatar from "@/api_avatar";
 import useAuth from "@/hooks/useAuth";
 
-
 export default function ProfileDashboard({ id_user }: { id_user: string }) {
   const [user, setUser] = useState<CommonUser | null>(null);
-  const { payload } = useAuth();
+  const p = useAuth();
 
   useEffect(() => {
     const getUser = async () => {
@@ -31,11 +30,13 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
       <Card className="flex flex-col gap-6 rounded-2xl border border-sidebar-border bg-sidebar/60 p-6 shadow-sm">
         {/* Header */}
         <div className="flex items-start gap-6">
-          <Avatar
-            className="h-32 w-32"
-            image={user?.profile_image}
-            name={user?.username}
-          />
+          <div className="  sm:w-32 sm:h-32 ">
+            <Avatar
+              className="h-full w-full"
+              image={user?.profile_image}
+              name={user?.username}
+            />
+          </div>
 
           <div className="flex flex-1 flex-col gap-2">
             <div className="flex items-start justify-between gap-4">
@@ -55,14 +56,11 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
               {/* Status */}
               <div className="flex items-center gap-2 text-muted-foreground">
                 {user?.accountType === "PROFESSIONAL" && (
-                  <Briefcase size={14}  />
+                  <Briefcase size={14} />
                 )}
 
                 {user?.verified && (
-                  <BadgeCheck
-                    size={14}
-                    className="text-emerald-500/80"
-                  />
+                  <BadgeCheck size={14} className="text-emerald-500/80" />
                 )}
               </div>
             </div>
@@ -71,9 +69,7 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
             <div className="mt-3 flex flex-wrap items-center gap-6">
               <div className="flex items-center gap-2 text-sm">
                 <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">
-                  {user?.posts?.length ?? 0}
-                </span>
+                <span className="font-medium">{user?.posts?.length ?? 0}</span>
                 <span className="text-muted-foreground">postagens</span>
               </div>
 
@@ -85,10 +81,8 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
                 <span className="text-muted-foreground">amizades</span>
               </div>
 
-              {user?.id_user === payload?.id_user &&
-                user?.accountType === "USER" && (
-                  <ProfessionalAccount />
-                )}
+              {user?.id_user === p.user?.id_user &&
+                user?.accountType === "USER" && <ProfessionalAccount />}
             </div>
           </div>
         </div>
@@ -141,19 +135,20 @@ export default function ProfileDashboard({ id_user }: { id_user: string }) {
   );
 }
 
-
-import {
-  GraduationCap,
-  Hash,
-  Link2,
-  MapPin,
-} from "lucide-react";
+import { GraduationCap, Hash, Link2, MapPin } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { DialogHeader, DialogTitle, DialogClose, Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import {
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -161,9 +156,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { Button } from "./ui/button";
-
 
 type ProfessionalType =
   | "PSYCHOLOGIST"
@@ -351,7 +345,7 @@ export const ProfessionalAccount = () => {
                 <span className="text-sm font-medium">Conta verificada</span>
               </div>
               <p className="text-xs text-sidebar-foreground/60 mt-1">
-                Campo visual no front (você valida no back depois).
+                Conta verifica vai aparecer nos posts.
               </p>
             </div>
             <Switch checked={verified} onCheckedChange={setVerified} />

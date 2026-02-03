@@ -1,7 +1,9 @@
 import type { Comment, Post } from "@/api/PostApi";
 import {
   BadgeCheck,
+  Briefcase,
   Calendar,
+  Crown,
   Delete,
   Edit,
   Heart,
@@ -27,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { DialogCreatePost } from "./post-create-modal";
 import DialogDeletePost from "./post-delete-model";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import {
   Card,
   CardContent,
@@ -41,51 +43,18 @@ import Comments from "./comment-post";
 import instanceV1 from "@/api/api@instance/ap-v1i";
 import Avatar from "@/api_avatar";
 import { io } from "socket.io-client";
-import { tokenActions } from "@/@tokenSettings/token";
 
-const findCommentsByIdPost = async (
-  id_post: string,
-  { page, limit }: { page: number; limit: number },
-  set: React.Dispatch<React.SetStateAction<Comment[]>>,
-  noParent?: string
-) => {
-  const parents = (
-    await instanceV1.get(
-      `/post/comment/${id_post}?page=${page}&limit=${limit}${
-        noParent ? `&onlyParents=true` : ""
-      }`
-    )
-  ).data.data as Comment[];
 
-  // ✅ FLATTEN: pais + replies do include
-  const flattened: Comment[] = [
-    ...parents,
-    ...parents.flatMap((p) => p.replies ?? []),
-  ];
-
-  set((prev) => {
-    const filtered = flattened.filter(
-      (np) => !prev.some((p) => p.id_comment === np.id_comment)
-    );
-    return [...prev, ...filtered].sort(
-      (a, b) =>
-        new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime()
-    );
-  });
-};
 
 export default function Posts({ post }: { post: Post }) {
   const [isUser, setUser] = useState(false);
-  const { payload } = useAuth();
-  const [page] = useState<number>(1);
-  const [like, setLike] = useState(false);
+  const { user } = useAuth();
   
-
-
+  const [like, setLike] = useState(false);
 
   useEffect(() => {
-    if (payload?.id_user === post.user?.id_user) setUser(true);
-  }, [payload, post.user?.id_user]);
+    if (user?.id_user === post.user?.id_user) setUser(true);
+  }, [user, post.user?.id_user]);
 
   return (
     <Card
@@ -123,8 +92,9 @@ export default function Posts({ post }: { post: Post }) {
                 <div className="flex w-full items-center gap-2 border-b border-border/40 pb-2">
                   {post.user?.accountType &&
                     post.user?.accountType !== "USER" && (
-                      <span className="rounded-md bg-accent/20 px-2 py-0.5 text-[10px] font-medium uppercase text-accent-foreground/80">
+                      <span className={`rounded-md ${post.user.accountType === "ADMIN" ? "bg-rose-600" : "bg-accent/20"} flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium uppercase text-accent-foreground/80`}>
                         {post.user.accountType}
+                        {post.user.accountType === "ADMIN" ? <Crown size={12}/> : <Briefcase size={12}/>}
                       </span>
                     )}
 
@@ -207,11 +177,9 @@ export default function Posts({ post }: { post: Post }) {
           {/* Comentários */}
 
           {/* Ações */}
-          <div className="w-full h-[0.5px] bg-accent/5 "/>
+          <div className="w-full h-[0.5px] bg-accent/5 " />
 
           <div className="flex w-full text-foreground/50  flex-col  md:flex-row items-center no-scrolbar gap-3">
-          
-
             <AllCommentsData data={post} />
 
             <ReportModal id_post={post.id_post!} />
@@ -297,7 +265,7 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
     setComments((prev) => prev.filter((c) => c.id_comment !== id_comment));
   };
 
-  // sempre que abrir o modal, faz um refetch (garante consistência)
+  // sempre que abrir o modal, faz um refetch porra
   useEffect(() => {
     if (!open) return;
 
@@ -318,7 +286,7 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
     const socket = io("http://localhost:3300");
     socket.emit("joinComments");
 
-    const samePost = (c: any) =>
+    const samePost = (c: Comment) =>
       c?.id_post === data.id_post || c?.post?.id_post === data.id_post;
 
     const onCreated = (c: Comment) => {
@@ -358,57 +326,54 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
   }, [data.id_post]);
 
   return (
-    <div >
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <span
-        
-          className=" cursor-pointer flex items-center gap-2 text-xs"
-        >
-          <MessagesSquareIcon />
-          Ver Comentarios
-        </span>
-      </DialogTrigger>
+    <div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <span className=" cursor-pointer flex items-center gap-2 text-xs">
+            <MessagesSquareIcon />
+            Ver Comentarios
+          </span>
+        </DialogTrigger>
 
-      <DialogContent className="p-0  min-w-[50%] text-foreground">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-          <div className="flex flex-col leading-tight">
-            <h2 className="text-sm font-semibold text-foreground">
-              Comentários
-            </h2>
-            <span className="text-xs text-muted-foreground">
-              {comments.length} comentário{comments.length !== 1 && "s"}
-            </span>
-          </div>
-        </div>
-
-        {comments.length < 1 && (
-          <div className="w-full flex-col flex text-center gap-4 items-center justify-center">
-            <SearchSlash className="text-foreground/50" />
-
-            <div>
-              <h1>Ninguem chegou aqui ainda...</h1>
-              <p className="text-sm text-center text-foreground/60 ">
-                Espere alguem comentar, ou aproveite a solitude.
-              </p>
+        <DialogContent className="p-0  min-w-[50%] text-foreground">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
+            <div className="flex flex-col leading-tight">
+              <h2 className="text-sm font-semibold text-foreground">
+                Comentários
+              </h2>
+              <span className="text-xs text-muted-foreground">
+                {comments.length} comentário{comments.length !== 1 && "s"}
+              </span>
             </div>
           </div>
-        )}
 
-        <div className="overflow-y-auto max-h-[calc(80vh-56px)] w-full scrollbar-custom px-4 py-3">
-          <Comments
-            noShowReplies={false}
-            comments={comments}
-            id_post={data.id_post!}
-          />
-        </div>
-        
-      <DialogFooter>
-        <div className="w-full p-4">
-            <CreateCommentModal id_post={data.id_post!}>
-              <Button
-                type="button"
-                className="
+          {comments.length < 1 && (
+            <div className="w-full flex-col flex text-center gap-4 items-center justify-center">
+              <SearchSlash className="text-foreground/50" />
+
+              <div>
+                <h1>Ninguem chegou aqui ainda...</h1>
+                <p className="text-sm text-center text-foreground/60 ">
+                  Espere alguem comentar, ou aproveite a solitude.
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-y-auto max-h-[calc(80vh-56px)] w-full scrollbar-custom px-4 py-3">
+            <Comments
+              noShowReplies={false}
+              comments={comments}
+              id_post={data.id_post!}
+            />
+          </div>
+
+          <DialogFooter>
+            <div className="w-full p-4">
+              <CreateCommentModal id_post={data.id_post!}>
+                <Button
+                  type="button"
+                  className="
                   flex items-center gap-2
                   bg-sidebar-accent
                   shadow-sm
@@ -416,17 +381,15 @@ export function AllCommentsData({ data }: AllCommentsDataProps) {
                   hover:bg-sidebar-accent/90
                   transition
                 "
-              >
-                <MessageCircleIcon className="w-4 h-4" />
-                Comentar
-              </Button>
-            </CreateCommentModal>
-        </div>
-        
-      </DialogFooter>
-      </DialogContent>
-
-    </Dialog>
+                >
+                  <MessageCircleIcon className="w-4 h-4" />
+                  Comentar
+                </Button>
+              </CreateCommentModal>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -519,22 +482,24 @@ const ReportModal = ({ id_post }: ReportModalProps) => {
   const [motive, setMotive] = useState<string | null>(null);
 
   const handleSend = async () => {
-    const report = await instanceV1.post(
-      `/post/report/${id_post}`,
-      { motive },
-      { headers: { Authorization: `bearer ${tokenActions.getToken()}` } }
-    );
-    toast.info("Report Enviado com sucesso");
+    try {
+      await instanceV1.post(
+        `/post/report/${id_post}`,
+        { motive },
+        {withCredentials: true}
+      );
+      toast.info("Report Enviado com sucesso");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      toast.error(e.message);
+    }
   };
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-            <span
-        
-          className=" cursor-pointer flex items-center gap-2 text-xs"
-        >
-          <MessageSquareWarning/>
+        <span className=" cursor-pointer flex items-center gap-2 text-xs">
+          <MessageSquareWarning />
           Reportar
         </span>
       </DialogTrigger>

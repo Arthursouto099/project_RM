@@ -5,11 +5,13 @@
 
 @theme {
   /* Tipografia */
-  --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans:
+    ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
   --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    "Liberation Mono", "Courier New", monospace;
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
 
   /* Escala */
   --spacing: 0.25rem;
@@ -146,7 +148,6 @@
   }
 }
 
-
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari e Opera */
 }
@@ -168,14 +169,14 @@
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.10);
+  background: rgba(15, 23, 42, 0.1);
   border-radius: 999px;
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.55);
   border-radius: 999px;
-  border: 2px solid rgba(15, 23, 42, 0.10); /* dá “padding” no thumb */
+  border: 2px solid rgba(15, 23, 42, 0.1); /* dá “padding” no thumb */
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {

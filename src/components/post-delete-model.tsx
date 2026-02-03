@@ -5,7 +5,7 @@ import {
   DialogContent,
 } from "@/components/ui/dialog"; // ajuste conforme seu projeto
 import PostApi from "@/api/PostApi";
-import { toast, ToastContainer } from "react-toastify"
+import { } from "sonner"
 export default function DialogDeletePost({
   children,
   onClose,
@@ -36,8 +36,6 @@ export default function DialogDeletePost({
 
   return (
     <Dialog>
-
-        <ToastContainer position="top-center"/>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent className="shadow-2xl border border-gray-200/20 text-sidebar-foreground bg-sidebar p-6 rounded-lg max-w-md">

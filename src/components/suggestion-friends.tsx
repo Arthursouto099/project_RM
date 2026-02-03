@@ -4,7 +4,7 @@ import Avatar from "@/api_avatar";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { SendToBack, User2, Users2 } from "lucide-react"
 import {  useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 
 export default function SuggestionFriends() {

@@ -1,29 +1,26 @@
-import { tokenActions } from "../@tokenSettings/token";
+import { useEffect, useState } from "react";
+import api from "../api/api@instance/ap-v1i";
+import type { CommonUser } from "@/api/UserApi";
 
-
-
-
-export type Payload = {
-    id_user: string,
-    email: string,
-    cpf: string,
-    name: string
-
-}
 export default function useAuth() {
-    const token = tokenActions.getToken()
+  const [user, setUser] = useState<CommonUser | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    if(!token) return {payload: null, isAuthenticated: false}
+  useEffect(() => {
+    api
+      .get("/user/find/me", { withCredentials: true })
+      .then((res) => {
+        setUser(res.data.data);
+      })
+      .catch(() => {
+        setUser(null);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
-    try {
-        const payload: Payload = tokenActions.decodeToken(token)
-        return {payload: payload, isAuthenticated: true}
-    }
-
-    catch {
-        return {payload: null, isAuthenticated: false}
-    }
-
-
-
+  return {
+    user,
+    isAuthenticated: !!user,
+    loading,
+  };
 }

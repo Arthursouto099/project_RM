@@ -85,7 +85,7 @@ const postController = {
 
   reportPost: async (req: CustomRequest, res: Response, next: NextFunction) => {
     const postIdentifier = req.params.id_post!;
-    const userIndetifier = req.userLogged?.id_user!;
+    const userIndetifier = req.userLogged?.id_user;
 
     try {
       const checkReports = await postService.findPostById({
