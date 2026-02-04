@@ -1,0 +1,250 @@
+import prisma from "../prisma.config";
+import ChatErrorHandler from "../errors/ChatErrorHandler";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import { Pagination } from "../interfaces/Pagination";
+import { getSkipQuantity } from "../utils";
+import { Prisma } from "@prisma/client";
+
+const chatService = {
+  // criando um chat privado para dois usuarios
+  createOrReturnPrivateChat: async (UserA: string, UserB: string) => {
+    try {
+      const existingChat = await prisma.chat.findFirst({
+        where: {
+          // como é privado o isGroup é false
+          isGroup: false,
+          // procuro todos os chats onde temos participante A && B
+          AND: [
+            { participants: { some: { id_user: UserA } } },
+            // verifico os chats onde temos o usuario A
+            { participants: { some: { id_user: UserA } } },
+            // verifico os chats onde temos o usuario B
+            // verifico se em participantes <every caso todas as condições seja, certa>
+            // Verifico se em participantes existe os ids
+            { participants: { every: { id_user: { in: [UserA, UserB] } } } },
+          ],
+        },
+        include: { participants: true, messages: true },
+      });
+
+      if (existingChat)
+        return {
+          data: existingChat,
+          message: "Chat Encontrado com sucesso",
+        };
+
+      return {
+        data: await prisma.chat.create({
+          data: {
+            isGroup: false,
+            participants: {
+              create: [{ id_user: UserA }, { id_user: UserB }],
+            },
+          },
+        }),
+        message: "Chat criado com sucesso",
+      };
+    } catch (e) {
+      if (e instanceof ChatErrorHandler) throw e;
+
+      if (e instanceof PrismaClientKnownRequestError)
+        throw ChatErrorHandler.internal(e.message);
+
+      throw ChatErrorHandler.internal();
+    }
+  },
+
+  findChatById: async (where: Prisma.ChatWhereUniqueInput) => {
+    return await prisma.chat.findFirst({
+      where: {
+        ...where,
+        isGroup: true,
+      },
+      include: {
+        participants: {
+          select: {
+            user: {
+              select: {
+                id_user: true,
+                nickname: true,
+                username: true,
+                profile_image: true,
+              },
+            },
+          },
+        },
+        messages: true,
+      },
+    });
+  },
+
+  findChat: async (UserA: string, UserB: string) => {
+    try {
+      const existingChat = await prisma.chat.findFirst({
+        where: {
+          // como é privado o isGroup é false
+          isGroup: false,
+          // procuro todos os chats onde temos participante A && B
+          AND: [
+            { participants: { some: { id_user: UserA } } },
+            // verifico os chats onde temos o usuario A
+            { participants: { some: { id_user: UserA } } },
+            // verifico os chats onde temos o usuario B
+            // verifico se em participantes <every caso todas as condições seja, certa>
+            // Verifico se em participantes existe os ids
+            { participants: { every: { id_user: { in: [UserA, UserB] } } } },
+          ],
+        },
+        include: {
+          participants: true,
+          messages: {
+            take: 1,
+            orderBy: {
+              createdAt: "desc",
+            },
+          },
+        },
+      });
+
+      return {
+        data: existingChat,
+        message: "Chat Encontrado com sucesso",
+      };
+    } catch (e) {
+      console.log(e);
+
+      if (e instanceof ChatErrorHandler) throw e;
+
+      if (e instanceof PrismaClientKnownRequestError)
+        throw ChatErrorHandler.internal(e.message);
+
+      throw ChatErrorHandler.internal();
+    }
+  },
+
+  addMember: async (where: Prisma.ChatWhereUniqueInput, id_user: string) => {
+    return await prisma.$transaction(async (ctx) => {
+      const find = await ctx.chat.findFirst({
+        where: {
+          ...where,
+          participants: {
+            some: {
+              id_user,
+            },
+          },
+        },
+        include: {
+          participants: {
+            select: { user: { select: { email: true, username: true } } },
+          },
+        },
+      });
+
+      if (find) return find;
+
+      return await ctx.chat.update({
+        where,
+        data: {
+          participants: {
+            create: {
+              id_user,
+            },
+          },
+        },
+        include: {
+          participants: {
+            select: { user: { select: { email: true, username: true } } },
+          },
+        },
+      });
+    });
+  },
+
+  removeMember: async (where: Prisma.ChatWhereUniqueInput, id_user: string) => {
+    return await prisma.$transaction(async (ctx) => {
+      const find = await ctx.chat.findFirst({
+        where: {
+          ...where,
+          participants: {
+            some: {
+              id_user,
+            },
+          },
+        },
+      });
+
+      if (!find) throw new Error("Usuario não faz parte desse chat");
+
+      return await ctx.chatUser.delete({
+        where: {
+          id_chat_id_user: { id_chat: where.id_chat!, id_user },
+        },
+        include: {
+          user: { select: { id_user: true, email: true, username: true } },
+        },
+      });
+    });
+  },
+
+  findChatsWhere: async (where: Prisma.ChatWhereInput) => {
+    return await prisma.chat.findMany({
+      where,
+      include: {
+        messages: true,
+        community: true,
+        participants: true,
+      },
+    });
+  },
+
+  getPrivateMessas: async (id_chat: string, pagination: Pagination) => {
+    const messages = await prisma.message.findMany({
+      where: { id_chat },
+      take: pagination.limit,
+      skip: getSkipQuantity(pagination),
+      orderBy: { createdAt: "desc" },
+      include: { sender: true },
+    });
+    return messages ?? [];
+  },
+
+  SendMessage: async ({
+    id_chat,
+    id_sender,
+    content,
+    images,
+    videos,
+  }: {
+    id_chat: string;
+    id_sender: string;
+    content: string;
+    images?: string[];
+    videos?: string[];
+  }) => {
+    try {
+      const message = await prisma.message.create({
+        data: {
+          id_chat,
+          id_sender,
+          content,
+          images: images ?? [],
+          videos: videos ?? [],
+        },
+        include: { sender: true },
+      });
+
+      return message;
+    } catch (e) {
+      console.log(e);
+
+      if (e instanceof ChatErrorHandler) throw e;
+
+      if (e instanceof PrismaClientKnownRequestError)
+        throw ChatErrorHandler.internal(e.message);
+
+      throw ChatErrorHandler.internal();
+    }
+  },
+};
+
+export default chatService;

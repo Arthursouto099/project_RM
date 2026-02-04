@@ -1,0 +1,109 @@
+import {z} from "zod";
+
+
+
+// Regex para cpf
+const cpfRegex: RegExp = /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/;
+// Regex para senha possuir uma letra maiúscula, um número e um caractere especial
+// eslint-disable-next-line no-useless-escape
+const passwordRegex: RegExp = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).+$/;
+// Regex para contato 
+const contactRegex: RegExp = /^\d{10,11}$/
+
+
+
+
+
+export const commonUserSchema = z.object({
+    username: z.string().min(2, "O nome do usuário deve conter pelo menos 2 caracteres"),
+    email: z.email("E-mail inválido"),
+    password: z
+        .string()
+        .min(6, "A senha deve conter no mínimo 8 caracteres")
+        .regex(
+            passwordRegex,
+            "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial"
+        ),
+    cpf: z.string().min(11, "Cpf Necessita ter 11 caracteres").regex(cpfRegex),
+    birth: z.date().optional(),
+    profile_image: z.url("Url Invalida").optional(),
+    fk_address: z.int().optional(),
+    contact:z
+    .string()
+    .regex(contactRegex, "Número de telefone inválido (use DDD + número)").optional(),
+    gender: z.enum([
+        "Masculino",
+        "Feminino",
+        "Não Binário",
+        "Agênero",
+        "Gênero Fluido",
+        "Transgênero",
+        "Travesti",
+        "Homem Trans",
+        "Mulher Trans",
+        "Pangênero",
+        "Bigênero",
+        "Outro",
+        "Prefiro não dizer"
+      ]).optional(),
+      emergency_contact: z.string().regex(contactRegex).optional(),
+      bio: z.string().optional(),
+      desc : z.string().optional()
+      
+
+}).strict(); 
+
+
+export const professionalProfileSchema = z.object({
+  verified: z.boolean().optional(),
+
+  verifiedAt: z.date().optional(),
+
+  verifiedBy: z.string().uuid().optional(),
+
+  accountType: z.enum([
+    "USER",
+    "PROFESSIONAL",
+    "CREATOR",
+    "ADMIN",
+  ]),
+
+  professionalType: z.enum([
+    "PSYCHOLOGIST",
+    "DOCTOR",
+    "LAWYER",
+    "NUTRITIONIST",
+    "THERAPIST",
+    "COACH",
+    "OTHER",
+  ]).optional(),
+
+  professionalBio: z.string().max(1000).optional(),
+
+  specialties: z.array(z.string().min(2)).optional(),
+}).strict();
+
+export type toProfessionalAcount = z.infer<typeof professionalProfileSchema>
+
+
+export const loginUserInputs = z.object({
+    email:  z.email("E-mail inválido"),
+      password: z
+        .string()
+        .min(6, "A senha deve conter no mínimo 8 caracteres")
+        .regex(
+            passwordRegex,
+            "A senha deve conter pelo menos uma letra maiúscula, um número e um caractere especial"
+        )
+}).strict()
+
+
+
+export const partialUserInputs = commonUserSchema.partial().strict()
+
+
+
+// exportando os tipos do usuario
+export type  LoginUserInputs = z.infer<typeof loginUserInputs>
+export type CommonUser = z.infer<typeof commonUserSchema>
+export type PartialUserInputs = z.infer<typeof partialUserInputs>
